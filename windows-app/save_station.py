@@ -149,9 +149,14 @@ class Drive:
         if creds and not creds.has_scopes(SCOPES):
             creds = None
         if not creds or not creds.valid:
+            refreshed = False
             if creds and creds.expired and creds.refresh_token:
-                creds.refresh(google.auth.transport.requests.Request())
-            else:
+                try:
+                    creds.refresh(google.auth.transport.requests.Request())
+                    refreshed = True
+                except Exception:
+                    creds = None  # refresh token revoked/expired → sign in again
+            if not refreshed and (not creds or not creds.valid):
                 secrets = client_secrets_path()
                 if not secrets:
                     raise RuntimeError(
@@ -160,7 +165,10 @@ class Drive:
                         "See BUILD.md."
                     )
                 flow = InstalledAppFlow.from_client_secrets_file(secrets, SCOPES)
-                creds = flow.run_local_server(port=0)
+                # offline + consent guarantees a refresh token, so the app can
+                # stay signed in across launches (no re-login every time).
+                creds = flow.run_local_server(port=0, access_type="offline",
+                                              prompt="consent")
             with open(TOKEN_PATH, "w") as f:
                 f.write(creds.to_json())
         self.service = build("drive", "v3", credentials=creds, cache_discovery=False)

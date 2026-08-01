@@ -348,6 +348,8 @@ let accessToken = null;
 let rootFolderId = null;
 let selectedFile = null;
 let gisReady = false;
+let refreshTimer = null;
+let interactiveLogin = false;
 
 const $ = (id) => document.getElementById(id);
 
@@ -391,11 +393,31 @@ function initTokenClient() {
     client_id: GOOGLE_CLIENT_ID,
     scope: SCOPES,
     callback: async (resp) => {
-      if (resp.error) { toast("Login failed: " + resp.error, "err"); return; }
+      if (resp.error) {
+        if (interactiveLogin) toast("Login failed: " + resp.error, "err");
+        interactiveLogin = false;
+        return;
+      }
+      interactiveLogin = false;
       accessToken = resp.access_token;
-      await onLoggedIn();
+      if (resp.expires_in) scheduleTokenRefresh(Number(resp.expires_in));
+      if ($("app").classList.contains("hidden")) await onLoggedIn();
     },
+    // Fires when a silent restore can't complete without interaction — stay quiet.
+    error_callback: () => { interactiveLogin = false; },
   });
+}
+
+// Keep the session alive: silently get a fresh token shortly before the current
+// one expires, so an open tab never gets logged out.
+function scheduleTokenRefresh(expiresInSec) {
+  clearTimeout(refreshTimer);
+  const ms = Math.max((expiresInSec - 120) * 1000, 30000);
+  refreshTimer = setTimeout(() => {
+    if (accessToken && tokenClient) {
+      try { tokenClient.requestAccessToken({ prompt: "" }); } catch (e) {}
+    }
+  }, ms);
 }
 
 /* ============================================================
@@ -407,6 +429,7 @@ function login() {
     return;
   }
   if (!tokenClient) { toast("Still loading Google sign-in… try again in a moment.", "err"); return; }
+  interactiveLogin = true;
   tokenClient.requestAccessToken({ prompt: "" });
 }
 
@@ -423,6 +446,7 @@ async function onLoggedIn() {
 
 function signOut() {
   localStorage.removeItem("ssw_signed_in");
+  clearTimeout(refreshTimer);
   if (accessToken) {
     try { google.accounts.oauth2.revoke(accessToken, () => {}); } catch (e) {}
   }
