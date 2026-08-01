@@ -251,9 +251,12 @@
 <!-- APP -->
 <main id="app" class="hidden">
 
-  <!-- Upload panel -->
-  <div class="panel" id="uploadPanel">
-    <h3>⬆️ Upload a save</h3>
+  <!-- New game upload panel (hidden until "＋ New game") -->
+  <div class="panel hidden" id="uploadPanel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="margin:0;">➕ New game — upload its first save</h3>
+      <button class="btn-ghost btn-sm" id="closeUploadBtn">✕ Cancel</button>
+    </div>
     <div class="dropzone" id="dropzone">
       <div class="dz-icon">📁</div>
       <div><b>Drop a save file here</b> or click to browse</div>
@@ -294,7 +297,10 @@
   <div id="gamesView">
     <div class="section-title">
       <h3>🕹️ Your games</h3>
-      <button class="btn-ghost btn-sm" id="refreshBtn">↻ Refresh</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-primary btn-sm" id="newGameBtn">＋ New game</button>
+        <button class="btn-ghost btn-sm" id="refreshBtn">↻ Refresh</button>
+      </div>
     </div>
     <div id="gamesContainer"></div>
   </div>
@@ -307,8 +313,10 @@
       <div class="hh-info">
         <h3 id="historyTitle"></h3>
         <div class="hh-actions">
+          <button class="btn-primary btn-sm" id="uploadToGameBtn">⬆ Upload save</button>
           <button class="btn-ghost btn-sm" id="setCoverBtn">🖼️ Add cover</button>
           <button class="btn-ghost btn-sm" id="downloadLatestBtn">⬇ Download latest</button>
+          <button class="btn-ghost btn-sm danger hidden" id="deleteGameBtn">🗑 Delete game</button>
         </div>
       </div>
     </div>
@@ -316,6 +324,7 @@
   </div>
 
   <input type="file" id="coverInput" class="cover-input-hidden" accept="image/*">
+  <input type="file" id="gameSaveInput" class="cover-input-hidden" accept=".sav,.srm,.dsv,.ss0,.ss1,.ss2,.ss3,.ss4,.ss5,.ss6,.ss7,.ss8,.ss9,.state">
 
 </main>
 
@@ -625,6 +634,7 @@ async function doUpload() {
     $("uploadStatus").textContent = "";
     toast("Saved “" + gameName + "” backup to Drive ✔", "ok");
     clearFile();
+    $("uploadPanel").classList.add("hidden");
     await loadGames();
   } catch (e) {
     console.error(e);
@@ -632,6 +642,61 @@ async function doUpload() {
     toast("Upload failed: " + e.message, "err", 5000);
   } finally {
     btn.disabled = !selectedFile;
+  }
+}
+
+// New game panel (the "＋ New game" flow — the only place you name a game)
+function openNewGamePanel() {
+  clearFile();
+  $("gameName").value = "";
+  $("uploadPanel").classList.remove("hidden");
+  $("uploadPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function guessEmulatorName(fn) {
+  const ext = getExt(fn).toLowerCase();
+  if (ext.startsWith("ss") || ext === "state") return "mGBA";
+  if (ext === "dsv") return "Delta";
+  return null; // ambiguous (.sav) — reuse the game's existing emulator
+}
+
+// Upload straight into the currently-open game — no naming needed.
+async function uploadToGame(folderId, file) {
+  if (!file || !folderId) return;
+  const gameName = currentHistory.name;
+  const device = localStorage.getItem("ssw_device_name") || getDeviceName();
+  let emulator = guessEmulatorName(file.name);
+  if (!emulator) {
+    const withEmu = currentHistory.saves.find((s) => s.appProperties && s.appProperties.emulator);
+    emulator = withEmu ? withEmu.appProperties.emulator : "Delta";
+  }
+  toast("Uploading save…");
+  try {
+    const ext = getExt(file.name);
+    const versionedName = timestamp() + "__" + sanitizeFolderName(device) + (ext ? "." + ext : "");
+    await uploadSave(folderId, versionedName, file, {
+      game: gameName, device, emulator, originalName: file.name, uploadedAt: new Date().toISOString(),
+    });
+    toast("Saved backup to “" + gameName + "” ✔", "ok");
+    await openHistory(folderId, gameName);
+  } catch (e) {
+    toast("Upload failed: " + e.message, "err", 5000);
+  }
+}
+
+// Delete a game — only allowed when it has no saves.
+async function deleteEmptyGame() {
+  if (!currentHistory.folderId) return;
+  if (currentHistory.saves.length) { toast("This game still has saves — delete them first.", "err"); return; }
+  if (!confirm('Delete the game "' + currentHistory.name + '"?\n\nThe empty game folder will be moved to your Google Drive trash.')) return;
+  try {
+    await trashFile(currentHistory.folderId);
+    toast("Game deleted", "ok");
+    $("historyView").classList.add("hidden");
+    $("gamesView").classList.remove("hidden");
+    await loadGames();
+  } catch (e) {
+    toast("Delete failed: " + e.message, "err");
   }
 }
 
@@ -644,7 +709,7 @@ async function loadGames() {
   try {
     const folders = await listSubfolders(rootFolderId);
     if (!folders.length) {
-      c.innerHTML = '<div class="empty"><div class="e-icon">🎲</div>No games yet. Upload your first save above!</div>';
+      c.innerHTML = '<div class="empty"><div class="e-icon">🎲</div>No games yet — click <b>＋ New game</b> to upload your first save.</div>';
       return;
     }
     // Fetch counts + latest + cover per game (in parallel)
@@ -703,9 +768,11 @@ async function openHistory(folderId, name) {
     if (!saves.length) {
       c.innerHTML = '<div class="empty"><div class="e-icon">📭</div>No backups for this game yet.</div>';
       $("downloadLatestBtn").disabled = true;
+      $("deleteGameBtn").classList.remove("hidden");  // only deletable when empty
       return;
     }
     $("downloadLatestBtn").disabled = false;
+    $("deleteGameBtn").classList.add("hidden");
     c.innerHTML = '<div class="history-list">' + saves.map((s, i) => {
       const p = s.appProperties || {};
       const device = p.device || "Unknown device";
@@ -787,6 +854,12 @@ function wireEvents() {
 
   $("setCoverBtn").onclick = () => $("coverInput").click();
   $("coverInput").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; setCover(f); };
+
+  $("newGameBtn").onclick = openNewGamePanel;
+  $("closeUploadBtn").onclick = () => $("uploadPanel").classList.add("hidden");
+  $("uploadToGameBtn").onclick = () => $("gameSaveInput").click();
+  $("gameSaveInput").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; uploadToGame(currentHistory.folderId, f); };
+  $("deleteGameBtn").onclick = deleteEmptyGame;
 }
 
 /* ============================================================

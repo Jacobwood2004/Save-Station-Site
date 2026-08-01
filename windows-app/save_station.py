@@ -311,7 +311,7 @@ class App(tk.Tk):
                                      font=("Segoe UI", 10))
         self.games_list.pack(fill="y", expand=True, pady=6)
         self.games_list.bind("<<ListboxSelect>>", self.on_game_select)
-        tk.Button(left, text="⬆ Upload save…", command=self.upload_save, bg=ACCENT,
+        tk.Button(left, text="＋ New game", command=self.new_game, bg=ACCENT,
                   fg="white", borderwidth=0, font=("Segoe UI", 10, "bold"),
                   activebackground="#6a4fe0", cursor="hand2", pady=6).pack(fill="x", pady=(0, 6))
         tk.Button(left, text="↻ Refresh", command=self.load_games, bg=PANEL2,
@@ -342,12 +342,17 @@ class App(tk.Tk):
 
         actions = tk.Frame(info, bg=BG)
         actions.pack(anchor="w", pady=(12, 0))
-        self.pull_latest_btn = self._abtn(actions, "⬇ Pull latest", self.pull_latest, primary=True)
+        self.upload_here_btn = self._abtn(actions, "⬆ Upload save", self.upload_to_current_game, primary=True)
+        self.pull_latest_btn = self._abtn(actions, "⬇ Pull latest", self.pull_latest)
         self.see_all_btn = self._abtn(actions, "☰ See all saves", self.toggle_history)
-        self.cover_btn = self._abtn(actions, "🖼 Set cover", self.set_cover)
         actions2 = tk.Frame(info, bg=BG)
         actions2.pack(anchor="w", pady=(8, 0))
+        self.cover_btn = self._abtn(actions2, "🖼 Set cover", self.set_cover)
         self.folder_btn = self._abtn(actions2, "📁 Set download folder", self.set_download_folder)
+        self.delete_game_btn = self._abtn(actions2, "🗑 Delete game", self.delete_game)
+        self.delete_game_btn.config(fg="#ff8f8f", activebackground="#3a2626")
+        self.pull_latest_btn.config(state="disabled")
+        self.delete_game_btn.config(state="disabled")
 
         # History (hidden until "See all saves")
         self.history_frame = tk.Frame(right, bg=BG)
@@ -381,7 +386,7 @@ class App(tk.Tk):
 
     def _set_actions_enabled(self, on):
         state = "normal" if on else "disabled"
-        for b in (self.pull_latest_btn, self.see_all_btn, self.cover_btn, self.folder_btn):
+        for b in (self.upload_here_btn, self.see_all_btn, self.cover_btn, self.folder_btn):
             b.config(state=state)
 
     # -- frame switching ----------------------------------------------------
@@ -535,6 +540,7 @@ class App(tk.Tk):
             self.update_summary()
             has = bool(saves)
             self.pull_latest_btn.config(state="normal" if has else "disabled")
+            self.delete_game_btn.config(state="disabled" if has else "normal")  # only when empty
             self.set_status(f"“{game['name']}” · {len(saves)} backup(s)")
 
         self.run_bg(work, done)
@@ -566,37 +572,53 @@ class App(tk.Tk):
             self.see_all_btn.config(text="☰ See all saves")
 
     # -- upload -------------------------------------------------------------
-    def upload_save(self):
+    def _pick_save_file(self):
         types = [("Save files", " ".join("*" + e for e in SAVE_EXTS)), ("All files", "*.*")]
-        path = filedialog.askopenfilename(title="Choose a save file to upload", filetypes=types)
+        return filedialog.askopenfilename(title="Choose a save file to upload", filetypes=types)
+
+    def new_game(self):
+        """＋ New game — the only flow that asks you to name the game."""
+        path = self._pick_save_file()
         if not path:
             return
         fn = os.path.basename(path)
-        default_game = game_name_from_filename(fn)
-        sel = self.games_list.curselection()
-        if sel:
-            default_game = self.games[sel[0]]["name"]
-        details = self.ask_upload_details(default_game, guess_emulator(fn), self.device_name())
+        details = self.ask_upload_details(game_name_from_filename(fn), guess_emulator(fn),
+                                          self.device_name())
         if not details:
             return
-        # remember device for next time
         self.config_data["device"] = details["device"]
         save_config(self.config_data)
+        self._do_upload(path, details["game"], details["emulator"], details["device"])
+
+    def upload_to_current_game(self):
+        """Upload straight into the selected game — no naming needed."""
+        if not self.current_game:
+            messagebox.showinfo("Pick a game", "Select a game first, or use ＋ New game.")
+            return
+        path = self._pick_save_file()
+        if not path:
+            return
+        emu = guess_emulator(os.path.basename(path))
+        if self.current_saves:  # reuse the game's existing emulator for ambiguous files
+            emu = self.current_saves[0].get("appProperties", {}).get("emulator", emu)
+        self._do_upload(path, self.current_game["name"], emu, self.device_name())
+
+    def _do_upload(self, path, game_name, emulator, device):
         self.set_status("Uploading…")
+        fn = os.path.basename(path)
 
         def work():
             root = self.root_id or self.drive.ensure_root()
             self.root_id = root
-            folder = self.drive.ensure_folder(sanitize(details["game"]), root)
+            folder = self.drive.ensure_folder(sanitize(game_name), root)
             ext = os.path.splitext(fn)[1].lstrip(".")
-            vname = timestamp() + "__" + sanitize(details["device"]) + (("." + ext) if ext else "")
+            vname = timestamp() + "__" + sanitize(device) + (("." + ext) if ext else "")
             props = {
-                "game": details["game"], "device": details["device"],
-                "emulator": details["emulator"], "originalName": fn,
-                "uploadedAt": datetime.datetime.now().isoformat(),
+                "game": game_name, "device": device, "emulator": emulator,
+                "originalName": fn, "uploadedAt": datetime.datetime.now().isoformat(),
             }
             self.drive.upload(folder, vname, path, props)
-            return details["game"]
+            return game_name
 
         def done(game):
             self.set_status("Uploaded ✔")
@@ -695,6 +717,41 @@ class App(tk.Tk):
         save_config(self.config_data)
         self.update_summary()
         self.set_status("Download folder set")
+
+    def delete_game(self):
+        if not self.current_game:
+            return
+        if self.current_saves:
+            messagebox.showinfo("Not empty", "This game still has saves — delete them first.")
+            return
+        name = self.current_game["name"]
+        if not messagebox.askyesno(
+                "Delete game",
+                f'Delete the game "{name}"?\n\n'
+                "The empty game folder will be moved to your Google Drive trash."):
+            return
+        folder_id = self.current_game["id"]
+        self.set_status("Deleting game…")
+
+        def work():
+            self.drive.trash(folder_id)
+            return True
+
+        def done(_):
+            self.current_game = None
+            self.game_title.config(text="Select a game")
+            self.summary.config(text="")
+            self.cover_label.config(image="", text="🎮")
+            self._cover_img = None
+            for i in self.tree.get_children():
+                self.tree.delete(i)
+            self._set_actions_enabled(False)
+            self.pull_latest_btn.config(state="disabled")
+            self.delete_game_btn.config(state="disabled")
+            self.set_status("Game deleted")
+            self.load_games()
+
+        self.run_bg(work, done, lambda m: messagebox.showerror("Delete failed", m))
 
     def pull_latest(self):
         if self.current_saves:
