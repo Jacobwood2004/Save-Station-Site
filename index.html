@@ -352,7 +352,14 @@ window.addEventListener("load", () => {
 
   waitForGis().then(() => {
     gisReady = true;
-    if (!notConfigured) initTokenClient();
+    if (!notConfigured) {
+      initTokenClient();
+      // Returning user? Silently restore their session (no button click, no popup
+      // if their Google session is still alive and they've granted access before).
+      if (localStorage.getItem("ssw_signed_in") === "1") {
+        try { tokenClient.requestAccessToken({ prompt: "" }); } catch (e) {}
+      }
+    }
   });
 
   wireEvents();
@@ -393,6 +400,7 @@ function login() {
 }
 
 async function onLoggedIn() {
+  localStorage.setItem("ssw_signed_in", "1");
   $("gate").classList.add("hidden");
   $("app").classList.remove("hidden");
   $("appHeader").classList.remove("hidden");
@@ -403,6 +411,7 @@ async function onLoggedIn() {
 }
 
 function signOut() {
+  localStorage.removeItem("ssw_signed_in");
   if (accessToken) {
     try { google.accounts.oauth2.revoke(accessToken, () => {}); } catch (e) {}
   }

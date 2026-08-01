@@ -58,6 +58,8 @@ TEXT = "#e6edf3"
 MUTED = "#8b98a5"
 ACCENT = "#7c5cff"
 
+COVER_W, COVER_H = 200, 128  # fixed cover box (px)
+
 
 def resource_path(rel):
     base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
@@ -319,9 +321,13 @@ class App(tk.Tk):
 
         top = tk.Frame(right, bg=BG)
         top.pack(fill="x")
-        self.cover_label = tk.Label(top, bg=PANEL2, width=18, height=7, text="🎮",
-                                    fg=MUTED, font=("Segoe UI", 34))
-        self.cover_label.pack(side="left", padx=(0, 14))
+        cover_box = tk.Frame(top, bg=PANEL2, width=COVER_W, height=COVER_H,
+                             highlightbackground="#2a323d", highlightthickness=1)
+        cover_box.pack(side="left", padx=(0, 14))
+        cover_box.pack_propagate(False)
+        self.cover_label = tk.Label(cover_box, bg=PANEL2, text="🎮", fg=MUTED,
+                                    font=("Segoe UI", 36))
+        self.cover_label.place(relx=0.5, rely=0.5, anchor="center")
         info = tk.Frame(top, bg=BG)
         info.pack(side="left", fill="both", expand=True, anchor="n")
         self.game_title = tk.Label(info, text="Select a game", bg=BG, fg=TEXT,
@@ -503,7 +509,7 @@ class App(tk.Tk):
             if cover_bytes and HAVE_PIL:
                 try:
                     img = Image.open(io.BytesIO(cover_bytes))
-                    img.thumbnail((170, 120))
+                    img.thumbnail((COVER_W - 8, COVER_H - 8))
                     self._cover_img = ImageTk.PhotoImage(img)
                     self.cover_label.config(image=self._cover_img, text="")
                 except Exception:
