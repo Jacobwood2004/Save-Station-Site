@@ -1,15 +1,17 @@
 """
 Save Station — Windows Companion
 =================================
-Connects to the SAME Google Drive folder ("Save Station Web Saves") used by the
-Save Station Web website. Sign in with Google, browse your games (with cover
-art), and pull down the latest — or any — uploaded save.
+Full-featured desktop companion for the Save Station Web website. Connects to
+the SAME Google Drive folder ("Save Station Web Saves"), and can do everything
+the website can:
 
-- Reads from your Google Drive (read-only).
-- Login screen with a single "Sign in with Google" button.
-- Shows each game's cover (uploaded from the website) + full backup history with
-  the device each save came from.
-- "Pull latest" grabs the newest save for a game in one click.
+- Sign in with Google (one-time per PC).
+- Browse games with cover art + a summary; full history behind "See all saves".
+- Upload saves (game name auto-detected from the filename, editable; pick emulator).
+- Set / change game cover art.
+- Pull the latest save, or download any older backup.
+- Per-game download folders: set a fixed path per game so pulls drop straight
+  into that game's emulator save folder — no prompt.
 
 Build to a standalone .exe with PyInstaller — see BUILD.md.
 """
@@ -17,6 +19,9 @@ Build to a standalone .exe with PyInstaller — see BUILD.md.
 import os
 import sys
 import io
+import re
+import json
+import platform
 import threading
 import datetime
 import tkinter as tk
@@ -26,7 +31,7 @@ import google.auth.transport.requests
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload
+from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 
 try:
     from PIL import Image, ImageTk
@@ -34,11 +39,17 @@ try:
 except Exception:
     HAVE_PIL = False
 
-SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+# Read + write, so the app can upload as well as download. (Restricted scope —
+# same "unverified app / Advanced" flow as before.)
+SCOPES = ["https://www.googleapis.com/auth/drive"]
 ROOT_FOLDER_NAME = "Save Station Web Saves"
 
 APP_DIR = os.path.join(os.path.expanduser("~"), ".save_station")
 TOKEN_PATH = os.path.join(APP_DIR, "token.json")
+CONFIG_PATH = os.path.join(APP_DIR, "config.json")
+
+SAVE_EXTS = [".sav", ".srm", ".dsv", ".ss0", ".ss1", ".ss2", ".ss3", ".ss4",
+             ".ss5", ".ss6", ".ss7", ".ss8", ".ss9", ".state"]
 
 BG = "#0e1116"
 PANEL = "#161b22"
@@ -64,6 +75,59 @@ def client_secrets_path():
     return None
 
 
+def load_config():
+    try:
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def save_config(cfg):
+    os.makedirs(APP_DIR, exist_ok=True)
+    try:
+        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, indent=2)
+    except Exception:
+        pass
+
+
+def game_name_from_filename(fn):
+    name = re.sub(r"\.[^.]+$", "", fn)
+    name = re.sub(r"\s*[\(\[][^)\]]*[\)\]]", "", name)
+    name = name.replace("_", " ")
+    return re.sub(r"\s{2,}", " ", name).strip()
+
+
+def sanitize(n):
+    return re.sub(r"[\/\\<>:\"|?*]+", "-", n).strip()[:120]
+
+
+def timestamp():
+    return datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+
+def guess_emulator(fn):
+    ext = os.path.splitext(fn)[1].lower().lstrip(".")
+    if ext.startswith("ss") or ext == "state":
+        return "mGBA"
+    if ext == "dsv":
+        return "Delta"
+    return "Delta"
+
+
+def split_cover(files):
+    cover = None
+    saves = []
+    for f in files:
+        if f.get("appProperties", {}).get("role") == "cover":
+            if cover is None:
+                cover = f
+        else:
+            saves.append(f)
+    return cover, saves
+
+
 # ----------------------------------------------------------------------------
 # Google Drive access
 # ----------------------------------------------------------------------------
@@ -79,6 +143,9 @@ class Drive:
                 creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
             except Exception:
                 creds = None
+        # Force re-consent if cached token lacks the scopes we now need.
+        if creds and not creds.has_scopes(SCOPES):
+            creds = None
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(google.auth.transport.requests.Request())
@@ -96,15 +163,30 @@ class Drive:
                 f.write(creds.to_json())
         self.service = build("drive", "v3", credentials=creds, cache_discovery=False)
 
-    def signed_in(self):
-        return self.service is not None
-
     def find_root(self):
         q = ("mimeType='application/vnd.google-apps.folder' and trashed=false "
              f"and name='{ROOT_FOLDER_NAME}'")
         res = self.service.files().list(q=q, fields="files(id,name)", spaces="drive").execute()
         files = res.get("files", [])
         return files[0]["id"] if files else None
+
+    def ensure_folder(self, name, parent_id):
+        q = ("mimeType='application/vnd.google-apps.folder' and trashed=false "
+             f"and name='{name}' and '{parent_id}' in parents")
+        res = self.service.files().list(q=q, fields="files(id)").execute()
+        files = res.get("files", [])
+        if files:
+            return files[0]["id"]
+        meta = {"name": name, "mimeType": "application/vnd.google-apps.folder",
+                "parents": [parent_id]}
+        return self.service.files().create(body=meta, fields="id").execute()["id"]
+
+    def ensure_root(self):
+        rid = self.find_root()
+        if rid:
+            return rid
+        meta = {"name": ROOT_FOLDER_NAME, "mimeType": "application/vnd.google-apps.folder"}
+        return self.service.files().create(body=meta, fields="id").execute()["id"]
 
     def list_subfolders(self, parent_id):
         q = ("mimeType='application/vnd.google-apps.folder' and trashed=false "
@@ -125,6 +207,14 @@ class Drive:
         ).execute()
         return res.get("files", [])
 
+    def upload(self, folder_id, name, local_path, app_properties):
+        meta = {"name": name, "parents": [folder_id], "appProperties": app_properties}
+        media = MediaFileUpload(local_path, resumable=False)
+        self.service.files().create(body=meta, media_body=media, fields="id").execute()
+
+    def delete(self, file_id):
+        self.service.files().delete(fileId=file_id).execute()
+
     def download_bytes(self, file_id):
         request = self.service.files().get_media(fileId=file_id)
         buf = io.BytesIO()
@@ -139,18 +229,6 @@ class Drive:
             f.write(self.download_bytes(file_id))
 
 
-def split_cover(files):
-    cover = None
-    saves = []
-    for f in files:
-        if f.get("appProperties", {}).get("role") == "cover":
-            if cover is None:
-                cover = f
-        else:
-            saves.append(f)
-    return cover, saves
-
-
 # ----------------------------------------------------------------------------
 # GUI
 # ----------------------------------------------------------------------------
@@ -158,14 +236,17 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Save Station — Windows Companion")
-        self.geometry("880x600")
-        self.minsize(760, 520)
+        self.geometry("940x640")
+        self.minsize(820, 560)
         self.configure(bg=BG)
         self.drive = Drive()
+        self.config_data = load_config()
         self.root_id = None
         self.games = []
         self.current_saves = []
-        self._cover_img = None  # keep ref so Tk doesn't GC it
+        self.current_game = None
+        self._cover_img = None
+        self.history_visible = False
 
         self.login_frame = tk.Frame(self, bg=BG)
         self.main_frame = tk.Frame(self, bg=BG)
@@ -173,14 +254,14 @@ class App(tk.Tk):
         self._build_main()
         self.show_login()
 
-    # -- login screen -------------------------------------------------------
+    # -- login --------------------------------------------------------------
     def _build_login(self):
         wrap = tk.Frame(self.login_frame, bg=BG)
         wrap.place(relx=0.5, rely=0.5, anchor="center")
         tk.Label(wrap, text="🎮", bg=BG, font=("Segoe UI", 52)).pack()
         tk.Label(wrap, text="Save Station", bg=BG, fg=TEXT,
                  font=("Segoe UI", 24, "bold")).pack(pady=(6, 2))
-        tk.Label(wrap, text="Pull your Delta & mGBA saves from Google Drive",
+        tk.Label(wrap, text="Your Delta & mGBA saves, synced with Google Drive",
                  bg=BG, fg=MUTED, font=("Segoe UI", 11)).pack(pady=(0, 24))
         self.login_btn = tk.Button(
             wrap, text="   Sign in with Google   ", command=self.sign_in,
@@ -195,8 +276,11 @@ class App(tk.Tk):
         header.pack(fill="x", padx=16, pady=(14, 8))
         tk.Label(header, text="🎮  Save Station", bg=BG, fg=TEXT,
                  font=("Segoe UI", 16, "bold")).pack(side="left")
+        tk.Button(header, text="Sign out", command=self.sign_out, bg=PANEL2, fg=MUTED,
+                  borderwidth=0, font=("Segoe UI", 9), activebackground="#232c38",
+                  cursor="hand2", padx=10, pady=4).pack(side="right")
         self.status = tk.Label(header, text="", bg=BG, fg=MUTED, font=("Segoe UI", 10))
-        self.status.pack(side="right")
+        self.status.pack(side="right", padx=12)
 
         style = ttk.Style(self)
         try:
@@ -211,56 +295,80 @@ class App(tk.Tk):
         body = tk.Frame(self.main_frame, bg=BG)
         body.pack(fill="both", expand=True, padx=16, pady=8)
 
-        # Left: games
+        # Left: games + global upload
         left = tk.Frame(body, bg=BG)
-        left.pack(side="left", fill="y", padx=(0, 12))
+        left.pack(side="left", fill="y", padx=(0, 14))
         tk.Label(left, text="GAMES", bg=BG, fg=MUTED,
                  font=("Segoe UI", 9, "bold")).pack(anchor="w")
-        self.games_list = tk.Listbox(left, width=26, bg=PANEL, fg=TEXT,
+        self.games_list = tk.Listbox(left, width=24, bg=PANEL, fg=TEXT,
                                      selectbackground=ACCENT, borderwidth=0,
                                      highlightthickness=0, activestyle="none",
                                      font=("Segoe UI", 10))
         self.games_list.pack(fill="y", expand=True, pady=6)
         self.games_list.bind("<<ListboxSelect>>", self.on_game_select)
+        tk.Button(left, text="⬆ Upload save…", command=self.upload_save, bg=ACCENT,
+                  fg="white", borderwidth=0, font=("Segoe UI", 10, "bold"),
+                  activebackground="#6a4fe0", cursor="hand2", pady=6).pack(fill="x", pady=(0, 6))
         tk.Button(left, text="↻ Refresh", command=self.load_games, bg=PANEL2,
                   fg=TEXT, borderwidth=0, font=("Segoe UI", 9),
                   activebackground="#232c38", cursor="hand2").pack(fill="x")
 
-        # Right: cover + saves
+        # Right: detail
         right = tk.Frame(body, bg=BG)
         right.pack(side="left", fill="both", expand=True)
 
         top = tk.Frame(right, bg=BG)
         top.pack(fill="x")
-        self.cover_label = tk.Label(top, bg=PANEL2, width=16, height=6, text="🎮",
-                                    fg=MUTED, font=("Segoe UI", 30))
-        self.cover_label.pack(side="left", padx=(0, 12))
-        self.game_title = tk.Label(top, text="Select a game", bg=BG, fg=TEXT,
-                                   font=("Segoe UI", 15, "bold"), anchor="w", justify="left")
-        self.game_title.pack(side="left", anchor="n", pady=4)
+        self.cover_label = tk.Label(top, bg=PANEL2, width=18, height=7, text="🎮",
+                                    fg=MUTED, font=("Segoe UI", 34))
+        self.cover_label.pack(side="left", padx=(0, 14))
+        info = tk.Frame(top, bg=BG)
+        info.pack(side="left", fill="both", expand=True, anchor="n")
+        self.game_title = tk.Label(info, text="Select a game", bg=BG, fg=TEXT,
+                                   font=("Segoe UI", 16, "bold"), anchor="w", justify="left")
+        self.game_title.pack(anchor="w", pady=(2, 4))
+        self.summary = tk.Label(info, text="", bg=BG, fg=MUTED, font=("Segoe UI", 10),
+                                anchor="w", justify="left", wraplength=460)
+        self.summary.pack(anchor="w")
 
-        tk.Label(right, text="SAVE HISTORY", bg=BG, fg=MUTED,
-                 font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(12, 0))
+        actions = tk.Frame(info, bg=BG)
+        actions.pack(anchor="w", pady=(12, 0))
+        self.pull_latest_btn = self._abtn(actions, "⬇ Pull latest", self.pull_latest, primary=True)
+        self.see_all_btn = self._abtn(actions, "☰ See all saves", self.toggle_history)
+        self.cover_btn = self._abtn(actions, "🖼 Set cover", self.set_cover)
+        actions2 = tk.Frame(info, bg=BG)
+        actions2.pack(anchor="w", pady=(8, 0))
+        self.folder_btn = self._abtn(actions2, "📁 Set download folder", self.set_download_folder)
+
+        # History (hidden until "See all saves")
+        self.history_frame = tk.Frame(right, bg=BG)
+        tk.Label(self.history_frame, text="SAVE HISTORY", bg=BG, fg=MUTED,
+                 font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(14, 0))
         cols = ("when", "device", "emulator", "size")
-        self.tree = ttk.Treeview(right, columns=cols, show="headings", selectmode="browse")
+        self.tree = ttk.Treeview(self.history_frame, columns=cols, show="headings",
+                                 selectmode="browse", height=8)
         for c, w in zip(cols, (180, 170, 90, 80)):
             self.tree.heading(c, text=c.capitalize())
             self.tree.column(c, width=w, anchor="w")
         self.tree.pack(fill="both", expand=True, pady=6)
-
-        btns = tk.Frame(right, bg=BG)
-        btns.pack(fill="x")
-        self.pull_latest_btn = tk.Button(btns, text="⬇ Pull latest", command=self.pull_latest,
-                  bg=ACCENT, fg="white", borderwidth=0, font=("Segoe UI", 10, "bold"),
-                  activebackground="#6a4fe0", cursor="hand2", padx=14, pady=6, state="disabled")
-        self.pull_latest_btn.pack(side="left")
-        self.download_btn = tk.Button(btns, text="⬇ Download selected", command=self.download_selected,
+        tk.Button(self.history_frame, text="⬇ Download selected", command=self.download_selected,
                   bg=PANEL2, fg=TEXT, borderwidth=0, font=("Segoe UI", 10),
-                  activebackground="#232c38", cursor="hand2", padx=14, pady=6, state="disabled")
-        self.download_btn.pack(side="left", padx=8)
-        tk.Button(btns, text="Sign out", command=self.sign_out, bg=PANEL2, fg=MUTED,
-                  borderwidth=0, font=("Segoe UI", 9), activebackground="#232c38",
-                  cursor="hand2", padx=10, pady=6).pack(side="right")
+                  activebackground="#232c38", cursor="hand2", padx=14, pady=6).pack(anchor="w")
+
+        self._set_actions_enabled(False)
+
+    def _abtn(self, parent, text, cmd, primary=False):
+        b = tk.Button(parent, text=text, command=cmd, borderwidth=0, cursor="hand2",
+                      font=("Segoe UI", 10, "bold" if primary else "normal"),
+                      bg=ACCENT if primary else PANEL2, fg="white" if primary else TEXT,
+                      activebackground="#6a4fe0" if primary else "#232c38", padx=14, pady=6)
+        b.pack(side="left", padx=(0, 8))
+        return b
+
+    def _set_actions_enabled(self, on):
+        state = "normal" if on else "disabled"
+        for b in (self.pull_latest_btn, self.see_all_btn, self.cover_btn, self.folder_btn):
+            b.config(state=state)
 
     # -- frame switching ----------------------------------------------------
     def show_login(self):
@@ -274,6 +382,12 @@ class App(tk.Tk):
     # -- helpers ------------------------------------------------------------
     def set_status(self, text):
         self.status.config(text=text)
+
+    def device_name(self):
+        if self.config_data.get("device"):
+            return self.config_data["device"]
+        n = os.environ.get("COMPUTERNAME") or platform.node() or "Windows PC"
+        return f"{n} (Windows)"
 
     def run_bg(self, fn, on_done=None, on_err=None):
         def worker():
@@ -289,7 +403,7 @@ class App(tk.Tk):
                     self.after(0, lambda: messagebox.showerror("Error", msg))
         threading.Thread(target=worker, daemon=True).start()
 
-    # -- auth flow ----------------------------------------------------------
+    # -- auth ---------------------------------------------------------------
     def sign_in(self):
         self.login_btn.config(state="disabled")
         self.login_status.config(text="Opening Google sign-in in your browser…")
@@ -318,6 +432,7 @@ class App(tk.Tk):
             pass
         self.drive = Drive()
         self.root_id = None
+        self.current_game = None
         self.games_list.delete(0, tk.END)
         for i in self.tree.get_children():
             self.tree.delete(i)
@@ -325,18 +440,15 @@ class App(tk.Tk):
         self.login_status.config(text="Signed out.")
         self.show_login()
 
-    # -- data flow ----------------------------------------------------------
-    def load_games(self):
+    # -- games / history ----------------------------------------------------
+    def load_games(self, select_name=None):
         self.set_status("Loading games…")
 
         def work():
             if not self.root_id:
                 self.root_id = self.drive.find_root()
             if not self.root_id:
-                raise RuntimeError(
-                    f"Couldn't find the '{ROOT_FOLDER_NAME}' folder. "
-                    "Upload a save from the website first."
-                )
+                return []
             return self.drive.list_subfolders(self.root_id)
 
         def done(folders):
@@ -344,22 +456,33 @@ class App(tk.Tk):
             self.games_list.delete(0, tk.END)
             for g in folders:
                 self.games_list.insert(tk.END, "  " + g["name"])
-            if folders:
-                self.set_status(f"{len(folders)} game(s)")
-            else:
-                self.set_status("No games yet — upload one from the website")
+            self.set_status(f"{len(folders)} game(s)" if folders
+                            else "No games yet — upload one to get started")
+            if select_name:
+                self.select_game_by_name(select_name)
 
         self.run_bg(work, done, lambda m: self.set_status("⚠ " + m))
+
+    def select_game_by_name(self, name):
+        for i, g in enumerate(self.games):
+            if g["name"] == name:
+                self.games_list.selection_clear(0, tk.END)
+                self.games_list.selection_set(i)
+                self.games_list.see(i)
+                self.on_game_select()
+                return
 
     def on_game_select(self, _evt=None):
         sel = self.games_list.curselection()
         if not sel:
             return
         game = self.games[sel[0]]
+        self.current_game = game
         self.game_title.config(text=game["name"])
         self.cover_label.config(image="", text="🎮")
         self._cover_img = None
-        self.set_status(f"Loading “{game['name']}”…")
+        self.summary.config(text="Loading…")
+        self._set_actions_enabled(True)
         for i in self.tree.get_children():
             self.tree.delete(i)
 
@@ -380,27 +503,184 @@ class App(tk.Tk):
             if cover_bytes and HAVE_PIL:
                 try:
                     img = Image.open(io.BytesIO(cover_bytes))
-                    img.thumbnail((150, 100))
+                    img.thumbnail((170, 120))
                     self._cover_img = ImageTk.PhotoImage(img)
                     self.cover_label.config(image=self._cover_img, text="")
                 except Exception:
                     pass
+            self.cover_btn.config(text="🖼 Change cover" if self._cover_img else "🖼 Set cover")
             for idx, s in enumerate(saves):
                 p = s.get("appProperties", {})
                 when = fmt_time(s.get("createdTime", ""))
                 if idx == 0:
                     when = "● " + when + "  (latest)"
                 self.tree.insert("", tk.END, iid=str(idx), values=(
-                    when,
-                    p.get("device", "Unknown"),
-                    p.get("emulator", ""),
+                    when, p.get("device", "Unknown"), p.get("emulator", ""),
                     human_size(s.get("size")),
                 ))
+            self.update_summary()
+            has = bool(saves)
+            self.pull_latest_btn.config(state="normal" if has else "disabled")
             self.set_status(f"“{game['name']}” · {len(saves)} backup(s)")
-            self.pull_latest_btn.config(state="normal" if saves else "disabled")
-            self.download_btn.config(state="normal" if saves else "disabled")
 
         self.run_bg(work, done)
+
+    def update_summary(self):
+        if not self.current_game:
+            return
+        lines = []
+        if self.current_saves:
+            latest = self.current_saves[0]
+            p = latest.get("appProperties", {})
+            lines.append(f"Latest: {fmt_time(latest.get('createdTime',''))} · "
+                         f"from {p.get('device','Unknown')} · {p.get('emulator','')}")
+            lines.append(f"{len(self.current_saves)} backup(s) total")
+        else:
+            lines.append("No backups yet.")
+        path = self.config_data.get("download_paths", {}).get(self.current_game["name"])
+        if path:
+            lines.append(f"⬇ Downloads to: {path}")
+        self.summary.config(text="\n".join(lines))
+
+    def toggle_history(self):
+        self.history_visible = not self.history_visible
+        if self.history_visible:
+            self.history_frame.pack(fill="both", expand=True)
+            self.see_all_btn.config(text="✕ Hide saves")
+        else:
+            self.history_frame.pack_forget()
+            self.see_all_btn.config(text="☰ See all saves")
+
+    # -- upload -------------------------------------------------------------
+    def upload_save(self):
+        types = [("Save files", " ".join("*" + e for e in SAVE_EXTS)), ("All files", "*.*")]
+        path = filedialog.askopenfilename(title="Choose a save file to upload", filetypes=types)
+        if not path:
+            return
+        fn = os.path.basename(path)
+        default_game = game_name_from_filename(fn)
+        sel = self.games_list.curselection()
+        if sel:
+            default_game = self.games[sel[0]]["name"]
+        details = self.ask_upload_details(default_game, guess_emulator(fn), self.device_name())
+        if not details:
+            return
+        # remember device for next time
+        self.config_data["device"] = details["device"]
+        save_config(self.config_data)
+        self.set_status("Uploading…")
+
+        def work():
+            root = self.root_id or self.drive.ensure_root()
+            self.root_id = root
+            folder = self.drive.ensure_folder(sanitize(details["game"]), root)
+            ext = os.path.splitext(fn)[1].lstrip(".")
+            vname = timestamp() + "__" + sanitize(details["device"]) + (("." + ext) if ext else "")
+            props = {
+                "game": details["game"], "device": details["device"],
+                "emulator": details["emulator"], "originalName": fn,
+                "uploadedAt": datetime.datetime.now().isoformat(),
+            }
+            self.drive.upload(folder, vname, path, props)
+            return details["game"]
+
+        def done(game):
+            self.set_status("Uploaded ✔")
+            self.load_games(select_name=game)
+
+        self.run_bg(work, done, lambda m: (self.set_status("⚠ upload failed"),
+                                           messagebox.showerror("Upload failed", m)))
+
+    def ask_upload_details(self, default_game, default_emu, default_device):
+        dlg = tk.Toplevel(self)
+        dlg.title("Upload save")
+        dlg.configure(bg=BG)
+        dlg.resizable(False, False)
+        dlg.transient(self)
+        result = {}
+
+        def row(label):
+            tk.Label(dlg, text=label, bg=BG, fg=MUTED, font=("Segoe UI", 9, "bold")).pack(
+                anchor="w", padx=20, pady=(12, 2))
+
+        row("Game name")
+        game_var = tk.StringVar(value=default_game)
+        tk.Entry(dlg, textvariable=game_var, width=40, bg=PANEL2, fg=TEXT,
+                 insertbackground=TEXT, relief="flat").pack(padx=20, ipady=4, fill="x")
+        row("Emulator")
+        emu_var = tk.StringVar(value=default_emu)
+        ttk.Combobox(dlg, textvariable=emu_var, values=["Delta", "mGBA"],
+                     state="readonly").pack(padx=20, fill="x")
+        row("Uploaded from (device)")
+        dev_var = tk.StringVar(value=default_device)
+        tk.Entry(dlg, textvariable=dev_var, width=40, bg=PANEL2, fg=TEXT,
+                 insertbackground=TEXT, relief="flat").pack(padx=20, ipady=4, fill="x")
+
+        btns = tk.Frame(dlg, bg=BG)
+        btns.pack(fill="x", padx=20, pady=18)
+
+        def ok():
+            if not game_var.get().strip():
+                messagebox.showinfo("Game name", "Please enter a game name.", parent=dlg)
+                return
+            result.update(game=game_var.get().strip(), emulator=emu_var.get(),
+                          device=dev_var.get().strip() or "Windows PC")
+            dlg.destroy()
+
+        tk.Button(btns, text="Upload", command=ok, bg=ACCENT, fg="white", borderwidth=0,
+                  font=("Segoe UI", 10, "bold"), cursor="hand2", padx=16, pady=6).pack(side="right")
+        tk.Button(btns, text="Cancel", command=dlg.destroy, bg=PANEL2, fg=TEXT, borderwidth=0,
+                  font=("Segoe UI", 10), cursor="hand2", padx=16, pady=6).pack(side="right", padx=8)
+
+        dlg.update_idletasks()
+        x = self.winfo_rootx() + (self.winfo_width() - dlg.winfo_width()) // 2
+        y = self.winfo_rooty() + 120
+        dlg.geometry(f"+{x}+{y}")
+        dlg.grab_set()
+        self.wait_window(dlg)
+        return result if result.get("game") else None
+
+    # -- cover --------------------------------------------------------------
+    def set_cover(self):
+        if not self.current_game:
+            return
+        game = self.current_game
+        path = filedialog.askopenfilename(
+            title="Choose a cover image",
+            filetypes=[("Images", "*.png *.jpg *.jpeg *.gif *.webp *.bmp"), ("All files", "*.*")])
+        if not path:
+            return
+        self.set_status("Uploading cover…")
+
+        def work():
+            for f in self.drive.list_saves(game["id"]):
+                if f.get("appProperties", {}).get("role") == "cover":
+                    try:
+                        self.drive.delete(f["id"])
+                    except Exception:
+                        pass
+            ext = os.path.splitext(path)[1].lstrip(".")
+            self.drive.upload(game["id"], "cover" + (("." + ext) if ext else ""), path,
+                              {"role": "cover", "originalName": os.path.basename(path)})
+            return True
+
+        def done(_):
+            self.set_status("Cover updated ✔")
+            self.select_game_by_name(game["name"])
+
+        self.run_bg(work, done, lambda m: messagebox.showerror("Cover failed", m))
+
+    # -- download -----------------------------------------------------------
+    def set_download_folder(self):
+        if not self.current_game:
+            return
+        d = filedialog.askdirectory(title=f"Download folder for {self.current_game['name']}")
+        if not d:
+            return
+        self.config_data.setdefault("download_paths", {})[self.current_game["name"]] = d
+        save_config(self.config_data)
+        self.update_summary()
+        self.set_status("Download folder set")
 
     def pull_latest(self):
         if self.current_saves:
@@ -416,13 +696,16 @@ class App(tk.Tk):
     def _download(self, save):
         p = save.get("appProperties", {})
         suggested = p.get("originalName", save["name"])
-        dest = filedialog.asksaveasfilename(
-            title="Save file as…",
-            initialfile=suggested,
-            defaultextension=os.path.splitext(suggested)[1] or ".sav",
-        )
-        if not dest:
-            return
+        game_name = self.current_game["name"] if self.current_game else ""
+        preset = self.config_data.get("download_paths", {}).get(game_name)
+        if preset:
+            dest = os.path.join(preset, suggested)
+        else:
+            dest = filedialog.asksaveasfilename(
+                title="Save file as…", initialfile=suggested,
+                defaultextension=os.path.splitext(suggested)[1] or ".sav")
+            if not dest:
+                return
         self.set_status("Downloading…")
 
         def work():
@@ -431,7 +714,8 @@ class App(tk.Tk):
 
         def done(path):
             self.set_status("Downloaded ✔")
-            messagebox.showinfo("Done", f"Saved to:\n{path}\n\nUploaded from: {p.get('device', 'Unknown')}")
+            messagebox.showinfo("Done", f"Saved to:\n{path}\n\n"
+                                        f"Uploaded from: {p.get('device', 'Unknown')}")
 
         self.run_bg(work, done, lambda m: (self.set_status("⚠ download failed"),
                                            messagebox.showerror("Download failed", m)))
