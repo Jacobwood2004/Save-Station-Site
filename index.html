@@ -136,19 +136,36 @@
   /* Games grid */
   .section-title { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 16px; }
   .section-title h3 { margin: 0; font-size: 16px; }
-  .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; }
   .game-card {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
-    padding: 18px; cursor: pointer; transition: transform .1s, border .15s;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    cursor: pointer; transition: transform .12s, border .15s, box-shadow .15s; overflow: hidden;
   }
-  .game-card:hover { transform: translateY(-2px); border-color: var(--accent); }
-  .game-card .gc-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-  .game-card .gc-emoji {
-    width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center;
-    font-size: 22px; background: var(--panel-2); flex-shrink: 0;
+  .game-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 12px 30px rgba(124,92,255,.20); }
+  .game-card .gc-cover {
+    aspect-ratio: 16 / 10; background: linear-gradient(135deg, #232c38, #12161c);
+    background-size: cover; background-position: center; display: grid; place-items: center;
+    font-size: 46px; position: relative;
   }
-  .game-card .gc-name { font-weight: 700; font-size: 15px; line-height: 1.2; word-break: break-word; }
-  .game-card .gc-meta { font-size: 12px; color: var(--muted); }
+  .game-card .gc-cover .gc-emu-tag {
+    position: absolute; top: 8px; right: 8px; font-size: 10px; font-weight: 700; letter-spacing: .3px;
+    background: rgba(0,0,0,.6); color: #fff; padding: 3px 9px; border-radius: 20px; backdrop-filter: blur(4px);
+  }
+  .game-card .gc-body { padding: 14px 16px; }
+  .game-card .gc-name { font-weight: 700; font-size: 15px; line-height: 1.25; word-break: break-word; }
+  .game-card .gc-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* history hero with cover */
+  .history-hero { display: flex; gap: 18px; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; }
+  .history-hero .hh-cover {
+    width: 160px; aspect-ratio: 16 / 10; border-radius: 14px; border: 1px solid var(--border);
+    background: linear-gradient(135deg, #232c38, #12161c); background-size: cover; background-position: center;
+    display: grid; place-items: center; font-size: 48px; flex-shrink: 0;
+  }
+  .history-hero .hh-info { flex: 1; min-width: 220px; }
+  .history-hero h3 { margin: 0 0 12px; font-size: 22px; word-break: break-word; }
+  .history-hero .hh-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .cover-input-hidden { display: none; }
 
   /* History view */
   .history-list { display: flex; flex-direction: column; gap: 10px; }
@@ -283,12 +300,20 @@
   <!-- History (per game) -->
   <div id="historyView" class="hidden">
     <button class="back-link" id="backBtn">← All games</button>
-    <div class="section-title">
-      <h3 id="historyTitle"></h3>
-      <button class="btn-ghost btn-sm" id="downloadLatestBtn">⬇ Download latest</button>
+    <div class="history-hero">
+      <div class="hh-cover" id="historyCover"></div>
+      <div class="hh-info">
+        <h3 id="historyTitle"></h3>
+        <div class="hh-actions">
+          <button class="btn-ghost btn-sm" id="setCoverBtn">🖼️ Add cover</button>
+          <button class="btn-ghost btn-sm" id="downloadLatestBtn">⬇ Download latest</button>
+        </div>
+      </div>
     </div>
     <div id="historyContainer"></div>
   </div>
+
+  <input type="file" id="coverInput" class="cover-input-hidden" accept="image/*">
 
 </main>
 
@@ -460,6 +485,50 @@ async function listSaves(folderId) {
   return (await r.json()).files || [];
 }
 
+// --- Covers -----------------------------------------------------------------
+function splitCover(files) {
+  let cover = null;
+  const saves = [];
+  for (const f of files) {
+    if (f.appProperties && f.appProperties.role === "cover") { if (!cover) cover = f; }
+    else saves.push(f);
+  }
+  return { cover, saves };  // files are createdTime-desc, so first cover is newest
+}
+
+const coverUrlCache = {};
+async function getCoverUrl(fileId) {
+  if (coverUrlCache[fileId]) return coverUrlCache[fileId];
+  const r = await driveFetch("https://www.googleapis.com/drive/v3/files/" + fileId + "?alt=media");
+  const u = URL.createObjectURL(await r.blob());
+  coverUrlCache[fileId] = u;
+  return u;
+}
+
+async function deleteFile(id) {
+  try { await driveFetch("https://www.googleapis.com/drive/v3/files/" + id, { method: "DELETE" }); } catch (e) {}
+}
+
+async function setCover(file) {
+  if (!currentHistory.folderId || !file) return;
+  if (!file.type.startsWith("image/")) { toast("Pick an image file for the cover.", "err"); return; }
+  toast("Uploading cover…");
+  try {
+    // remove old covers so they don't pile up
+    const existing = await listSaves(currentHistory.folderId);
+    for (const f of existing) {
+      if (f.appProperties && f.appProperties.role === "cover") { delete coverUrlCache[f.id]; await deleteFile(f.id); }
+    }
+    const ext = getExt(file.name);
+    await uploadSave(currentHistory.folderId, "cover" + (ext ? "." + ext : ""), file,
+      { role: "cover", originalName: file.name });
+    toast("Cover updated ✔", "ok");
+    await openHistory(currentHistory.folderId, currentHistory.name);
+  } catch (e) {
+    toast("Cover upload failed: " + e.message, "err", 5000);
+  }
+}
+
 async function uploadSave(folderId, filename, fileBlob, appProperties) {
   const metadata = { name: filename, parents: [folderId], appProperties };
   const form = new FormData();
@@ -559,25 +628,32 @@ async function loadGames() {
       c.innerHTML = '<div class="empty"><div class="e-icon">🎲</div>No games yet. Upload your first save above!</div>';
       return;
     }
-    // Fetch counts + latest per game (in parallel)
+    // Fetch counts + latest + cover per game (in parallel)
     const enriched = await Promise.all(folders.map(async (f) => {
-      const saves = await listSaves(f.id);
-      return { folder: f, saves };
+      const { cover, saves } = splitCover(await listSaves(f.id));
+      return { folder: f, saves, cover };
     }));
     c.innerHTML = '<div class="games-grid">' + enriched.map((g) => {
       const latest = g.saves[0];
       const meta = latest
-        ? (g.saves.length + " backup" + (g.saves.length > 1 ? "s" : "") + " · latest " + relTime(latest.createdTime))
-        : "No backups";
+        ? (g.saves.length + " backup" + (g.saves.length > 1 ? "s" : "") + " · " + relTime(latest.createdTime))
+        : "No backups yet";
+      const emu = latest && latest.appProperties ? (latest.appProperties.emulator || "") : "";
+      const coverAttr = g.cover ? ' data-cover="' + g.cover.id + '"' : '';
       return '<div class="game-card" data-fid="' + g.folder.id + '" data-name="' +
         escapeAttr(g.folder.name) + '">' +
-        '<div class="gc-top"><div class="gc-emoji">' + emojiFor(g.folder.name) + '</div>' +
-        '<div><div class="gc-name">' + escapeHtml(g.folder.name) + '</div></div></div>' +
-        '<div class="gc-meta">' + meta + '</div></div>';
+        '<div class="gc-cover"' + coverAttr + '>' + (g.cover ? '' : emojiFor(g.folder.name)) +
+          (emu ? '<span class="gc-emu-tag">' + escapeHtml(emu) + '</span>' : '') + '</div>' +
+        '<div class="gc-body"><div class="gc-name">' + escapeHtml(g.folder.name) + '</div>' +
+        '<div class="gc-meta">' + meta + '</div></div></div>';
     }).join("") + "</div>";
 
     c.querySelectorAll(".game-card").forEach((card) => {
       card.onclick = () => openHistory(card.dataset.fid, card.dataset.name);
+    });
+    // lazy-load cover images
+    c.querySelectorAll(".gc-cover[data-cover]").forEach(async (el) => {
+      try { el.style.backgroundImage = "url('" + (await getCoverUrl(el.dataset.cover)) + "')"; } catch (e) {}
     });
   } catch (e) {
     c.innerHTML = '<div class="empty">Could not load games: ' + escapeHtml(e.message) + "</div>";
@@ -589,13 +665,22 @@ let currentHistory = { folderId: null, name: null, saves: [] };
 async function openHistory(folderId, name) {
   $("gamesView").classList.add("hidden");
   $("historyView").classList.remove("hidden");
-  $("historyTitle").textContent = emojiFor(name) + " " + name;
+  $("historyTitle").textContent = name;
+  const coverEl = $("historyCover");
+  coverEl.style.backgroundImage = "";
+  coverEl.textContent = emojiFor(name);
   const c = $("historyContainer");
   c.innerHTML = '<div class="empty"><span class="spinner"></span> Loading backups…</div>';
   window.scrollTo({ top: 0, behavior: "smooth" });
   try {
-    const saves = await listSaves(folderId);
-    currentHistory = { folderId, name, saves };
+    const { cover, saves } = splitCover(await listSaves(folderId));
+    currentHistory = { folderId, name, saves, cover };
+    if (cover) {
+      $("setCoverBtn").textContent = "🖼️ Change cover";
+      try { coverEl.style.backgroundImage = "url('" + (await getCoverUrl(cover.id)) + "')"; coverEl.textContent = ""; } catch (e) {}
+    } else {
+      $("setCoverBtn").textContent = "🖼️ Add cover";
+    }
     if (!saves.length) {
       c.innerHTML = '<div class="empty"><div class="e-icon">📭</div>No backups for this game yet.</div>';
       $("downloadLatestBtn").disabled = true;
@@ -663,6 +748,9 @@ function wireEvents() {
   dz.addEventListener("drop", (e) => { if (e.dataTransfer.files.length) onFileChosen(e.dataTransfer.files[0]); });
 
   $("uploadBtn").onclick = doUpload;
+
+  $("setCoverBtn").onclick = () => $("coverInput").click();
+  $("coverInput").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; setCover(f); };
 }
 
 /* ============================================================
