@@ -47,6 +47,8 @@
   .btn-ghost { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
   .btn-ghost:hover:not(:disabled) { background: #232c38; }
   .btn-sm { padding: 6px 12px; font-size: 13px; border-radius: 8px; }
+  .btn-ghost.danger:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
+  .sr-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
   header {
     display: flex; align-items: center; justify-content: space-between;
@@ -518,6 +520,14 @@ async function deleteFile(id) {
   try { await driveFetch("https://www.googleapis.com/drive/v3/files/" + id, { method: "DELETE" }); } catch (e) {}
 }
 
+async function trashFile(id) {
+  await driveFetch("https://www.googleapis.com/drive/v3/files/" + id, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ trashed: true }),
+  });
+}
+
 async function setCover(file) {
   if (!currentHistory.folderId || !file) return;
   if (!file.type.startsWith("image/")) { toast("Pick an image file for the cover.", "err"); return; }
@@ -713,7 +723,10 @@ async function openHistory(folderId, name) {
             (s.size ? '<span>' + humanSize(+s.size) + '</span>' : '') +
           '</div>' +
         '</div>' +
-        '<button class="btn-ghost btn-sm" data-id="' + s.id + '" data-fn="' + escapeAttr(orig) + '">⬇ Download</button>' +
+        '<div class="sr-actions">' +
+          '<button class="btn-ghost btn-sm" data-id="' + s.id + '" data-fn="' + escapeAttr(orig) + '">⬇ Download</button>' +
+          '<button class="btn-ghost btn-sm danger" data-del="' + s.id + '" title="Delete this backup">🗑</button>' +
+        '</div>' +
       '</div>';
     }).join("") + "</div>";
 
@@ -723,6 +736,20 @@ async function openHistory(folderId, name) {
         try { await downloadSave(b.dataset.id, b.dataset.fn); toast("Downloaded ✔", "ok"); }
         catch (e) { toast("Download failed: " + e.message, "err"); }
         finally { b.disabled = false; b.innerHTML = "⬇ Download"; }
+      };
+    });
+    c.querySelectorAll("button[data-del]").forEach((b) => {
+      b.onclick = async () => {
+        if (!confirm("Delete this backup?\n\nIt will be moved to your Google Drive trash (recoverable there for 30 days).")) return;
+        b.disabled = true; b.innerHTML = '<span class="spinner"></span>';
+        try {
+          await trashFile(b.dataset.del);
+          toast("Backup deleted", "ok");
+          await openHistory(currentHistory.folderId, currentHistory.name);
+        } catch (e) {
+          toast("Delete failed: " + e.message, "err");
+          b.disabled = false; b.innerHTML = "🗑";
+        }
       };
     });
   } catch (e) {

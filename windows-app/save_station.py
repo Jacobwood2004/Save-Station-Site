@@ -217,6 +217,9 @@ class Drive:
     def delete(self, file_id):
         self.service.files().delete(fileId=file_id).execute()
 
+    def trash(self, file_id):
+        self.service.files().update(fileId=file_id, body={"trashed": True}).execute()
+
     def download_bytes(self, file_id):
         request = self.service.files().get_media(fileId=file_id)
         buf = io.BytesIO()
@@ -357,9 +360,14 @@ class App(tk.Tk):
             self.tree.heading(c, text=c.capitalize())
             self.tree.column(c, width=w, anchor="w")
         self.tree.pack(fill="both", expand=True, pady=6)
-        tk.Button(self.history_frame, text="⬇ Download selected", command=self.download_selected,
+        hbtns = tk.Frame(self.history_frame, bg=BG)
+        hbtns.pack(anchor="w", fill="x")
+        tk.Button(hbtns, text="⬇ Download selected", command=self.download_selected,
                   bg=PANEL2, fg=TEXT, borderwidth=0, font=("Segoe UI", 10),
-                  activebackground="#232c38", cursor="hand2", padx=14, pady=6).pack(anchor="w")
+                  activebackground="#232c38", cursor="hand2", padx=14, pady=6).pack(side="left")
+        tk.Button(hbtns, text="🗑 Delete selected", command=self.delete_selected,
+                  bg=PANEL2, fg="#ff8f8f", borderwidth=0, font=("Segoe UI", 10),
+                  activebackground="#3a2626", cursor="hand2", padx=14, pady=6).pack(side="left", padx=8)
 
         self._set_actions_enabled(False)
 
@@ -698,6 +706,33 @@ class App(tk.Tk):
             messagebox.showinfo("Pick a save", "Select a save from the list first.")
             return
         self._download(self.current_saves[int(sel[0])])
+
+    def delete_selected(self):
+        sel = self.tree.selection()
+        if not sel:
+            messagebox.showinfo("Pick a save", "Select a save from the list first.")
+            return
+        save = self.current_saves[int(sel[0])]
+        p = save.get("appProperties", {})
+        label = p.get("originalName", save["name"])
+        if not messagebox.askyesno(
+                "Delete backup",
+                f"Delete this backup?\n\n{label}\n({fmt_time(save.get('createdTime',''))})\n\n"
+                "It will be moved to your Google Drive trash (recoverable there for 30 days)."):
+            return
+        game = self.current_game
+        self.set_status("Deleting…")
+
+        def work():
+            self.drive.trash(save["id"])
+            return True
+
+        def done(_):
+            self.set_status("Backup deleted")
+            if game:
+                self.select_game_by_name(game["name"])
+
+        self.run_bg(work, done, lambda m: messagebox.showerror("Delete failed", m))
 
     def _download(self, save):
         p = save.get("appProperties", {})
