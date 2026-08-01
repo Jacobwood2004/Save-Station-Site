@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Save Station Web</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root {
+    --bg: #0e1116;
+    --panel: #161b22;
+    --panel-2: #1c232d;
+    --border: #2a323d;
+    --text: #e6edf3;
+    --muted: #8b98a5;
+    --accent: #7c5cff;
+    --accent-2: #4ad2c9;
+    --danger: #ff6b6b;
+    --ok: #3fb950;
+    --shadow: 0 8px 30px rgba(0,0,0,.4);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(1200px 600px at 80% -10%, #1b1440 0%, transparent 60%),
+                radial-gradient(1000px 500px at -10% 110%, #0d2f2c 0%, transparent 55%),
+                var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+  }
+  a { color: var(--accent-2); }
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform .06s ease, filter .15s ease, background .15s ease;
+  }
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), #5b8cff); color: white; }
+  .btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
+  .btn-ghost { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover:not(:disabled) { background: #232c38; }
+  .btn-sm { padding: 6px 12px; font-size: 13px; border-radius: 8px; }
+
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px; border-bottom: 1px solid var(--border);
+    background: rgba(14,17,22,.7); backdrop-filter: blur(8px);
+    position: sticky; top: 0; z-index: 20;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid; place-items: center; font-size: 22px;
+    box-shadow: var(--shadow);
+  }
+  .brand h1 { font-size: 18px; margin: 0; letter-spacing: .3px; }
+  .brand p { font-size: 12px; margin: 0; color: var(--muted); }
+
+  .userbox { display: flex; align-items: center; gap: 12px; }
+  .userbox img { width: 32px; height: 32px; border-radius: 50%; }
+  .userbox .uname { font-size: 13px; color: var(--muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  main { max-width: 1000px; margin: 0 auto; padding: 24px; }
+
+  /* Login gate */
+  .gate {
+    min-height: 70vh; display: grid; place-items: center; text-align: center;
+  }
+  .gate-card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 20px; padding: 48px 40px; max-width: 460px;
+    box-shadow: var(--shadow);
+  }
+  .gate-card .biglogo {
+    width: 72px; height: 72px; border-radius: 18px; margin: 0 auto 20px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid; place-items: center; font-size: 38px;
+  }
+  .gate-card h2 { margin: 0 0 8px; font-size: 24px; }
+  .gate-card p { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 0 0 28px; }
+  .gbtn {
+    background: white; color: #3c4043; display: inline-flex; align-items: center; gap: 12px;
+    padding: 12px 20px; border-radius: 10px; font-weight: 600; font-size: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  }
+  .gbtn:hover { filter: brightness(.97); }
+  .gbtn svg { width: 20px; height: 20px; }
+
+  .config-warn {
+    background: #2a1f12; border: 1px solid #6b4a1f; color: #f0c674;
+    padding: 14px 16px; border-radius: 12px; font-size: 13px; line-height: 1.5;
+    margin-bottom: 20px; text-align: left;
+  }
+  .config-warn code { background: rgba(0,0,0,.35); padding: 1px 6px; border-radius: 5px; }
+
+  /* Upload panel */
+  .panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px; margin-bottom: 24px; box-shadow: var(--shadow);
+  }
+  .panel h3 { margin: 0 0 16px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+
+  .dropzone {
+    border: 2px dashed var(--border); border-radius: 14px; padding: 32px;
+    text-align: center; color: var(--muted); transition: border .15s, background .15s;
+    cursor: pointer;
+  }
+  .dropzone.drag { border-color: var(--accent); background: rgba(124,92,255,.08); color: var(--text); }
+  .dropzone .dz-icon { font-size: 34px; margin-bottom: 8px; }
+  .dropzone b { color: var(--text); }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+  .field input, .field select {
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 10px; padding: 10px 12px; font-size: 14px; font-family: inherit;
+  }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--accent); }
+  .field .hint { font-size: 11px; color: var(--muted); }
+  .file-chip {
+    display: inline-flex; align-items: center; gap: 8px; background: var(--panel-2);
+    border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; font-size: 13px; margin-top: 12px;
+  }
+  .file-chip .x { color: var(--muted); cursor: pointer; font-weight: bold; }
+  .upload-actions { display: flex; gap: 12px; margin-top: 18px; align-items: center; }
+
+  /* Games grid */
+  .section-title { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 16px; }
+  .section-title h3 { margin: 0; font-size: 16px; }
+  .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .game-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 18px; cursor: pointer; transition: transform .1s, border .15s;
+  }
+  .game-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .game-card .gc-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .game-card .gc-emoji {
+    width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center;
+    font-size: 22px; background: var(--panel-2); flex-shrink: 0;
+  }
+  .game-card .gc-name { font-weight: 700; font-size: 15px; line-height: 1.2; word-break: break-word; }
+  .game-card .gc-meta { font-size: 12px; color: var(--muted); }
+
+  /* History view */
+  .history-list { display: flex; flex-direction: column; gap: 10px; }
+  .save-row {
+    display: flex; align-items: center; gap: 14px; background: var(--panel-2);
+    border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px;
+  }
+  .save-row .sr-icon { font-size: 20px; }
+  .save-row .sr-main { flex: 1; min-width: 0; }
+  .save-row .sr-title { font-weight: 600; font-size: 14px; }
+  .save-row .sr-sub { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; background: rgba(124,92,255,.15); color: #b9a6ff;
+  }
+  .badge.device { background: rgba(74,210,201,.14); color: var(--accent-2); }
+  .badge.latest { background: rgba(63,185,80,.16); color: var(--ok); }
+
+  .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); background: none; padding: 4px 0; margin-bottom: 8px; }
+  .back-link:hover { color: var(--text); }
+
+  .empty { text-align: center; color: var(--muted); padding: 40px 20px; }
+  .empty .e-icon { font-size: 40px; margin-bottom: 8px; }
+
+  .spinner {
+    width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--panel); border: 1px solid var(--border); color: var(--text);
+    padding: 12px 20px; border-radius: 12px; box-shadow: var(--shadow); font-size: 14px;
+    opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 100;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+  #toast.err { border-color: var(--danger); }
+  #toast.ok { border-color: var(--ok); }
+
+  .hidden { display: none !important; }
+  @media (max-width: 620px) { .form-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="hidden" id="appHeader">
+  <div class="brand">
+    <div class="logo">🎮</div>
+    <div>
+      <h1>Save Station Web</h1>
+      <p>Delta &amp; mGBA saves · backed up to your Google Drive</p>
+    </div>
+  </div>
+  <div class="userbox">
+    <img id="userAvatar" alt="" class="hidden">
+    <span class="uname" id="userName"></span>
+    <button class="btn-ghost btn-sm" id="signOutBtn">Sign out</button>
+  </div>
+</header>
+
+<!-- LOGIN GATE -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="biglogo">🎮</div>
+    <h2>Save Station Web</h2>
+    <p>Back up your <b>Delta</b> and <b>mGBA</b> emulator saves straight to your own Google Drive.
+       Every upload is versioned so you can restore any backup, anytime.</p>
+    <div class="config-warn hidden" id="configWarn">
+      ⚠️ <b>Not configured yet.</b> This app needs your own Google OAuth Client ID.
+      Open <code>index.html</code> and set <code>GOOGLE_CLIENT_ID</code> near the top of the script.
+      See <code>README.md</code> for the 5-minute setup.
+    </div>
+    <button class="gbtn" id="loginBtn">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+  </div>
+</div>
+
+<!-- APP -->
+<main id="app" class="hidden">
+
+  <!-- Upload panel -->
+  <div class="panel" id="uploadPanel">
+    <h3>⬆️ Upload a save</h3>
+    <div class="dropzone" id="dropzone">
+      <div class="dz-icon">📁</div>
+      <div><b>Drop a save file here</b> or click to browse</div>
+      <div style="font-size:12px;margin-top:6px;">Delta &amp; mGBA saves — <code>.sav</code>, <code>.srm</code>, save states</div>
+      <input type="file" id="fileInput" class="hidden" accept=".sav,.srm,.dsv,.ss0,.ss1,.ss2,.ss3,.ss4,.ss5,.ss6,.ss7,.ss8,.ss9,.state">
+    </div>
+    <div id="fileChip" class="hidden"></div>
+
+    <div class="form-grid" id="uploadForm">
+      <div class="field">
+        <label for="gameName">Game name</label>
+        <input type="text" id="gameName" placeholder="e.g. Pokemon - Emerald" autocomplete="off">
+        <span class="hint">Auto-filled from the file name — edit it if needed.</span>
+      </div>
+      <div class="field">
+        <label for="emulator">Emulator</label>
+        <select id="emulator">
+          <option value="Delta">Delta</option>
+          <option value="mGBA">mGBA</option>
+        </select>
+        <span class="hint">Which emulator this save came from.</span>
+      </div>
+      <div class="field">
+        <label for="deviceName">Uploaded from (device)</label>
+        <input type="text" id="deviceName" placeholder="This device" autocomplete="off">
+        <span class="hint">Shown in the save history. Auto-detected, editable, remembered.</span>
+      </div>
+      <div class="field" style="justify-content:flex-end;">
+        <div class="upload-actions">
+          <button class="btn-primary" id="uploadBtn" disabled>Upload to Drive</button>
+          <span id="uploadStatus" style="font-size:13px;color:var(--muted);"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Games list -->
+  <div id="gamesView">
+    <div class="section-title">
+      <h3>🕹️ Your games</h3>
+      <button class="btn-ghost btn-sm" id="refreshBtn">↻ Refresh</button>
+    </div>
+    <div id="gamesContainer"></div>
+  </div>
+
+  <!-- History (per game) -->
+  <div id="historyView" class="hidden">
+    <button class="back-link" id="backBtn">← All games</button>
+    <div class="section-title">
+      <h3 id="historyTitle"></h3>
+      <button class="btn-ghost btn-sm" id="downloadLatestBtn">⬇ Download latest</button>
+    </div>
+    <div id="historyContainer"></div>
+  </div>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   CONFIG — set your Google OAuth Client ID here.
+   Get one at https://console.cloud.google.com  (see README.md)
+   ============================================================ */
+const GOOGLE_CLIENT_ID = "PASTE_YOUR_CLIENT_ID_HERE.apps.googleusercontent.com";
+
+const ROOT_FOLDER_NAME = "Save Station Web Saves";
+const SCOPES = "https://www.googleapis.com/auth/drive.file";
+
+/* ============================================================
+   State
+   ============================================================ */
+let tokenClient = null;
+let accessToken = null;
+let rootFolderId = null;
+let selectedFile = null;
+let gisReady = false;
+
+const $ = (id) => document.getElementById(id);
+
+/* ============================================================
+   Boot
+   ============================================================ */
+window.addEventListener("load", () => {
+  const notConfigured = GOOGLE_CLIENT_ID.startsWith("PASTE_");
+  if (notConfigured) $("configWarn").classList.remove("hidden");
+
+  // Prefill device name
+  $("deviceName").value = getDeviceName();
+
+  waitForGis().then(() => {
+    gisReady = true;
+    if (!notConfigured) initTokenClient();
+  });
+
+  wireEvents();
+});
+
+function waitForGis() {
+  return new Promise((resolve) => {
+    const check = () => {
+      if (window.google && google.accounts && google.accounts.oauth2) resolve();
+      else setTimeout(check, 100);
+    };
+    check();
+  });
+}
+
+function initTokenClient() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: SCOPES,
+    callback: async (resp) => {
+      if (resp.error) { toast("Login failed: " + resp.error, "err"); return; }
+      accessToken = resp.access_token;
+      await onLoggedIn();
+    },
+  });
+}
+
+/* ============================================================
+   Auth
+   ============================================================ */
+function login() {
+  if (GOOGLE_CLIENT_ID.startsWith("PASTE_")) {
+    toast("Set your Google Client ID in index.html first (see README).", "err", 4500);
+    return;
+  }
+  if (!tokenClient) { toast("Still loading Google sign-in… try again in a moment.", "err"); return; }
+  tokenClient.requestAccessToken({ prompt: "" });
+}
+
+async function onLoggedIn() {
+  $("gate").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  $("appHeader").classList.remove("hidden");
+  await loadUserProfile();
+  toast("Signed in — connecting to Drive…", "ok");
+  rootFolderId = await ensureRootFolder();
+  await loadGames();
+}
+
+function signOut() {
+  if (accessToken) {
+    try { google.accounts.oauth2.revoke(accessToken, () => {}); } catch (e) {}
+  }
+  accessToken = null; rootFolderId = null;
+  $("app").classList.add("hidden");
+  $("appHeader").classList.add("hidden");
+  $("gate").classList.remove("hidden");
+}
+
+async function loadUserProfile() {
+  try {
+    const r = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: { Authorization: "Bearer " + accessToken },
+    });
+    if (r.ok) {
+      const u = await r.json();
+      $("userName").textContent = u.email || u.name || "";
+      if (u.picture) { $("userAvatar").src = u.picture; $("userAvatar").classList.remove("hidden"); }
+    }
+  } catch (e) { /* non-fatal */ }
+}
+
+/* ============================================================
+   Drive helpers
+   ============================================================ */
+async function driveFetch(url, opts = {}) {
+  opts.headers = Object.assign({}, opts.headers, { Authorization: "Bearer " + accessToken });
+  const r = await fetch(url, opts);
+  if (r.status === 401) { toast("Session expired — please sign in again.", "err"); signOut(); throw new Error("401"); }
+  if (!r.ok) { const t = await r.text(); throw new Error("Drive error " + r.status + ": " + t); }
+  return r;
+}
+
+async function findFolder(name, parentId) {
+  const q = [
+    "mimeType='application/vnd.google-apps.folder'",
+    "trashed=false",
+    "name='" + name.replace(/'/g, "\\'") + "'",
+    parentId ? "'" + parentId + "' in parents" : "'root' in parents",
+  ].join(" and ");
+  const url = "https://www.googleapis.com/drive/v3/files?q=" + encodeURIComponent(q) + "&fields=files(id,name)&spaces=drive";
+  const r = await driveFetch(url);
+  const data = await r.json();
+  return data.files && data.files.length ? data.files[0].id : null;
+}
+
+async function createFolder(name, parentId) {
+  const body = { name, mimeType: "application/vnd.google-apps.folder" };
+  if (parentId) body.parents = [parentId];
+  const r = await driveFetch("https://www.googleapis.com/drive/v3/files?fields=id", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await r.json();
+  return data.id;
+}
+
+async function ensureFolder(name, parentId) {
+  return (await findFolder(name, parentId)) || (await createFolder(name, parentId));
+}
+
+async function ensureRootFolder() {
+  return await ensureFolder(ROOT_FOLDER_NAME, null);
+}
+
+async function listSubfolders(parentId) {
+  const q = "mimeType='application/vnd.google-apps.folder' and trashed=false and '" + parentId + "' in parents";
+  const url = "https://www.googleapis.com/drive/v3/files?q=" + encodeURIComponent(q) +
+              "&fields=files(id,name)&orderBy=name&pageSize=200";
+  const r = await driveFetch(url);
+  return (await r.json()).files || [];
+}
+
+async function listSaves(folderId) {
+  const q = "trashed=false and mimeType!='application/vnd.google-apps.folder' and '" + folderId + "' in parents";
+  const url = "https://www.googleapis.com/drive/v3/files?q=" + encodeURIComponent(q) +
+              "&fields=files(id,name,createdTime,size,appProperties)&orderBy=createdTime desc&pageSize=500";
+  const r = await driveFetch(url);
+  return (await r.json()).files || [];
+}
+
+async function uploadSave(folderId, filename, fileBlob, appProperties) {
+  const metadata = { name: filename, parents: [folderId], appProperties };
+  const form = new FormData();
+  form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+  form.append("file", fileBlob);
+  const r = await driveFetch(
+    "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name",
+    { method: "POST", body: form }
+  );
+  return await r.json();
+}
+
+async function downloadSave(fileId, filename) {
+  const r = await driveFetch("https://www.googleapis.com/drive/v3/files/" + fileId + "?alt=media");
+  const blob = await r.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+/* ============================================================
+   Upload flow
+   ============================================================ */
+function onFileChosen(file) {
+  if (!file) return;
+  selectedFile = file;
+  const chip = $("fileChip");
+  chip.classList.remove("hidden");
+  chip.innerHTML = '<div class="file-chip">💾 <b>' + escapeHtml(file.name) +
+    '</b> <span style="color:var(--muted)">(' + humanSize(file.size) + ')</span> ' +
+    '<span class="x" id="clearFile">✕</span></div>';
+  $("clearFile").onclick = clearFile;
+
+  // Detect game name from filename + guess emulator from extension
+  const detected = gameNameFromFilename(file.name);
+  if (detected) $("gameName").value = detected;
+  guessEmulator(file.name);
+  $("uploadBtn").disabled = false;
+}
+
+function clearFile() {
+  selectedFile = null;
+  $("fileChip").classList.add("hidden");
+  $("fileInput").value = "";
+  $("uploadBtn").disabled = true;
+}
+
+async function doUpload() {
+  if (!selectedFile) return;
+  const gameName = $("gameName").value.trim();
+  if (!gameName) { toast("Give the game a name first.", "err"); return; }
+  const emulator = $("emulator").value;
+  const device = $("deviceName").value.trim() || "Unknown device";
+  localStorage.setItem("ssw_device_name", device);
+
+  const btn = $("uploadBtn");
+  btn.disabled = true;
+  $("uploadStatus").innerHTML = '<span class="spinner"></span> Uploading…';
+
+  try {
+    const gameFolderId = await ensureFolder(sanitizeFolderName(gameName), rootFolderId);
+    const stamp = timestamp();
+    const ext = getExt(selectedFile.name);
+    const versionedName = stamp + "__" + sanitizeFolderName(device) + (ext ? "." + ext : "");
+    const appProperties = {
+      game: gameName,
+      device: device,
+      emulator: emulator,
+      originalName: selectedFile.name,
+      uploadedAt: new Date().toISOString(),
+    };
+    await uploadSave(gameFolderId, versionedName, selectedFile, appProperties);
+    $("uploadStatus").textContent = "";
+    toast("Saved “" + gameName + "” backup to Drive ✔", "ok");
+    clearFile();
+    await loadGames();
+  } catch (e) {
+    console.error(e);
+    $("uploadStatus").textContent = "";
+    toast("Upload failed: " + e.message, "err", 5000);
+  } finally {
+    btn.disabled = !selectedFile;
+  }
+}
+
+/* ============================================================
+   Games + history rendering
+   ============================================================ */
+async function loadGames() {
+  const c = $("gamesContainer");
+  c.innerHTML = '<div class="empty"><span class="spinner"></span> Loading your games…</div>';
+  try {
+    const folders = await listSubfolders(rootFolderId);
+    if (!folders.length) {
+      c.innerHTML = '<div class="empty"><div class="e-icon">🎲</div>No games yet. Upload your first save above!</div>';
+      return;
+    }
+    // Fetch counts + latest per game (in parallel)
+    const enriched = await Promise.all(folders.map(async (f) => {
+      const saves = await listSaves(f.id);
+      return { folder: f, saves };
+    }));
+    c.innerHTML = '<div class="games-grid">' + enriched.map((g) => {
+      const latest = g.saves[0];
+      const meta = latest
+        ? (g.saves.length + " backup" + (g.saves.length > 1 ? "s" : "") + " · latest " + relTime(latest.createdTime))
+        : "No backups";
+      return '<div class="game-card" data-fid="' + g.folder.id + '" data-name="' +
+        escapeAttr(g.folder.name) + '">' +
+        '<div class="gc-top"><div class="gc-emoji">' + emojiFor(g.folder.name) + '</div>' +
+        '<div><div class="gc-name">' + escapeHtml(g.folder.name) + '</div></div></div>' +
+        '<div class="gc-meta">' + meta + '</div></div>';
+    }).join("") + "</div>";
+
+    c.querySelectorAll(".game-card").forEach((card) => {
+      card.onclick = () => openHistory(card.dataset.fid, card.dataset.name);
+    });
+  } catch (e) {
+    c.innerHTML = '<div class="empty">Could not load games: ' + escapeHtml(e.message) + "</div>";
+  }
+}
+
+let currentHistory = { folderId: null, name: null, saves: [] };
+
+async function openHistory(folderId, name) {
+  $("gamesView").classList.add("hidden");
+  $("historyView").classList.remove("hidden");
+  $("historyTitle").textContent = emojiFor(name) + " " + name;
+  const c = $("historyContainer");
+  c.innerHTML = '<div class="empty"><span class="spinner"></span> Loading backups…</div>';
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  try {
+    const saves = await listSaves(folderId);
+    currentHistory = { folderId, name, saves };
+    if (!saves.length) {
+      c.innerHTML = '<div class="empty"><div class="e-icon">📭</div>No backups for this game yet.</div>';
+      $("downloadLatestBtn").disabled = true;
+      return;
+    }
+    $("downloadLatestBtn").disabled = false;
+    c.innerHTML = '<div class="history-list">' + saves.map((s, i) => {
+      const p = s.appProperties || {};
+      const device = p.device || "Unknown device";
+      const emu = p.emulator || "";
+      const orig = p.originalName || s.name;
+      return '<div class="save-row">' +
+        '<div class="sr-icon">💾</div>' +
+        '<div class="sr-main">' +
+          '<div class="sr-title">' + escapeHtml(orig) +
+            (i === 0 ? ' <span class="badge latest">● Latest</span>' : '') + '</div>' +
+          '<div class="sr-sub">' +
+            '<span>🕒 ' + fmtTime(s.createdTime) + '</span>' +
+            '<span class="badge device">🖥️ ' + escapeHtml(device) + '</span>' +
+            (emu ? '<span class="badge">' + escapeHtml(emu) + '</span>' : '') +
+            (s.size ? '<span>' + humanSize(+s.size) + '</span>' : '') +
+          '</div>' +
+        '</div>' +
+        '<button class="btn-ghost btn-sm" data-id="' + s.id + '" data-fn="' + escapeAttr(orig) + '">⬇ Download</button>' +
+      '</div>';
+    }).join("") + "</div>";
+
+    c.querySelectorAll("button[data-id]").forEach((b) => {
+      b.onclick = async () => {
+        b.disabled = true; b.innerHTML = '<span class="spinner"></span>';
+        try { await downloadSave(b.dataset.id, b.dataset.fn); toast("Downloaded ✔", "ok"); }
+        catch (e) { toast("Download failed: " + e.message, "err"); }
+        finally { b.disabled = false; b.innerHTML = "⬇ Download"; }
+      };
+    });
+  } catch (e) {
+    c.innerHTML = '<div class="empty">Could not load backups: ' + escapeHtml(e.message) + "</div>";
+  }
+}
+
+/* ============================================================
+   Events
+   ============================================================ */
+function wireEvents() {
+  $("loginBtn").onclick = login;
+  $("signOutBtn").onclick = signOut;
+  $("refreshBtn").onclick = loadGames;
+  $("backBtn").onclick = () => {
+    $("historyView").classList.add("hidden");
+    $("gamesView").classList.remove("hidden");
+  };
+  $("downloadLatestBtn").onclick = async () => {
+    const latest = currentHistory.saves[0];
+    if (!latest) return;
+    const orig = (latest.appProperties && latest.appProperties.originalName) || latest.name;
+    try { await downloadSave(latest.id, orig); toast("Downloaded latest ✔", "ok"); }
+    catch (e) { toast("Download failed: " + e.message, "err"); }
+  };
+
+  const dz = $("dropzone");
+  dz.onclick = () => $("fileInput").click();
+  $("fileInput").onchange = (e) => onFileChosen(e.target.files[0]);
+  ["dragenter", "dragover"].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add("drag"); }));
+  ["dragleave", "drop"].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove("drag"); }));
+  dz.addEventListener("drop", (e) => { if (e.dataTransfer.files.length) onFileChosen(e.dataTransfer.files[0]); });
+
+  $("uploadBtn").onclick = doUpload;
+}
+
+/* ============================================================
+   Utilities
+   ============================================================ */
+function gameNameFromFilename(fn) {
+  let name = fn.replace(/\.[^.]+$/, "");            // strip extension
+  name = name.replace(/\s*[\(\[][^)\]]*[\)\]]/g, ""); // strip (USA) [!] etc.
+  name = name.replace(/[_]+/g, " ");                // underscores → spaces
+  name = name.replace(/\s{2,}/g, " ").trim();
+  return name;
+}
+
+function guessEmulator(fn) {
+  const ext = getExt(fn).toLowerCase();
+  // mGBA save states are .ss0-.ss9; Delta uses .dsv for its states.
+  if (ext.startsWith("ss") || ext === "state") $("emulator").value = "mGBA";
+  else if (ext === "dsv") $("emulator").value = "Delta";
+}
+
+function getExt(fn) { const m = fn.match(/\.([^.]+)$/); return m ? m[1] : ""; }
+
+function sanitizeFolderName(n) { return n.replace(/[\/\\<>:"|?*]+/g, "-").replace(/\s{2,}/g, " ").trim().slice(0, 120); }
+
+function getDeviceName() {
+  const saved = localStorage.getItem("ssw_device_name");
+  if (saved) return saved;
+  const ua = navigator.userAgent;
+  let os = "Device";
+  if (/Windows/.test(ua)) os = "Windows PC";
+  else if (/iPhone/.test(ua)) os = "iPhone";
+  else if (/iPad/.test(ua)) os = "iPad";
+  else if (/Android/.test(ua)) os = "Android";
+  else if (/Macintosh/.test(ua)) os = "Mac";
+  else if (/Linux/.test(ua)) os = "Linux PC";
+  let browser = "";
+  if (/Edg\//.test(ua)) browser = "Edge";
+  else if (/Chrome\//.test(ua)) browser = "Chrome";
+  else if (/Firefox\//.test(ua)) browser = "Firefox";
+  else if (/Safari\//.test(ua)) browser = "Safari";
+  return browser ? os + " (" + browser + ")" : os;
+}
+
+function timestamp() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) +
+    "_" + p(d.getHours()) + "-" + p(d.getMinutes()) + "-" + p(d.getSeconds());
+}
+
+function fmtTime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+function relTime(iso) {
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (diff < 60) return "just now";
+  if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+  if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+  if (diff < 2592000) return Math.floor(diff / 86400) + "d ago";
+  return fmtTime(iso);
+}
+
+function humanSize(b) {
+  if (b < 1024) return b + " B";
+  if (b < 1048576) return (b / 1024).toFixed(1) + " KB";
+  return (b / 1048576).toFixed(1) + " MB";
+}
+
+function emojiFor(name) {
+  const n = name.toLowerCase();
+  if (n.includes("pokemon") || n.includes("pokémon")) return "🔴";
+  if (n.includes("zelda")) return "🗡️";
+  if (n.includes("mario")) return "🍄";
+  if (n.includes("fire emblem")) return "⚔️";
+  if (n.includes("metroid")) return "🚀";
+  if (n.includes("kirby")) return "🌟";
+  if (n.includes("sonic")) return "💨";
+  if (n.includes("final fantasy")) return "💎";
+  return "🎮";
+}
+
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function escapeAttr(s) { return escapeHtml(s); }
+
+let toastTimer = null;
+function toast(msg, type, ms) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.className = "show " + (type || "");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = t.className.replace("show", "").trim(); }, ms || 3000);
+}
+</script>
+</body>
+</html>

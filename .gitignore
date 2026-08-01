@@ -1,0 +1,16 @@
+# Google OAuth secrets — never commit these
+client_secret.json
+token.json
+**/client_secret.json
+**/token.json
+
+# Python / PyInstaller build artifacts
+windows-app/.venv/
+windows-app/build/
+windows-app/dist/
+windows-app/*.spec
+__pycache__/
+*.pyc
+
+# Local Claude Code config
+.claude/
