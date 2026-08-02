@@ -280,6 +280,11 @@
         <span class="hint">Which emulator this save came from.</span>
       </div>
       <div class="field">
+        <label for="backupName">Backup name (optional)</label>
+        <input type="text" id="backupName" placeholder="e.g. Before Elite Four" autocomplete="off">
+        <span class="hint">A label to find this backup later.</span>
+      </div>
+      <div class="field">
         <label for="deviceName">Uploaded from (device)</label>
         <input type="text" id="deviceName" placeholder="This device" autocomplete="off">
         <span class="hint">Shown in the save history. Auto-detected, editable, remembered.</span>
@@ -561,6 +566,15 @@ async function trashFile(id) {
   });
 }
 
+// Set/clear a backup's display label (metadata only — the file name is untouched).
+async function setLabel(fileId, label) {
+  await driveFetch("https://www.googleapis.com/drive/v3/files/" + fileId, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ appProperties: { label: label ? label : null } }),
+  });
+}
+
 async function setCover(file) {
   if (!currentHistory.folderId || !file) return;
   if (!file.type.startsWith("image/")) { toast("Pick an image file for the cover.", "err"); return; }
@@ -627,6 +641,7 @@ function clearFile() {
   selectedFile = null;
   $("fileChip").classList.add("hidden");
   $("fileInput").value = "";
+  $("backupName").value = "";
   $("uploadBtn").disabled = true;
 }
 
@@ -647,13 +662,15 @@ async function doUpload() {
     const stamp = timestamp();
     const ext = getExt(selectedFile.name);
     const versionedName = stamp + "__" + sanitizeFolderName(device) + (ext ? "." + ext : "");
+    const label = $("backupName").value.trim();
     const appProperties = {
       game: gameName,
       device: device,
       emulator: emulator,
-      originalName: selectedFile.name,
+      originalName: selectedFile.name,  // the real save filename — never changed by a label
       uploadedAt: new Date().toISOString(),
     };
+    if (label) appProperties.label = label;
     await uploadSave(gameFolderId, versionedName, selectedFile, appProperties);
     $("uploadStatus").textContent = "";
     toast("Saved “" + gameName + "” backup to Drive ✔", "ok");
@@ -694,13 +711,14 @@ async function uploadToGame(folderId, file) {
     const withEmu = currentHistory.saves.find((s) => s.appProperties && s.appProperties.emulator);
     emulator = withEmu ? withEmu.appProperties.emulator : "Delta";
   }
+  const label = (prompt("Name this backup (optional — leave blank to skip):", "") || "").trim();
   toast("Uploading save…");
   try {
     const ext = getExt(file.name);
     const versionedName = timestamp() + "__" + sanitizeFolderName(device) + (ext ? "." + ext : "");
-    await uploadSave(folderId, versionedName, file, {
-      game: gameName, device, emulator, originalName: file.name, uploadedAt: new Date().toISOString(),
-    });
+    const props = { game: gameName, device, emulator, originalName: file.name, uploadedAt: new Date().toISOString() };
+    if (label) props.label = label;
+    await uploadSave(folderId, versionedName, file, props);
     toast("Saved backup to “" + gameName + "” ✔", "ok");
     await openHistory(folderId, gameName);
   } catch (e) {
@@ -802,20 +820,24 @@ async function openHistory(folderId, name) {
       const device = p.device || "Unknown device";
       const emu = p.emulator || "";
       const orig = p.originalName || s.name;
+      const label = p.label || "";
+      const title = label || orig;
       return '<div class="save-row">' +
         '<div class="sr-icon">💾</div>' +
         '<div class="sr-main">' +
-          '<div class="sr-title">' + escapeHtml(orig) +
+          '<div class="sr-title">' + escapeHtml(title) +
             (i === 0 ? ' <span class="badge latest">● Latest</span>' : '') + '</div>' +
           '<div class="sr-sub">' +
             '<span>🕒 ' + fmtTime(s.createdTime) + '</span>' +
             '<span class="badge device">🖥️ ' + escapeHtml(device) + '</span>' +
             (emu ? '<span class="badge">' + escapeHtml(emu) + '</span>' : '') +
             (s.size ? '<span>' + humanSize(+s.size) + '</span>' : '') +
+            (label ? '<span>📄 ' + escapeHtml(orig) + '</span>' : '') +
           '</div>' +
         '</div>' +
         '<div class="sr-actions">' +
           '<button class="btn-ghost btn-sm" data-id="' + s.id + '" data-fn="' + escapeAttr(orig) + '">⬇ Download</button>' +
+          '<button class="btn-ghost btn-sm" data-rename="' + s.id + '" data-cur="' + escapeAttr(label) + '" title="Rename this backup">✏️</button>' +
           '<button class="btn-ghost btn-sm danger" data-del="' + s.id + '" title="Delete this backup">🗑</button>' +
         '</div>' +
       '</div>';
@@ -827,6 +849,22 @@ async function openHistory(folderId, name) {
         try { await downloadSave(b.dataset.id, b.dataset.fn); toast("Downloaded ✔", "ok"); }
         catch (e) { toast("Download failed: " + e.message, "err"); }
         finally { b.disabled = false; b.innerHTML = "⬇ Download"; }
+      };
+    });
+    c.querySelectorAll("button[data-rename]").forEach((b) => {
+      b.onclick = async () => {
+        const cur = b.dataset.cur || "";
+        const name = prompt("Backup name (leave blank to clear the label):", cur);
+        if (name === null) return; // cancelled
+        b.disabled = true; b.innerHTML = '<span class="spinner"></span>';
+        try {
+          await setLabel(b.dataset.rename, name.trim());
+          toast("Backup renamed", "ok");
+          await openHistory(currentHistory.folderId, currentHistory.name);
+        } catch (e) {
+          toast("Rename failed: " + e.message, "err");
+          b.disabled = false; b.innerHTML = "✏️";
+        }
       };
     });
     c.querySelectorAll("button[data-del]").forEach((b) => {

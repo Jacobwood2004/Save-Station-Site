@@ -25,7 +25,7 @@ import platform
 import threading
 import datetime
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, filedialog, messagebox, simpledialog
 
 import google.auth.transport.requests
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -228,6 +228,11 @@ class Drive:
     def trash(self, file_id):
         self.service.files().update(fileId=file_id, body={"trashed": True}).execute()
 
+    def set_label(self, file_id, label):
+        # metadata only — never touches the file name
+        props = {"label": label if label else None}
+        self.service.files().update(fileId=file_id, body={"appProperties": props}).execute()
+
     def download_bytes(self, file_id):
         request = self.service.files().get_media(fileId=file_id)
         buf = io.BytesIO()
@@ -366,11 +371,12 @@ class App(tk.Tk):
         self.history_frame = tk.Frame(right, bg=BG)
         tk.Label(self.history_frame, text="SAVE HISTORY", bg=BG, fg=MUTED,
                  font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(14, 0))
-        cols = ("when", "device", "emulator", "size")
+        cols = ("name", "when", "device", "emulator", "size")
         self.tree = ttk.Treeview(self.history_frame, columns=cols, show="headings",
                                  selectmode="browse", height=8)
-        for c, w in zip(cols, (180, 170, 90, 80)):
-            self.tree.heading(c, text=c.capitalize())
+        headings = {"name": "Backup name"}
+        for c, w in zip(cols, (150, 160, 140, 80, 70)):
+            self.tree.heading(c, text=headings.get(c, c.capitalize()))
             self.tree.column(c, width=w, anchor="w")
         self.tree.pack(fill="both", expand=True, pady=6)
         hbtns = tk.Frame(self.history_frame, bg=BG)
@@ -378,6 +384,9 @@ class App(tk.Tk):
         tk.Button(hbtns, text="⬇ Download selected", command=self.download_selected,
                   bg=PANEL2, fg=TEXT, borderwidth=0, font=("Segoe UI", 10),
                   activebackground="#232c38", cursor="hand2", padx=14, pady=6).pack(side="left")
+        tk.Button(hbtns, text="✏ Rename", command=self.rename_selected,
+                  bg=PANEL2, fg=TEXT, borderwidth=0, font=("Segoe UI", 10),
+                  activebackground="#232c38", cursor="hand2", padx=14, pady=6).pack(side="left", padx=8)
         tk.Button(hbtns, text="🗑 Delete selected", command=self.delete_selected,
                   bg=PANEL2, fg="#ff8f8f", borderwidth=0, font=("Segoe UI", 10),
                   activebackground="#3a2626", cursor="hand2", padx=14, pady=6).pack(side="left", padx=8)
@@ -541,8 +550,9 @@ class App(tk.Tk):
                 when = fmt_time(s.get("createdTime", ""))
                 if idx == 0:
                     when = "● " + when + "  (latest)"
+                name = p.get("label") or p.get("originalName", s.get("name", "—"))
                 self.tree.insert("", tk.END, iid=str(idx), values=(
-                    when, p.get("device", "Unknown"), p.get("emulator", ""),
+                    name, when, p.get("device", "Unknown"), p.get("emulator", ""),
                     human_size(s.get("size")),
                 ))
             self.update_summary()
@@ -596,10 +606,11 @@ class App(tk.Tk):
             return
         self.config_data["device"] = details["device"]
         save_config(self.config_data)
-        self._do_upload(path, details["game"], details["emulator"], details["device"])
+        self._do_upload(path, details["game"], details["emulator"], details["device"],
+                        details.get("label", ""))
 
     def upload_to_current_game(self):
-        """Upload straight into the selected game — no naming needed."""
+        """Upload straight into the selected game — no game-naming needed."""
         if not self.current_game:
             messagebox.showinfo("Pick a game", "Select a game first, or use ＋ New game.")
             return
@@ -609,9 +620,12 @@ class App(tk.Tk):
         emu = guess_emulator(os.path.basename(path))
         if self.current_saves:  # reuse the game's existing emulator for ambiguous files
             emu = self.current_saves[0].get("appProperties", {}).get("emulator", emu)
-        self._do_upload(path, self.current_game["name"], emu, self.device_name())
+        label = simpledialog.askstring("Name this backup",
+                                       "Backup name (optional — leave blank to skip):",
+                                       parent=self) or ""
+        self._do_upload(path, self.current_game["name"], emu, self.device_name(), label.strip())
 
-    def _do_upload(self, path, game_name, emulator, device):
+    def _do_upload(self, path, game_name, emulator, device, label=""):
         self.set_status("Uploading…")
         fn = os.path.basename(path)
 
@@ -625,6 +639,8 @@ class App(tk.Tk):
                 "game": game_name, "device": device, "emulator": emulator,
                 "originalName": fn, "uploadedAt": datetime.datetime.now().isoformat(),
             }
+            if label:
+                props["label"] = label
             self.drive.upload(folder, vname, path, props)
             return game_name
 
@@ -659,6 +675,10 @@ class App(tk.Tk):
         dev_var = tk.StringVar(value=default_device)
         tk.Entry(dlg, textvariable=dev_var, width=40, bg=PANEL2, fg=TEXT,
                  insertbackground=TEXT, relief="flat").pack(padx=20, ipady=4, fill="x")
+        row("Backup name (optional)")
+        label_var = tk.StringVar(value="")
+        tk.Entry(dlg, textvariable=label_var, width=40, bg=PANEL2, fg=TEXT,
+                 insertbackground=TEXT, relief="flat").pack(padx=20, ipady=4, fill="x")
 
         btns = tk.Frame(dlg, bg=BG)
         btns.pack(fill="x", padx=20, pady=18)
@@ -668,7 +688,8 @@ class App(tk.Tk):
                 messagebox.showinfo("Game name", "Please enter a game name.", parent=dlg)
                 return
             result.update(game=game_var.get().strip(), emulator=emu_var.get(),
-                          device=dev_var.get().strip() or "Windows PC")
+                          device=dev_var.get().strip() or "Windows PC",
+                          label=label_var.get().strip())
             dlg.destroy()
 
         tk.Button(btns, text="Upload", command=ok, bg=ACCENT, fg="white", borderwidth=0,
@@ -771,6 +792,32 @@ class App(tk.Tk):
             messagebox.showinfo("Pick a save", "Select a save from the list first.")
             return
         self._download(self.current_saves[int(sel[0])])
+
+    def rename_selected(self):
+        sel = self.tree.selection()
+        if not sel:
+            messagebox.showinfo("Pick a save", "Select a save from the list first.")
+            return
+        save = self.current_saves[int(sel[0])]
+        cur = save.get("appProperties", {}).get("label", "")
+        name = simpledialog.askstring("Rename backup",
+                                      "Backup name (leave blank to clear):",
+                                      initialvalue=cur, parent=self)
+        if name is None:
+            return
+        game = self.current_game
+        self.set_status("Renaming…")
+
+        def work():
+            self.drive.set_label(save["id"], name.strip())
+            return True
+
+        def done(_):
+            self.set_status("Renamed ✔")
+            if game:
+                self.select_game_by_name(game["name"])
+
+        self.run_bg(work, done, lambda m: messagebox.showerror("Rename failed", m))
 
     def delete_selected(self):
         sel = self.tree.selection()
