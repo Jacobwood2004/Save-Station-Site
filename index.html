@@ -95,6 +95,7 @@
   }
   .gbtn:hover { filter: brightness(.97); }
   .gbtn svg { width: 20px; height: 20px; }
+  .gate-restoring { color: var(--muted); font-size: 13px; margin-top: 18px; }
 
   .config-warn {
     background: #2a1f12; border: 1px solid #6b4a1f; color: #f0c674;
@@ -118,6 +119,8 @@
   .dropzone.drag { border-color: var(--accent); background: rgba(124,92,255,.08); color: var(--text); }
   .dropzone .dz-icon { font-size: 34px; margin-bottom: 8px; }
   .dropzone b { color: var(--text); }
+  .dz-or { margin-top: 14px; font-size: 12px; }
+  .dz-or button { margin-top: 6px; }
 
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
   .field { display: flex; flex-direction: column; gap: 6px; }
@@ -135,6 +138,53 @@
   .file-chip .x { color: var(--muted); cursor: pointer; font-weight: bold; }
   .upload-actions { display: flex; gap: 12px; margin-top: 18px; align-items: center; }
 
+  /* Console pills */
+  .cpill {
+    display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; letter-spacing: .2px; color: #fff;
+    background: #3a4453; white-space: nowrap;
+  }
+
+  /* Console picker grid (onboarding + account) */
+  .console-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px;
+  }
+  .console-card {
+    background: var(--panel-2); border: 2px solid var(--border); border-radius: 14px;
+    padding: 14px; text-align: left; cursor: pointer; display: flex; gap: 12px;
+    transition: border .15s, background .15s, transform .1s;
+  }
+  .console-card:hover { transform: translateY(-2px); }
+  .console-card .cc-icon { font-size: 26px; line-height: 1; }
+  .console-card .cc-name { font-weight: 700; font-size: 14px; }
+  .console-card .cc-sub { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.45; }
+  .console-card.on { border-color: var(--accent); background: rgba(124,92,255,.12); }
+  .console-card .cc-check {
+    margin-left: auto; width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+    border: 2px solid var(--border); display: grid; place-items: center; font-size: 12px; color: transparent;
+  }
+  .console-card.on .cc-check { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+  /* Onboarding */
+  .onboard { max-width: 900px; margin: 0 auto; }
+  .onboard-head { text-align: center; margin-bottom: 26px; }
+  .onboard-head h2 { margin: 0 0 8px; font-size: 26px; }
+  .onboard-head p { color: var(--muted); font-size: 14px; margin: 0; line-height: 1.55; }
+  .onboard-foot {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-top: 22px; flex-wrap: wrap;
+  }
+  .onboard-foot .of-count { font-size: 13px; color: var(--muted); }
+
+  /* Filter chips */
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .chip {
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
+    border-radius: 20px; padding: 5px 13px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .chip:hover { color: var(--text); }
+  .chip.on { background: rgba(124,92,255,.18); border-color: var(--accent); color: #c7b8ff; }
+
   /* Games grid */
   .section-title { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 16px; }
   .section-title h3 { margin: 0; font-size: 16px; }
@@ -151,7 +201,8 @@
   }
   .game-card .gc-cover .gc-emu-tag {
     position: absolute; top: 8px; right: 8px; font-size: 10px; font-weight: 700; letter-spacing: .3px;
-    background: rgba(0,0,0,.6); color: #fff; padding: 3px 9px; border-radius: 20px; backdrop-filter: blur(4px);
+    color: #fff; padding: 3px 9px; border-radius: 20px; backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px rgba(0,0,0,.35);
   }
   .game-card .gc-body { padding: 14px 16px; }
   .game-card .gc-name { font-weight: 700; font-size: 15px; line-height: 1.25; word-break: break-word; }
@@ -165,9 +216,15 @@
     display: grid; place-items: center; font-size: 48px; flex-shrink: 0;
   }
   .history-hero .hh-info { flex: 1; min-width: 220px; }
-  .history-hero h3 { margin: 0 0 12px; font-size: 22px; word-break: break-word; }
+  .history-hero h3 { margin: 0 0 6px; font-size: 22px; word-break: break-word; }
+  .history-hero .hh-console { margin-bottom: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .history-hero .hh-actions { display: flex; gap: 10px; flex-wrap: wrap; }
   .cover-input-hidden { display: none; }
+  .folder-note {
+    background: rgba(74,210,201,.08); border: 1px solid rgba(74,210,201,.28); color: var(--accent-2);
+    border-radius: 10px; padding: 10px 13px; font-size: 12px; line-height: 1.5; margin-bottom: 16px;
+  }
+  .folder-note code { background: rgba(0,0,0,.3); padding: 1px 5px; border-radius: 4px; }
 
   /* History view */
   .history-list { display: flex; flex-direction: column; gap: 10px; }
@@ -178,7 +235,7 @@
   .save-row .sr-icon { font-size: 20px; }
   .save-row .sr-main { flex: 1; min-width: 0; }
   .save-row .sr-title { font-weight: 600; font-size: 14px; }
-  .save-row .sr-sub { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .save-row .sr-sub { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   .badge {
     display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 20px;
     font-size: 11px; font-weight: 600; background: rgba(124,92,255,.15); color: #b9a6ff;
@@ -208,6 +265,41 @@
   #toast.err { border-color: var(--danger); }
   #toast.ok { border-color: var(--ok); }
 
+  .acct-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .acct-row b { color: var(--text); font-weight: 600; }
+
+  /* QR sign-in */
+  .qr-wrap { display: flex; gap: 22px; align-items: flex-start; flex-wrap: wrap; margin-top: 16px; }
+  .qr-box {
+    background: #fff; padding: 14px; border-radius: 14px; line-height: 0;
+    box-shadow: var(--shadow); flex-shrink: 0;
+  }
+  .qr-box svg { display: block; width: 232px; height: 232px; }
+  .qr-side { flex: 1; min-width: 240px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .qr-side ol { margin: 0 0 14px; padding-left: 20px; }
+  .qr-side li { margin-bottom: 4px; }
+  .qr-count { font-size: 13px; font-weight: 700; color: var(--accent-2); }
+  .qr-count.low { color: var(--danger); }
+  .qr-warn {
+    background: #2a1f12; border: 1px solid #6b4a1f; color: #f0c674;
+    padding: 11px 14px; border-radius: 10px; font-size: 12px; line-height: 1.5; margin-top: 14px;
+  }
+  .qr-expired { text-align: center; color: var(--muted); font-size: 13px; padding: 30px 10px; }
+
+  /* Scanner (mobile) */
+  .scan-card { max-width: 460px; margin: 0 auto; text-align: left; }
+  #scanVideo {
+    width: 100%; max-width: 360px; border-radius: 14px; background: #000;
+    aspect-ratio: 1 / 1; object-fit: cover; display: block; margin: 0 auto 14px;
+  }
+  .gate-or { color: var(--muted); font-size: 12px; margin: 18px 0 12px; letter-spacing: .5px; }
+  .btn-scan {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px;
+    border-radius: 10px; font-size: 15px;
+  }
+  .btn-scan:hover { background: #232c38; }
+
   .hidden { display: none !important; }
   @media (max-width: 620px) { .form-grid { grid-template-columns: 1fr; } }
 </style>
@@ -219,12 +311,13 @@
     <div class="logo">🎮</div>
     <div>
       <h1>Save Station Web</h1>
-      <p>Delta &amp; mGBA saves · backed up to your Google Drive</p>
+      <p>Your game saves &middot; backed up to your own Google Drive</p>
     </div>
   </div>
   <div class="userbox">
     <img id="userAvatar" alt="" class="hidden">
     <span class="uname" id="userName"></span>
+    <button class="btn-ghost btn-sm" id="accountBtn" title="Account &amp; consoles">⚙ Account</button>
     <button class="btn-ghost btn-sm" id="signOutBtn">Sign out</button>
   </div>
 </header>
@@ -234,7 +327,7 @@
   <div class="gate-card">
     <div class="biglogo">🎮</div>
     <h2>Save Station Web</h2>
-    <p>Back up your <b>Delta</b> and <b>mGBA</b> emulator saves straight to your own Google Drive.
+    <p>Back up your console and emulator saves straight to your own Google Drive.
        Every upload is versioned so you can restore any backup, anytime.</p>
     <div class="config-warn hidden" id="configWarn">
       ⚠️ <b>Not configured yet.</b> This app needs your own Google OAuth Client ID.
@@ -245,11 +338,109 @@
       <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Sign in with Google
     </button>
+    <!-- Phones and iPads only: sign in by scanning a signed-in computer's code. -->
+    <div id="qrLoginOption" class="hidden">
+      <div class="gate-or">— or —</div>
+      <button class="btn-scan" id="scanQrBtn">📷 Scan a QR code from a signed-in device</button>
+    </div>
+    <div class="gate-restoring hidden" id="gateRestoring"><span class="spinner"></span> Signing you back in…</div>
+  </div>
+</div>
+
+<!-- QR SCAN (mobile) -->
+<div class="gate hidden" id="scanGate">
+  <div class="gate-card scan-card">
+    <h2 style="text-align:center;">📷 Scan to sign in</h2>
+    <p style="text-align:center;">On the computer that's already signed in, open
+       <b>⚙ Account → Sign in on another device</b> and point this phone at the code.</p>
+    <video id="scanVideo" class="hidden" playsinline muted></video>
+    <div id="scanFallback" class="hidden" style="font-size:13px;color:var(--muted);line-height:1.6;">
+      This browser can't scan from inside the page. Use your normal
+      <b>Camera app</b> to scan the code instead — it'll open this site and sign you straight in.
+    </div>
+    <div id="scanStatus" style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:14px;"></div>
+    <div style="text-align:center;">
+      <button class="btn-ghost btn-sm" id="scanCancelBtn">← Back to sign in</button>
+    </div>
   </div>
 </div>
 
 <!-- APP -->
 <main id="app" class="hidden">
+
+  <!-- ONBOARDING: pick your consoles (first sign-in) -->
+  <div id="onboardView" class="hidden">
+    <div class="onboard">
+      <div class="onboard-head">
+        <h2 id="onboardTitle">Welcome to Save Station 👋</h2>
+        <p id="onboardBlurb">
+          Which consoles do you plan on keeping saves for? Pick as many as you like — this just tailors
+          the upload form and filters to you. You can change it any time under <b>⚙ Account</b>.
+        </p>
+      </div>
+      <div class="console-grid" id="consoleGrid"></div>
+      <div class="onboard-foot">
+        <span class="of-count" id="onboardCount">0 selected</span>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn-ghost btn-sm" id="selectAllConsolesBtn">Select all</button>
+          <button class="btn-ghost btn-sm hidden" id="onboardCancelBtn">Cancel</button>
+          <button class="btn-primary" id="onboardDoneBtn" disabled>Continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCOUNT panel -->
+  <div id="accountView" class="hidden">
+    <button class="back-link" id="acctBackBtn">← Back</button>
+    <div class="panel">
+      <h3>👤 Account</h3>
+      <div class="acct-row">Signed in as <b id="acctEmail">—</b></div>
+      <div class="acct-row">Saves live in your Drive under <b id="acctFolder">—</b></div>
+      <div class="acct-row">Nothing is stored on this site's server — only in your Google Drive.</div>
+      <div style="margin-top:18px;">
+        <div class="field" style="max-width:340px;">
+          <label for="acctDevice">This device's name</label>
+          <input type="text" id="acctDevice" autocomplete="off">
+          <span class="hint">Shown on every backup you upload from this browser.</span>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>🎮 Your consoles</h3>
+      <div id="acctConsoles" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
+      <button class="btn-ghost btn-sm" id="editConsolesBtn">✎ Change consoles</button>
+    </div>
+    <div class="panel">
+      <h3>📱 Sign in on another device</h3>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6;">
+        Show a one-time code, then scan it with your phone or iPad to sign that device
+        into this account — no typing your password on a small screen.
+      </div>
+      <button class="btn-ghost btn-sm" id="showQrBtn" style="margin-top:14px;">▦ Show QR code</button>
+      <div id="qrArea" class="hidden">
+        <div class="qr-wrap">
+          <div class="qr-box" id="qrBox"></div>
+          <div class="qr-side">
+            <ol>
+              <li>Open the <b>Camera app</b> on your phone or iPad.</li>
+              <li>Point it at this code and tap the link that appears.</li>
+              <li>You'll land on Save Station already signed in.</li>
+            </ol>
+            <div>Expires in <span class="qr-count" id="qrCount">2:00</span></div>
+            <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn-ghost btn-sm" id="qrRefreshBtn">↻ New code</button>
+              <button class="btn-ghost btn-sm" id="hideQrBtn">✕ Hide</button>
+            </div>
+          </div>
+        </div>
+        <div class="qr-warn">
+          🔒 <b>Treat this like a password.</b> Anyone who scans it gets into your Save Station
+          folder until it expires. Don't screenshot it, share it, or show it on a stream.
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- New game upload panel (hidden until "＋ New game") -->
   <div class="panel hidden" id="uploadPanel">
@@ -257,11 +448,23 @@
       <h3 style="margin:0;">➕ New game — upload its first save</h3>
       <button class="btn-ghost btn-sm" id="closeUploadBtn">✕ Cancel</button>
     </div>
+
+    <div class="field" style="margin-bottom:16px;max-width:420px;">
+      <label for="consoleSel">Console</label>
+      <select id="consoleSel"></select>
+      <span class="hint" id="consoleHint"></span>
+    </div>
+
     <div class="dropzone" id="dropzone">
       <div class="dz-icon">📁</div>
-      <div><b>Drop a save file here</b> or click to browse</div>
-      <div style="font-size:12px;margin-top:6px;">Delta &amp; mGBA saves — <code>.sav</code>, <code>.srm</code>, save states</div>
-      <input type="file" id="fileInput" class="hidden" accept=".sav,.srm,.dsv,.ss0,.ss1,.ss2,.ss3,.ss4,.ss5,.ss6,.ss7,.ss8,.ss9,.state">
+      <div id="dzLead"><b>Drop a save file here</b> or click to browse</div>
+      <div style="font-size:12px;margin-top:6px;" id="dzExts"></div>
+      <div class="dz-or hidden" id="dzFolderRow">
+        — or —<br>
+        <button class="btn-ghost btn-sm" id="pickFolderBtn" type="button">📂 Choose a save folder</button>
+      </div>
+      <input type="file" id="fileInput" class="hidden">
+      <input type="file" id="folderInput" class="hidden" webkitdirectory directory multiple>
     </div>
     <div id="fileChip" class="hidden"></div>
 
@@ -272,12 +475,10 @@
         <span class="hint">Auto-filled from the file name — edit it if needed.</span>
       </div>
       <div class="field">
-        <label for="emulator">Emulator</label>
-        <select id="emulator">
-          <option value="Delta">Delta</option>
-          <option value="mGBA">mGBA</option>
-        </select>
-        <span class="hint">Which emulator this save came from.</span>
+        <label for="emulator">Emulator (optional)</label>
+        <input type="text" id="emulator" list="emulatorList" placeholder="e.g. mGBA" autocomplete="off">
+        <datalist id="emulatorList"></datalist>
+        <span class="hint">Which emulator or console this save came from.</span>
       </div>
       <div class="field">
         <label for="backupName">Backup name (optional)</label>
@@ -307,6 +508,7 @@
         <button class="btn-ghost btn-sm" id="refreshBtn">↻ Refresh</button>
       </div>
     </div>
+    <div class="chips" id="filterChips"></div>
     <div id="gamesContainer"></div>
   </div>
 
@@ -317,19 +519,23 @@
       <div class="hh-cover" id="historyCover"></div>
       <div class="hh-info">
         <h3 id="historyTitle"></h3>
+        <div class="hh-console" id="historyConsole"></div>
         <div class="hh-actions">
           <button class="btn-primary btn-sm" id="uploadToGameBtn">⬆ Upload save</button>
+          <button class="btn-ghost btn-sm hidden" id="uploadFolderToGameBtn">📂 Upload save folder</button>
           <button class="btn-ghost btn-sm" id="setCoverBtn">🖼️ Add cover</button>
           <button class="btn-ghost btn-sm" id="downloadLatestBtn">⬇ Download latest</button>
           <button class="btn-ghost btn-sm danger hidden" id="deleteGameBtn">🗑 Delete game</button>
         </div>
       </div>
     </div>
+    <div class="folder-note hidden" id="folderNote"></div>
     <div id="historyContainer"></div>
   </div>
 
   <input type="file" id="coverInput" class="cover-input-hidden" accept="image/*">
-  <input type="file" id="gameSaveInput" class="cover-input-hidden" accept=".sav,.srm,.dsv,.ss0,.ss1,.ss2,.ss3,.ss4,.ss5,.ss6,.ss7,.ss8,.ss9,.state">
+  <input type="file" id="gameSaveInput" class="cover-input-hidden">
+  <input type="file" id="gameFolderInput" class="cover-input-hidden" webkitdirectory directory multiple>
 
 </main>
 
@@ -344,6 +550,75 @@ const GOOGLE_CLIENT_ID = "1043116488819-uehkbdpe89r2032gim7kqigpv3e7mk6j.apps.go
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 const SCOPES = "https://www.googleapis.com/auth/drive.file";
+const PROFILE_FILE = "station.json";
+
+/* ============================================================
+   Consoles — the single source of truth, mirrored in
+   windows-app/save_station.py. Keep the two in sync.
+
+   kind: "file"   → one save file per game
+         "folder" → the save is a folder; we zip it on upload
+         "both"   → either happens depending on the emulator
+   ============================================================ */
+const CONSOLES = [
+  { id: "gb", label: "Game Boy", short: "GB", icon: "🕹️", color: "#7b8f2e", kind: "file",
+    exts: [".sav", ".srm", ".rtc", ".state", ".ss0", ".ss1", ".ss2", ".ss3", ".ss4", ".ss5", ".ss6", ".ss7", ".ss8", ".ss9"],
+    emus: ["mGBA", "SameBoy", "Gambatte", "Delta", "BGB"],
+    where: "mGBA / SameBoy .sav next to the ROM, or a Delta export" },
+
+  { id: "gbc", label: "Game Boy Color", short: "GBC", icon: "🌈", color: "#c2417a", kind: "file",
+    exts: [".sav", ".srm", ".rtc", ".state", ".ss0", ".ss1", ".ss2", ".ss3", ".ss4", ".ss5", ".ss6", ".ss7", ".ss8", ".ss9"],
+    emus: ["mGBA", "SameBoy", "Gambatte", "Delta"],
+    where: "mGBA / SameBoy .sav next to the ROM, or a Delta export" },
+
+  { id: "gba", label: "Game Boy Advance", short: "GBA", icon: "🎮", color: "#5b4be0", kind: "file",
+    exts: [".sav", ".srm", ".flash", ".state", ".ss0", ".ss1", ".ss2", ".ss3", ".ss4", ".ss5", ".ss6", ".ss7", ".ss8", ".ss9"],
+    emus: ["mGBA", "VBA-M", "Delta", "GBA.emu"],
+    where: "mGBA .sav / VBA .srm next to the ROM, or a Delta export" },
+
+  { id: "nds", label: "Nintendo DS", short: "DS", icon: "📱", color: "#6b7a8a", kind: "file",
+    exts: [".sav", ".dsv", ".duc", ".state", ".ss0", ".ss1", ".ss2", ".ss3", ".ss4", ".ss5", ".ss6", ".ss7", ".ss8", ".ss9"],
+    emus: ["melonDS", "DeSmuME", "Delta", "DraStic"],
+    where: "melonDS .sav or DeSmuME .dsv, usually next to the ROM" },
+
+  { id: "3ds", label: "Nintendo 3DS", short: "3DS", icon: "🔶", color: "#d1495b", kind: "folder",
+    exts: [".sav", ".zip"],
+    emus: ["Citra", "Azahar", "Lime3DS", "Panda3DS"],
+    where: "Citra/Azahar sdmc/Nintendo 3DS/…/title/<id>/data folder" },
+
+  { id: "wii", label: "Wii", short: "Wii", icon: "🎳", color: "#3f9fd6", kind: "both",
+    exts: [".bin", ".raw", ".gci", ".sav", ".zip"],
+    emus: ["Dolphin"],
+    where: "Dolphin .gci / memory-card .raw, or a Wii/<title-id>/data save folder" },
+
+  { id: "wiiu", label: "Wii U", short: "Wii U", icon: "📺", color: "#2e86c1", kind: "folder",
+    exts: [".zip"],
+    emus: ["Cemu"],
+    where: "Cemu mlc01/usr/save/00050000/<title-id>/user/80000001 folder" },
+
+  { id: "switch", label: "Nintendo Switch", short: "Switch", icon: "🔀", color: "#d63a3a", kind: "folder",
+    exts: [".zip"],
+    emus: ["Ryujinx"],
+    where: "Ryujinx bis/user/save/<id> folder" },
+
+  { id: "psp", label: "PSP", short: "PSP", icon: "🎧", color: "#3d4d6b", kind: "folder",
+    exts: [".zip", ".bin"],
+    emus: ["PPSSPP"],
+    where: "PSP/SAVEDATA/<game id> folder (PPSSPP, desktop or iOS Files)" },
+
+  { id: "vita", label: "PS Vita", short: "Vita", icon: "🎴", color: "#1f6fb2", kind: "folder",
+    exts: [".zip", ".bin"],
+    emus: ["Vita3K"],
+    where: "Vita3K ux0/user/00/savedata/<title-id> folder" },
+];
+
+const CONSOLE_BY_ID = Object.fromEntries(CONSOLES.map((c) => [c.id, c]));
+
+// Old saves (before consoles existed) only carry an emulator name.
+const LEGACY_EMU_CONSOLE = { Delta: "gba", mGBA: "gba" };
+
+function consoleOf(id) { return CONSOLE_BY_ID[id] || null; }
+function isFolderConsole(id) { const c = consoleOf(id); return !!c && (c.kind === "folder" || c.kind === "both"); }
 
 /* ============================================================
    State
@@ -351,10 +626,16 @@ const SCOPES = "https://www.googleapis.com/auth/drive.file";
 let tokenClient = null;
 let accessToken = null;
 let rootFolderId = null;
-let selectedFile = null;
+let selectedUpload = null;     // { kind:"file"|"folder", file?, files?, name, size }
 let gisReady = false;
 let refreshTimer = null;
 let interactiveLogin = false;
+let tokenExpiresAt = 0;        // epoch seconds; drives the QR handoff window
+let profile = null;            // { version, consoles:[], createdAt, updatedAt }
+let onboardSelection = new Set();
+let onboardMode = "first";     // "first" | "edit"
+let allGames = [];             // enriched game list, for client-side filtering
+let activeFilter = "all";
 
 const $ = (id) => document.getElementById(id);
 
@@ -368,17 +649,31 @@ window.addEventListener("load", () => {
   // Prefill device name
   $("deviceName").value = getDeviceName();
 
+  // The scan-to-sign-in option is for phones and iPads only.
+  if (isHandheld()) $("qrLoginOption").classList.remove("hidden");
+
+  // Arrived from a scanned QR code? That beats everything else.
+  const handoff = readHandoff();
+  if (handoff && handoff.expired) {
+    toast("That QR code has expired — show a fresh one on your computer.", "err", 6000);
+  }
+
   waitForGis().then(() => {
     gisReady = true;
-    if (!notConfigured) {
-      initTokenClient();
-      // Returning user? Silently restore their session (no button click, no popup
-      // if their Google session is still alive and they've granted access before).
-      if (localStorage.getItem("ssw_signed_in") === "1") {
-        try { tokenClient.requestAccessToken({ prompt: "" }); } catch (e) {}
-      }
-    }
+    if (!notConfigured) initTokenClient();
   });
+
+  if (handoff && !handoff.expired) {
+    $("gateRestoring").classList.remove("hidden");
+    $("loginBtn").classList.add("hidden");
+    adoptHandoff(handoff);
+  } else if (!notConfigured && localStorage.getItem("ssw_signed_in") === "1") {
+    // Returning user? Silently restore their session — no button click and no
+    // account chooser, because we pass the email they used last time as a hint.
+    $("gateRestoring").classList.remove("hidden");
+    $("loginBtn").classList.add("hidden");
+    waitForGis().then(silentRestore);
+  }
 
   wireEvents();
 });
@@ -401,16 +696,35 @@ function initTokenClient() {
       if (resp.error) {
         if (interactiveLogin) toast("Login failed: " + resp.error, "err");
         interactiveLogin = false;
+        showGateAgain();
         return;
       }
       interactiveLogin = false;
       accessToken = resp.access_token;
-      if (resp.expires_in) scheduleTokenRefresh(Number(resp.expires_in));
+      if (resp.expires_in) {
+        tokenExpiresAt = Math.floor(Date.now() / 1000) + Number(resp.expires_in);
+        scheduleTokenRefresh(Number(resp.expires_in));
+      }
       if ($("app").classList.contains("hidden")) await onLoggedIn();
     },
-    // Fires when a silent restore can't complete without interaction — stay quiet.
-    error_callback: () => { interactiveLogin = false; },
+    // Fires when a silent restore can't complete without interaction — stay quiet
+    // and just put the sign-in button back.
+    error_callback: () => { interactiveLogin = false; showGateAgain(); },
   });
+}
+
+// Ask for a token without any UI. login_hint means a returning user goes
+// straight back in instead of getting an account chooser.
+function silentRestore() {
+  const opts = { prompt: "" };
+  const hint = localStorage.getItem("ssw_email");
+  if (hint) opts.hint = hint;
+  try { tokenClient.requestAccessToken(opts); } catch (e) { showGateAgain(); }
+}
+
+function showGateAgain() {
+  $("gateRestoring").classList.add("hidden");
+  $("loginBtn").classList.remove("hidden");
 }
 
 // Keep the session alive: silently get a fresh token shortly before the current
@@ -420,7 +734,10 @@ function scheduleTokenRefresh(expiresInSec) {
   const ms = Math.max((expiresInSec - 120) * 1000, 30000);
   refreshTimer = setTimeout(() => {
     if (accessToken && tokenClient) {
-      try { tokenClient.requestAccessToken({ prompt: "" }); } catch (e) {}
+      const opts = { prompt: "" };
+      const hint = localStorage.getItem("ssw_email");
+      if (hint) opts.hint = hint;
+      try { tokenClient.requestAccessToken(opts); } catch (e) {}
     }
   }, ms);
 }
@@ -435,7 +752,10 @@ function login() {
   }
   if (!tokenClient) { toast("Still loading Google sign-in… try again in a moment.", "err"); return; }
   interactiveLogin = true;
-  tokenClient.requestAccessToken({ prompt: "" });
+  const opts = { prompt: "" };
+  const hint = localStorage.getItem("ssw_email");
+  if (hint) opts.hint = hint;
+  tokenClient.requestAccessToken(opts);
 }
 
 async function onLoggedIn() {
@@ -446,19 +766,36 @@ async function onLoggedIn() {
   await loadUserProfile();
   toast("Signed in — connecting to Drive…", "ok");
   rootFolderId = await ensureRootFolder();
-  await loadGames();
+
+  profile = await loadProfile();
+  if (!profile) {
+    // Brand new account → ask which consoles they'll keep saves for.
+    startOnboarding("first");
+    return;
+  }
+  enterApp();
+}
+
+function enterApp() {
+  $("onboardView").classList.add("hidden");
+  $("accountView").classList.add("hidden");
+  $("gamesView").classList.remove("hidden");
+  refreshConsoleUi();
+  loadGames();
 }
 
 function signOut() {
   localStorage.removeItem("ssw_signed_in");
   clearTimeout(refreshTimer);
+  hideQrCode();
   if (accessToken) {
     try { google.accounts.oauth2.revoke(accessToken, () => {}); } catch (e) {}
   }
-  accessToken = null; rootFolderId = null;
+  accessToken = null; rootFolderId = null; profile = null; tokenExpiresAt = 0;
   $("app").classList.add("hidden");
   $("appHeader").classList.add("hidden");
   $("gate").classList.remove("hidden");
+  showGateAgain();
 }
 
 async function loadUserProfile() {
@@ -469,6 +806,8 @@ async function loadUserProfile() {
     if (r.ok) {
       const u = await r.json();
       $("userName").textContent = u.email || u.name || "";
+      $("acctEmail").textContent = u.email || u.name || "—";
+      if (u.email) localStorage.setItem("ssw_email", u.email);
       if (u.picture) { $("userAvatar").src = u.picture; $("userAvatar").classList.remove("hidden"); }
     }
   } catch (e) { /* non-fatal */ }
@@ -498,9 +837,10 @@ async function findFolder(name, parentId) {
   return data.files && data.files.length ? data.files[0].id : null;
 }
 
-async function createFolder(name, parentId) {
+async function createFolder(name, parentId, appProperties) {
   const body = { name, mimeType: "application/vnd.google-apps.folder" };
   if (parentId) body.parents = [parentId];
+  if (appProperties) body.appProperties = appProperties;
   const r = await driveFetch("https://www.googleapis.com/drive/v3/files?fields=id", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -510,8 +850,8 @@ async function createFolder(name, parentId) {
   return data.id;
 }
 
-async function ensureFolder(name, parentId) {
-  return (await findFolder(name, parentId)) || (await createFolder(name, parentId));
+async function ensureFolder(name, parentId, appProperties) {
+  return (await findFolder(name, parentId)) || (await createFolder(name, parentId, appProperties));
 }
 
 async function ensureRootFolder() {
@@ -521,7 +861,7 @@ async function ensureRootFolder() {
 async function listSubfolders(parentId) {
   const q = "mimeType='application/vnd.google-apps.folder' and trashed=false and '" + parentId + "' in parents";
   const url = "https://www.googleapis.com/drive/v3/files?q=" + encodeURIComponent(q) +
-              "&fields=files(id,name)&orderBy=name&pageSize=200";
+              "&fields=files(id,name,appProperties)&orderBy=name&pageSize=200";
   const r = await driveFetch(url);
   return (await r.json()).files || [];
 }
@@ -534,12 +874,653 @@ async function listSaves(folderId) {
   return (await r.json()).files || [];
 }
 
-// --- Covers -----------------------------------------------------------------
+// Tag a game folder with the console it belongs to, so later uploads inherit it.
+async function setFolderProps(folderId, props) {
+  await driveFetch("https://www.googleapis.com/drive/v3/files/" + folderId, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ appProperties: props }),
+  });
+}
+
+/* ============================================================
+   Account profile — a station.json in the Drive root folder.
+   Both this site and the Windows app read it, so your console
+   picks follow you to every device. Nothing lives on our server.
+   ============================================================ */
+async function findProfileFile() {
+  const q = "trashed=false and name='" + PROFILE_FILE + "' and '" + rootFolderId + "' in parents";
+  const url = "https://www.googleapis.com/drive/v3/files?q=" + encodeURIComponent(q) +
+              "&fields=files(id,name)&pageSize=5";
+  const r = await driveFetch(url);
+  const files = (await r.json()).files || [];
+  return files.length ? files[0].id : null;
+}
+
+async function loadProfile() {
+  try {
+    const id = await findProfileFile();
+    if (!id) return null;
+    const r = await driveFetch("https://www.googleapis.com/drive/v3/files/" + id + "?alt=media");
+    const p = await r.json();
+    p._fileId = id;
+    if (!Array.isArray(p.consoles)) p.consoles = [];
+    return p;
+  } catch (e) {
+    console.warn("Could not read profile", e);
+    return null;
+  }
+}
+
+async function saveProfile(p) {
+  p.version = 1;
+  p.updatedAt = new Date().toISOString();
+  if (!p.createdAt) p.createdAt = p.updatedAt;
+  const body = new Blob([JSON.stringify(p, (k, v) => (k === "_fileId" ? undefined : v), 2)],
+                        { type: "application/json" });
+  if (p._fileId) {
+    await driveFetch("https://www.googleapis.com/upload/drive/v3/files/" + p._fileId + "?uploadType=media",
+      { method: "PATCH", headers: { "Content-Type": "application/json" }, body });
+  } else {
+    const metadata = { name: PROFILE_FILE, parents: [rootFolderId], appProperties: { role: "profile" } };
+    const form = new FormData();
+    form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+    form.append("file", body);
+    const r = await driveFetch(
+      "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id",
+      { method: "POST", body: form });
+    p._fileId = (await r.json()).id;
+  }
+  return p;
+}
+
+/* ============================================================
+   Onboarding — "which consoles do you plan to keep saves for?"
+   ============================================================ */
+function startOnboarding(mode) {
+  onboardMode = mode;
+  onboardSelection = new Set(mode === "edit" && profile ? profile.consoles : []);
+  $("gamesView").classList.add("hidden");
+  $("historyView").classList.add("hidden");
+  $("accountView").classList.add("hidden");
+  $("uploadPanel").classList.add("hidden");
+  $("onboardView").classList.remove("hidden");
+  $("onboardTitle").textContent = mode === "edit" ? "Your consoles" : "Welcome to Save Station 👋";
+  $("onboardBlurb").innerHTML = mode === "edit"
+    ? "Add or remove consoles any time. Unticking one never deletes saves — it just hides it from the pickers."
+    : "Which consoles do you plan on keeping saves for? Pick as many as you like — this just tailors " +
+      "the upload form and filters to you. You can change it any time under <b>⚙ Account</b>.";
+  $("onboardCancelBtn").classList.toggle("hidden", mode !== "edit");
+  $("onboardDoneBtn").textContent = mode === "edit" ? "Save" : "Continue";
+  renderConsoleGrid();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function renderConsoleGrid() {
+  $("consoleGrid").innerHTML = CONSOLES.map((c) =>
+    '<div class="console-card' + (onboardSelection.has(c.id) ? " on" : "") + '" data-cid="' + c.id + '">' +
+      '<div class="cc-icon">' + c.icon + '</div>' +
+      '<div><div class="cc-name">' + escapeHtml(c.label) + '</div>' +
+        '<div class="cc-sub">' + escapeHtml(c.where) + '</div></div>' +
+      '<div class="cc-check">✓</div>' +
+    '</div>').join("");
+  $("consoleGrid").querySelectorAll(".console-card").forEach((el) => {
+    el.onclick = () => {
+      const id = el.dataset.cid;
+      if (onboardSelection.has(id)) onboardSelection.delete(id); else onboardSelection.add(id);
+      el.classList.toggle("on");
+      updateOnboardCount();
+    };
+  });
+  updateOnboardCount();
+}
+
+function updateOnboardCount() {
+  const n = onboardSelection.size;
+  $("onboardCount").textContent = n + " selected" + (n === 0 ? " — pick at least one" : "");
+  $("onboardDoneBtn").disabled = n === 0;
+  $("selectAllConsolesBtn").textContent = n === CONSOLES.length ? "Clear all" : "Select all";
+}
+
+async function finishOnboarding() {
+  const btn = $("onboardDoneBtn");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Saving…';
+  try {
+    profile = await saveProfile(Object.assign(profile || {}, {
+      consoles: CONSOLES.filter((c) => onboardSelection.has(c.id)).map((c) => c.id),
+    }));
+    toast(onboardMode === "edit" ? "Consoles updated ✔" : "You're all set — let's back up some saves ✔", "ok");
+    enterApp();
+  } catch (e) {
+    toast("Could not save your consoles: " + e.message, "err", 5000);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = onboardMode === "edit" ? "Save" : "Continue";
+  }
+}
+
+/* ============================================================
+   Console-driven UI
+   ============================================================ */
+function myConsoles() {
+  const picked = (profile && profile.consoles) || [];
+  const list = CONSOLES.filter((c) => picked.includes(c.id));
+  return list.length ? list : CONSOLES;
+}
+
+function refreshConsoleUi() {
+  // Upload form console dropdown — their consoles first, everything else after.
+  const mine = myConsoles();
+  const others = CONSOLES.filter((c) => !mine.includes(c));
+  let html = mine.map((c) => '<option value="' + c.id + '">' + c.icon + "  " + escapeHtml(c.label) + "</option>").join("");
+  if (others.length) {
+    html += '<optgroup label="Other consoles">' +
+      others.map((c) => '<option value="' + c.id + '">' + c.icon + "  " + escapeHtml(c.label) + "</option>").join("") +
+      "</optgroup>";
+  }
+  $("consoleSel").innerHTML = html;
+  onConsoleChanged();
+
+  // Account panel
+  $("acctFolder").textContent = ROOT_FOLDER_NAME;
+  $("acctDevice").value = getDeviceName();
+  $("acctConsoles").innerHTML = mine.map(consolePill).join("") ||
+    '<span style="color:var(--muted);font-size:13px;">None picked yet.</span>';
+
+  // Filter chips over the games list
+  const chips = ['<button class="chip' + (activeFilter === "all" ? " on" : "") + '" data-f="all">All</button>']
+    .concat(mine.map((c) =>
+      '<button class="chip' + (activeFilter === c.id ? " on" : "") + '" data-f="' + c.id + '">' +
+      c.icon + " " + escapeHtml(c.short) + "</button>"));
+  $("filterChips").innerHTML = chips.join("");
+  $("filterChips").querySelectorAll(".chip").forEach((b) => {
+    b.onclick = () => { activeFilter = b.dataset.f; refreshConsoleUi(); renderGames(); };
+  });
+}
+
+function consolePill(c, extra) {
+  if (!c) return "";
+  return '<span class="cpill" style="background:' + c.color + ';">' + c.icon + " " +
+         escapeHtml(c.short) + (extra ? " " + escapeHtml(extra) : "") + "</span>";
+}
+
+function currentConsole() { return consoleOf($("consoleSel").value); }
+
+function onConsoleChanged() {
+  const c = currentConsole();
+  if (!c) return;
+  $("consoleHint").textContent = c.where;
+  $("dzExts").innerHTML = "Accepted: " + c.exts.map((e) => "<code>" + e + "</code>").join(", ");
+  $("fileInput").accept = c.exts.join(",");
+  $("gameSaveInput").accept = c.exts.join(",");
+  $("emulatorList").innerHTML = c.emus.map((e) => '<option value="' + escapeAttr(e) + '">').join("");
+  if (!$("emulator").value || !CONSOLES.some((x) => x.emus.includes($("emulator").value))) {
+    $("emulator").value = c.emus[0] || "";
+  }
+  const folderish = isFolderConsole(c.id);
+  $("dzFolderRow").classList.toggle("hidden", !folderish);
+  $("dzLead").innerHTML = c.kind === "folder"
+    ? "<b>Drop the save folder's zip here</b> — or pick the folder below"
+    : "<b>Drop a save file here</b> or click to browse";
+}
+
+/* ============================================================
+   Zip (store-only) — folder saves become one .zip on upload.
+   No library needed; save folders are small.
+   ============================================================ */
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+    t[i] = c >>> 0;
+  }
+  return t;
+})();
+
+function crc32(u8) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+function dosTime(d) {
+  return ((d.getHours() << 11) | (d.getMinutes() << 5) | (Math.floor(d.getSeconds() / 2))) & 0xFFFF;
+}
+function dosDate(d) {
+  return (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF;
+}
+
+// entries: [{ path, data: Uint8Array, date: Date }] → Blob
+function buildZip(entries) {
+  const enc = new TextEncoder();
+  const parts = [];
+  const central = [];
+  let offset = 0;
+
+  for (const e of entries) {
+    const nameBytes = enc.encode(e.path);
+    const crc = crc32(e.data);
+    const t = dosTime(e.date || new Date());
+    const d = dosDate(e.date || new Date());
+    const local = new DataView(new ArrayBuffer(30));
+    local.setUint32(0, 0x04034b50, true);
+    local.setUint16(4, 20, true);        // version needed
+    local.setUint16(6, 0x0800, true);    // UTF-8 names
+    local.setUint16(8, 0, true);         // method 0 = stored
+    local.setUint16(10, t, true);
+    local.setUint16(12, d, true);
+    local.setUint32(14, crc, true);
+    local.setUint32(18, e.data.length, true);
+    local.setUint32(22, e.data.length, true);
+    local.setUint16(26, nameBytes.length, true);
+    local.setUint16(28, 0, true);
+    parts.push(new Uint8Array(local.buffer), nameBytes, e.data);
+
+    const cen = new DataView(new ArrayBuffer(46));
+    cen.setUint32(0, 0x02014b50, true);
+    cen.setUint16(4, 20, true);          // version made by
+    cen.setUint16(6, 20, true);          // version needed
+    cen.setUint16(8, 0x0800, true);
+    cen.setUint16(10, 0, true);
+    cen.setUint16(12, t, true);
+    cen.setUint16(14, d, true);
+    cen.setUint32(16, crc, true);
+    cen.setUint32(20, e.data.length, true);
+    cen.setUint32(24, e.data.length, true);
+    cen.setUint16(28, nameBytes.length, true);
+    cen.setUint32(42, offset, true);     // offset of this entry's local header
+    central.push(new Uint8Array(cen.buffer), nameBytes);
+
+    offset += 30 + nameBytes.length + e.data.length;
+  }
+
+  const centralSize = central.reduce((n, p) => n + p.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true);
+  end.setUint16(8, entries.length, true);
+  end.setUint16(10, entries.length, true);
+  end.setUint32(12, centralSize, true);
+  end.setUint32(16, offset, true);       // offset of central directory
+
+  return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type: "application/zip" });
+}
+
+async function zipFileList(fileList) {
+  const files = Array.from(fileList).filter((f) => f.size >= 0);
+  if (!files.length) return null;
+  // webkitRelativePath is "<folder>/sub/file" — drop the top folder so the zip
+  // extracts as the save folder's *contents*, matching what emulators expect.
+  const rel = (f) => {
+    const p = f.webkitRelativePath || f.name;
+    const i = p.indexOf("/");
+    return i >= 0 ? p.slice(i + 1) : p;
+  };
+  const entries = [];
+  for (const f of files) {
+    entries.push({ path: rel(f), data: new Uint8Array(await f.arrayBuffer()), date: new Date(f.lastModified) });
+  }
+  return buildZip(entries);
+}
+
+function folderRootName(fileList) {
+  const first = fileList[0];
+  const p = (first && first.webkitRelativePath) || "";
+  const i = p.indexOf("/");
+  return i > 0 ? p.slice(0, i) : (first ? first.name : "Save folder");
+}
+
+/* ============================================================
+   QR encoder — byte mode, error-correction level L, versions 1-40.
+   Written out longhand because the page loads no third-party
+   scripts: a sign-in handoff must never leave this origin.
+   ============================================================ */
+const QR = (() => {
+  // Per version: [ec codewords per block, [[block count, data codewords], ...]]
+  const RS_L = {
+    1: [7, [[1, 19]]],          2: [10, [[1, 34]]],        3: [15, [[1, 55]]],
+    4: [20, [[1, 80]]],         5: [26, [[1, 108]]],       6: [18, [[2, 68]]],
+    7: [20, [[2, 78]]],         8: [24, [[2, 97]]],        9: [30, [[2, 116]]],
+    10: [18, [[2, 68], [2, 69]]],   11: [20, [[4, 81]]],
+    12: [24, [[2, 92], [2, 93]]],   13: [26, [[4, 107]]],
+    14: [30, [[3, 115], [1, 116]]], 15: [22, [[5, 87], [1, 88]]],
+    16: [24, [[5, 98], [1, 99]]],   17: [28, [[1, 107], [5, 108]]],
+    18: [30, [[5, 120], [1, 121]]], 19: [28, [[3, 113], [4, 114]]],
+    20: [28, [[3, 107], [5, 108]]], 21: [28, [[4, 116], [4, 117]]],
+    22: [28, [[2, 111], [7, 112]]], 23: [30, [[4, 121], [5, 122]]],
+    24: [30, [[6, 117], [4, 118]]], 25: [26, [[8, 106], [4, 107]]],
+    26: [28, [[10, 114], [2, 115]]], 27: [30, [[8, 122], [4, 123]]],
+    28: [30, [[3, 117], [10, 118]]], 29: [30, [[7, 116], [7, 117]]],
+    30: [30, [[5, 115], [10, 116]]], 31: [30, [[13, 115], [3, 116]]],
+    32: [30, [[17, 115]]],           33: [30, [[17, 115], [1, 116]]],
+    34: [30, [[13, 115], [6, 116]]], 35: [30, [[12, 121], [7, 122]]],
+    36: [30, [[6, 121], [14, 122]]], 37: [30, [[17, 122], [4, 123]]],
+    38: [30, [[4, 122], [18, 123]]], 39: [30, [[20, 117], [4, 118]]],
+    40: [30, [[19, 118], [6, 119]]],
+  };
+
+  const ALIGN = {
+    2: [6, 18], 3: [6, 22], 4: [6, 26], 5: [6, 30], 6: [6, 34],
+    7: [6, 22, 38], 8: [6, 24, 42], 9: [6, 26, 46], 10: [6, 28, 50],
+    11: [6, 30, 54], 12: [6, 32, 58], 13: [6, 34, 62],
+    14: [6, 26, 46, 66], 15: [6, 26, 48, 70], 16: [6, 26, 50, 74],
+    17: [6, 30, 54, 78], 18: [6, 30, 56, 82], 19: [6, 30, 58, 86], 20: [6, 34, 62, 90],
+    21: [6, 28, 50, 72, 94], 22: [6, 26, 50, 74, 98], 23: [6, 30, 54, 78, 102],
+    24: [6, 28, 54, 80, 106], 25: [6, 32, 58, 84, 110], 26: [6, 30, 58, 86, 114],
+    27: [6, 34, 62, 90, 118], 28: [6, 26, 50, 74, 98, 122], 29: [6, 30, 54, 78, 102, 126],
+    30: [6, 26, 52, 78, 104, 130], 31: [6, 30, 56, 82, 108, 134], 32: [6, 34, 60, 86, 112, 138],
+    33: [6, 30, 58, 86, 114, 142], 34: [6, 34, 62, 90, 118, 146],
+    35: [6, 30, 54, 78, 102, 126, 150], 36: [6, 24, 50, 76, 102, 128, 154],
+    37: [6, 28, 54, 80, 106, 132, 158], 38: [6, 32, 58, 84, 110, 136, 162],
+    39: [6, 26, 54, 82, 110, 138, 166], 40: [6, 30, 58, 86, 114, 142, 170],
+  };
+
+  // GF(256), primitive polynomial 0x11D
+  const EXP = new Uint8Array(512), LOG = new Uint8Array(256);
+  (() => {
+    let x = 1;
+    for (let i = 0; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 0x100) x ^= 0x11D; }
+    for (let i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
+  })();
+  const mul = (a, b) => (a === 0 || b === 0) ? 0 : EXP[LOG[a] + LOG[b]];
+
+  function genPoly(n) {
+    let p = new Uint8Array([1]);
+    for (let i = 0; i < n; i++) {
+      const q = new Uint8Array(p.length + 1);
+      for (let j = 0; j < p.length; j++) { q[j] ^= p[j]; q[j + 1] ^= mul(p[j], EXP[i]); }
+      p = q;
+    }
+    return p;
+  }
+
+  function ecBytes(data, n) {
+    const g = genPoly(n);
+    const buf = new Uint8Array(data.length + n);
+    buf.set(data);
+    for (let i = 0; i < data.length; i++) {
+      const f = buf[i];
+      if (!f) continue;
+      for (let j = 0; j < g.length; j++) buf[i + j] ^= mul(g[j], f);
+    }
+    return buf.slice(data.length);
+  }
+
+  function capacity(version) {
+    const [, groups] = RS_L[version];
+    return groups.reduce((n, [b, d]) => n + b * d, 0);
+  }
+
+  function pickVersion(byteLen) {
+    for (let v = 1; v <= 40; v++) {
+      const header = 4 + (v >= 10 ? 16 : 8);
+      if (capacity(v) * 8 >= header + byteLen * 8) return v;
+    }
+    throw new Error("too much data for one QR code");
+  }
+
+  function buildCodewords(bytes, version) {
+    const [ecPer, groups] = RS_L[version];
+    const total = capacity(version);
+    const bits = [];
+    const push = (val, len) => { for (let i = len - 1; i >= 0; i--) bits.push((val >> i) & 1); };
+    push(4, 4);                                   // byte mode
+    push(bytes.length, version >= 10 ? 16 : 8);
+    for (const b of bytes) push(b, 8);
+    for (let i = 0; i < 4 && bits.length < total * 8; i++) bits.push(0);
+    while (bits.length % 8) bits.push(0);
+
+    const data = new Uint8Array(total);
+    for (let i = 0; i < bits.length; i += 8) {
+      let v = 0;
+      for (let j = 0; j < 8; j++) v = (v << 1) | bits[i + j];
+      data[i / 8] = v;
+    }
+    const pads = [0xEC, 0x11];
+    for (let i = 0, idx = bits.length / 8; idx < total; i++, idx++) data[idx] = pads[i % 2];
+
+    // Split into blocks, then interleave data and EC codewords.
+    const blocks = [];
+    let pos = 0;
+    for (const [count, dlen] of groups) {
+      for (let i = 0; i < count; i++) {
+        const d = data.slice(pos, pos + dlen);
+        pos += dlen;
+        blocks.push({ d, e: ecBytes(d, ecPer) });
+      }
+    }
+    const out = [];
+    const maxD = Math.max(...blocks.map((b) => b.d.length));
+    for (let i = 0; i < maxD; i++) for (const b of blocks) if (i < b.d.length) out.push(b.d[i]);
+    for (let i = 0; i < ecPer; i++) for (const b of blocks) out.push(b.e[i]);
+    return out;
+  }
+
+  function formatBits(mask) {
+    const data = (1 << 3) | mask;               // 01 = level L
+    let rem = data;
+    for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+    return ((data << 10) | rem) ^ 0x5412;
+  }
+
+  function versionBits(v) {
+    let rem = v;
+    for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1F25);
+    return (v << 12) | rem;
+  }
+
+  function blankMatrix(version) {
+    const size = version * 4 + 17;
+    const m = new Uint8Array(size * size);
+    const fn = new Uint8Array(size * size);
+    const set = (r, c, v) => { m[r * size + c] = v; fn[r * size + c] = 1; };
+
+    const finder = (r0, c0) => {
+      for (let r = -1; r <= 7; r++) for (let c = -1; c <= 7; c++) {
+        const rr = r0 + r, cc = c0 + c;
+        if (rr < 0 || cc < 0 || rr >= size || cc >= size) continue;
+        const ring = (r >= 0 && r <= 6 && (c === 0 || c === 6)) ||
+                     (c >= 0 && c <= 6 && (r === 0 || r === 6));
+        const core = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+        set(rr, cc, (ring || core) ? 1 : 0);
+      }
+    };
+    finder(0, 0); finder(0, size - 7); finder(size - 7, 0);
+
+    for (let i = 8; i < size - 8; i++) {
+      const v = i % 2 === 0 ? 1 : 0;
+      set(6, i, v); set(i, 6, v);
+    }
+
+    const pos = ALIGN[version] || [];
+    for (const r of pos) for (const c of pos) {
+      if ((r <= 7 && c <= 7) || (r <= 7 && c >= size - 8) || (r >= size - 8 && c <= 7)) continue;
+      for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
+        set(r + dr, c + dc, Math.max(Math.abs(dr), Math.abs(dc)) !== 1 ? 1 : 0);
+      }
+    }
+
+    set(size - 8, 8, 1);                        // always dark
+
+    // Reserve the format areas so data placement skips them.
+    for (const [r, c] of formatCoords(size)) set(r, c, 0);
+
+    if (version >= 7) {
+      const vb = versionBits(version);
+      for (let i = 0; i < 18; i++) {
+        const bit = (vb >> i) & 1;
+        const a = size - 11 + (i % 3), b = Math.floor(i / 3);
+        set(a, b, bit); set(b, a, bit);
+      }
+    }
+    return { size, m, fn };
+  }
+
+  // [row, col] of format bit i, first copy then second. Bit 0 is the LSB and
+  // sits at (0,8); bit 14 lands at (8,0) — note the column-8 run comes first.
+  function formatCoords(size) {
+    const out = [];
+    for (let i = 0; i < 15; i++) {
+      if (i < 6) out.push([i, 8]);
+      else if (i === 6) out.push([7, 8]);
+      else if (i === 7) out.push([8, 8]);
+      else if (i === 8) out.push([8, 7]);
+      else out.push([8, 14 - i]);
+    }
+    for (let i = 0; i < 15; i++) {
+      if (i < 8) out.push([8, size - 1 - i]);
+      else out.push([size - 15 + i, 8]);
+    }
+    return out;
+  }
+
+  function placeData(grid, codewords) {
+    const { size, m, fn } = grid;
+    let bit = 0;
+    const total = codewords.length * 8;
+    for (let right = size - 1; right >= 1; right -= 2) {
+      if (right === 6) right = 5;
+      for (let vert = 0; vert < size; vert++) {
+        for (let j = 0; j < 2; j++) {
+          const c = right - j;
+          const upward = ((right + 1) & 2) === 0;
+          const r = upward ? size - 1 - vert : vert;
+          if (fn[r * size + c] || bit >= total) continue;
+          m[r * size + c] = (codewords[bit >>> 3] >> (7 - (bit & 7))) & 1;
+          bit++;
+        }
+      }
+    }
+  }
+
+  const MASKS = [
+    (r, c) => (r + c) % 2 === 0,
+    (r, c) => r % 2 === 0,
+    (r, c) => c % 3 === 0,
+    (r, c) => (r + c) % 3 === 0,
+    (r, c) => (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0,
+    (r, c) => ((r * c) % 2) + ((r * c) % 3) === 0,
+    (r, c) => (((r * c) % 2) + ((r * c) % 3)) % 2 === 0,
+    (r, c) => (((r + c) % 2) + ((r * c) % 3)) % 2 === 0,
+  ];
+
+  function applyMask(grid, mask) {
+    const { size, m, fn } = grid;
+    const fn2 = MASKS[mask];
+    for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
+      if (!fn[r * size + c] && fn2(r, c)) m[r * size + c] ^= 1;
+    }
+  }
+
+  function writeFormat(grid, mask) {
+    const { size, m } = grid;
+    const bits = formatBits(mask);
+    const coords = formatCoords(size);
+    for (let i = 0; i < 15; i++) {
+      const bit = (bits >> i) & 1;
+      const [r1, c1] = coords[i];
+      const [r2, c2] = coords[i + 15];
+      m[r1 * size + c1] = bit;
+      m[r2 * size + c2] = bit;
+    }
+  }
+
+  // The four penalty rules from the spec; lowest total wins.
+  function penalty(grid) {
+    const { size, m } = grid;
+    const at = (r, c) => m[r * size + c];
+    let score = 0;
+
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        // rule 2: 2x2 blocks of one colour
+        if (r < size - 1 && c < size - 1) {
+          const v = at(r, c);
+          if (v === at(r, c + 1) && v === at(r + 1, c) && v === at(r + 1, c + 1)) score += 3;
+        }
+      }
+    }
+    // rules 1 + 3, scanned in both directions
+    const line = (get) => {
+      let run = 1, prev = get(0);
+      const arr = [prev];
+      for (let i = 1; i < size; i++) {
+        const v = get(i);
+        arr.push(v);
+        if (v === prev) { run++; } else { if (run >= 5) score += 3 + (run - 5); run = 1; prev = v; }
+      }
+      if (run >= 5) score += 3 + (run - 5);
+      const A = [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0];
+      const B = [0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1];
+      for (let i = 0; i + 11 <= size; i++) {
+        let a = true, b = true;
+        for (let j = 0; j < 11; j++) { if (arr[i + j] !== A[j]) a = false; if (arr[i + j] !== B[j]) b = false; }
+        if (a) score += 40;
+        if (b) score += 40;
+      }
+    };
+    for (let r = 0; r < size; r++) line((i) => at(r, i));
+    for (let c = 0; c < size; c++) line((i) => at(i, c));
+
+    // rule 4: overall balance of dark modules
+    let dark = 0;
+    for (let i = 0; i < m.length; i++) dark += m[i];
+    const pct = (dark * 100) / (size * size);
+    score += Math.floor(Math.abs(pct - 50) / 5) * 10;
+    return score;
+  }
+
+  function encode(text, forceMask) {
+    const bytes = new TextEncoder().encode(text);
+    const version = pickVersion(bytes.length);
+    const codewords = buildCodewords(bytes, version);
+    let best = null;
+    const masks = forceMask === undefined ? [0, 1, 2, 3, 4, 5, 6, 7] : [forceMask];
+    for (const mask of masks) {
+      const grid = blankMatrix(version);
+      placeData(grid, codewords);
+      applyMask(grid, mask);
+      writeFormat(grid, mask);
+      const p = penalty(grid);
+      if (!best || p < best.p) best = { p, grid, mask };
+    }
+    return { size: best.grid.size, modules: best.grid.m, version, mask: best.mask };
+  }
+
+  // Quiet zone of 4 modules is required by the spec — scanners rely on it.
+  function svg(text, px) {
+    const { size, modules } = encode(text);
+    const q = 4, dim = size + q * 2;
+    let path = "";
+    for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
+      if (modules[r * size + c]) path += `M${c + q} ${r + q}h1v1h-1z`;
+    }
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${dim} ${dim}" ` +
+           `width="${px}" height="${px}" shape-rendering="crispEdges">` +
+           `<rect width="${dim}" height="${dim}" fill="#fff"/>` +
+           `<path d="${path}" fill="#000"/></svg>`;
+  }
+
+  return { encode, svg };
+})();
+
+async function sha256Hex(blob) {
+  try {
+    const buf = await crypto.subtle.digest("SHA-256", await blob.arrayBuffer());
+    return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  } catch (e) { return ""; }
+}
+
+/* ============================================================
+   Covers / files
+   ============================================================ */
 function splitCover(files) {
   let cover = null;
   const saves = [];
   for (const f of files) {
     if (f.appProperties && f.appProperties.role === "cover") { if (!cover) cover = f; }
+    else if (f.name === PROFILE_FILE) { /* never a save */ }
     else saves.push(f);
   }
   return { cover, saves };  // files are createdTime-desc, so first cover is newest
@@ -589,7 +1570,7 @@ async function setCover(file) {
     await uploadSave(currentHistory.folderId, "cover" + (ext ? "." + ext : ""), file,
       { role: "cover", originalName: file.name });
     toast("Cover updated ✔", "ok");
-    await openHistory(currentHistory.folderId, currentHistory.name);
+    await openHistory(currentHistory.folderId, currentHistory.name, currentHistory.console);
   } catch (e) {
     toast("Cover upload failed: " + e.message, "err", 5000);
   }
@@ -622,56 +1603,90 @@ async function downloadSave(fileId, filename) {
    ============================================================ */
 function onFileChosen(file) {
   if (!file) return;
-  selectedFile = file;
-  const chip = $("fileChip");
-  chip.classList.remove("hidden");
-  chip.innerHTML = '<div class="file-chip">💾 <b>' + escapeHtml(file.name) +
-    '</b> <span style="color:var(--muted)">(' + humanSize(file.size) + ')</span> ' +
-    '<span class="x" id="clearFile">✕</span></div>';
-  $("clearFile").onclick = clearFile;
+  selectedUpload = { kind: "file", file, name: file.name, size: file.size };
+  showUploadChip("💾", file.name, file.size);
 
-  // Detect game name from filename + guess emulator from extension
   const detected = gameNameFromFilename(file.name);
   if (detected) $("gameName").value = detected;
-  guessEmulator(file.name);
+  guessConsole(file.name);
   $("uploadBtn").disabled = false;
 }
 
+async function onFolderChosen(fileList) {
+  if (!fileList || !fileList.length) return;
+  const rootName = folderRootName(fileList);
+  const total = Array.from(fileList).reduce((n, f) => n + f.size, 0);
+  selectedUpload = { kind: "folder", files: fileList, name: rootName, size: total };
+  showUploadChip("📂", rootName + "  (" + fileList.length + " files → .zip)", total);
+  if (!$("gameName").value) $("gameName").value = gameNameFromFilename(rootName);
+  $("uploadBtn").disabled = false;
+}
+
+function showUploadChip(icon, label, size) {
+  const chip = $("fileChip");
+  chip.classList.remove("hidden");
+  chip.innerHTML = '<div class="file-chip">' + icon + ' <b>' + escapeHtml(label) +
+    '</b> <span style="color:var(--muted)">(' + humanSize(size) + ')</span> ' +
+    '<span class="x" id="clearFile">✕</span></div>';
+  $("clearFile").onclick = clearFile;
+}
+
 function clearFile() {
-  selectedFile = null;
+  selectedUpload = null;
   $("fileChip").classList.add("hidden");
   $("fileInput").value = "";
+  $("folderInput").value = "";
   $("backupName").value = "";
   $("uploadBtn").disabled = true;
 }
 
+// Turn the current selection into one blob ready for Drive.
+async function selectionToBlob(sel) {
+  if (sel.kind === "folder") {
+    const zip = await zipFileList(sel.files);
+    return { blob: zip, filename: sanitizeFolderName(sel.name) + ".zip", isFolder: true };
+  }
+  return { blob: sel.file, filename: sel.file.name, isFolder: false };
+}
+
 async function doUpload() {
-  if (!selectedFile) return;
+  if (!selectedUpload) return;
   const gameName = $("gameName").value.trim();
   if (!gameName) { toast("Give the game a name first.", "err"); return; }
-  const emulator = $("emulator").value;
+  const consoleId = $("consoleSel").value;
+  const emulator = $("emulator").value.trim();
   const device = $("deviceName").value.trim() || "Unknown device";
   localStorage.setItem("ssw_device_name", device);
 
   const btn = $("uploadBtn");
   btn.disabled = true;
-  $("uploadStatus").innerHTML = '<span class="spinner"></span> Uploading…';
+  $("uploadStatus").innerHTML = '<span class="spinner"></span> ' +
+    (selectedUpload.kind === "folder" ? "Zipping &amp; uploading…" : "Uploading…");
 
   try {
-    const gameFolderId = await ensureFolder(sanitizeFolderName(gameName), rootFolderId);
+    const { blob, filename, isFolder } = await selectionToBlob(selectedUpload);
+    const gameFolderId = await ensureFolder(sanitizeFolderName(gameName), rootFolderId,
+                                            { console: consoleId, role: "game" });
+    // Make sure an existing folder learns its console too.
+    try { await setFolderProps(gameFolderId, { console: consoleId, role: "game" }); } catch (e) {}
+
     const stamp = timestamp();
-    const ext = getExt(selectedFile.name);
+    const ext = getExt(filename);
     const versionedName = stamp + "__" + sanitizeFolderName(device) + (ext ? "." + ext : "");
     const label = $("backupName").value.trim();
     const appProperties = {
       game: gameName,
       device: device,
+      console: consoleId,
       emulator: emulator,
-      originalName: selectedFile.name,  // the real save filename — never changed by a label
+      kind: isFolder ? "folder" : "file",
+      originalName: filename,  // the real save filename — never changed by a label
       uploadedAt: new Date().toISOString(),
     };
+    const hash = await sha256Hex(blob);
+    if (hash) appProperties.hash = hash;
     if (label) appProperties.label = label;
-    await uploadSave(gameFolderId, versionedName, selectedFile, appProperties);
+    await uploadSave(gameFolderId, versionedName, blob, appProperties);
     $("uploadStatus").textContent = "";
     toast("Saved “" + gameName + "” backup to Drive ✔", "ok");
     clearFile();
@@ -682,7 +1697,7 @@ async function doUpload() {
     $("uploadStatus").textContent = "";
     toast("Upload failed: " + e.message, "err", 5000);
   } finally {
-    btn.disabled = !selectedFile;
+    btn.disabled = !selectedUpload;
   }
 }
 
@@ -690,37 +1705,49 @@ async function doUpload() {
 function openNewGamePanel() {
   clearFile();
   $("gameName").value = "";
+  onConsoleChanged();
   $("uploadPanel").classList.remove("hidden");
   $("uploadPanel").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function guessEmulatorName(fn) {
-  const ext = getExt(fn).toLowerCase();
-  if (ext.startsWith("ss") || ext === "state") return "mGBA";
-  if (ext === "dsv") return "Delta";
-  return null; // ambiguous (.sav) — reuse the game's existing emulator
+// Extension → console, but only ever narrowing within what the user picked.
+function guessConsole(fn) {
+  const ext = "." + getExt(fn).toLowerCase();
+  if (ext === ".dsv" || ext === ".duc") { $("consoleSel").value = "nds"; onConsoleChanged(); return; }
+  if (ext === ".gci") { $("consoleSel").value = "wii"; onConsoleChanged(); return; }
+  const cur = currentConsole();
+  if (cur && cur.exts.includes(ext)) return;          // already fits
+  const match = myConsoles().find((c) => c.exts.includes(ext));
+  if (match) { $("consoleSel").value = match.id; onConsoleChanged(); }
 }
 
 // Upload straight into the currently-open game — no naming needed.
-async function uploadToGame(folderId, file) {
-  if (!file || !folderId) return;
+async function uploadToGame(folderId, selection) {
+  if (!selection || !folderId) return;
   const gameName = currentHistory.name;
   const device = localStorage.getItem("ssw_device_name") || getDeviceName();
-  let emulator = guessEmulatorName(file.name);
-  if (!emulator) {
-    const withEmu = currentHistory.saves.find((s) => s.appProperties && s.appProperties.emulator);
-    emulator = withEmu ? withEmu.appProperties.emulator : "Delta";
-  }
+  const consoleId = currentHistory.console ||
+    (currentHistory.saves.find((s) => s.appProperties && s.appProperties.console) || {}).appProperties?.console ||
+    "gba";
+  const prev = currentHistory.saves.find((s) => s.appProperties && s.appProperties.emulator);
+  const emulator = prev ? prev.appProperties.emulator : ((consoleOf(consoleId) || {}).emus || [""])[0];
   const label = (prompt("Name this backup (optional — leave blank to skip):", "") || "").trim();
-  toast("Uploading save…");
+  toast(selection.kind === "folder" ? "Zipping & uploading…" : "Uploading save…");
   try {
-    const ext = getExt(file.name);
+    const { blob, filename, isFolder } = await selectionToBlob(selection);
+    const ext = getExt(filename);
     const versionedName = timestamp() + "__" + sanitizeFolderName(device) + (ext ? "." + ext : "");
-    const props = { game: gameName, device, emulator, originalName: file.name, uploadedAt: new Date().toISOString() };
+    const props = {
+      game: gameName, device, console: consoleId, emulator,
+      kind: isFolder ? "folder" : "file",
+      originalName: filename, uploadedAt: new Date().toISOString(),
+    };
+    const hash = await sha256Hex(blob);
+    if (hash) props.hash = hash;
     if (label) props.label = label;
-    await uploadSave(folderId, versionedName, file, props);
+    await uploadSave(folderId, versionedName, blob, props);
     toast("Saved backup to “" + gameName + "” ✔", "ok");
-    await openHistory(folderId, gameName);
+    await openHistory(folderId, gameName, consoleId);
   } catch (e) {
     toast("Upload failed: " + e.message, "err", 5000);
   }
@@ -745,62 +1772,106 @@ async function deleteEmptyGame() {
 /* ============================================================
    Games + history rendering
    ============================================================ */
+// Work out a game's console: the folder tag wins, then its saves, then legacy emulator.
+function gameConsoleId(folder, saves) {
+  const tag = folder.appProperties && folder.appProperties.console;
+  if (tag && CONSOLE_BY_ID[tag]) return tag;
+  for (const s of saves) {
+    const p = s.appProperties || {};
+    if (p.console && CONSOLE_BY_ID[p.console]) return p.console;
+    if (p.emulator && LEGACY_EMU_CONSOLE[p.emulator]) return LEGACY_EMU_CONSOLE[p.emulator];
+  }
+  return null;
+}
+
 async function loadGames() {
   const c = $("gamesContainer");
   c.innerHTML = '<div class="empty"><span class="spinner"></span> Loading your games…</div>';
   try {
     const folders = await listSubfolders(rootFolderId);
     if (!folders.length) {
+      allGames = [];
       c.innerHTML = '<div class="empty"><div class="e-icon">🎲</div>No games yet — click <b>＋ New game</b> to upload your first save.</div>';
       return;
     }
     // Fetch counts + latest + cover per game (in parallel)
-    const enriched = await Promise.all(folders.map(async (f) => {
+    allGames = await Promise.all(folders.map(async (f) => {
       const { cover, saves } = splitCover(await listSaves(f.id));
-      return { folder: f, saves, cover };
+      return { folder: f, saves, cover, consoleId: gameConsoleId(f, saves) };
     }));
-    c.innerHTML = '<div class="games-grid">' + enriched.map((g) => {
-      const latest = g.saves[0];
-      const meta = latest
-        ? (g.saves.length + " backup" + (g.saves.length > 1 ? "s" : "") + " · " + relTime(latest.createdTime))
-        : "No backups yet";
-      const emu = latest && latest.appProperties ? (latest.appProperties.emulator || "") : "";
-      const coverAttr = g.cover ? ' data-cover="' + g.cover.id + '"' : '';
-      return '<div class="game-card" data-fid="' + g.folder.id + '" data-name="' +
-        escapeAttr(g.folder.name) + '">' +
-        '<div class="gc-cover"' + coverAttr + '>' + (g.cover ? '' : emojiFor(g.folder.name)) +
-          (emu ? '<span class="gc-emu-tag">' + escapeHtml(emu) + '</span>' : '') + '</div>' +
-        '<div class="gc-body"><div class="gc-name">' + escapeHtml(g.folder.name) + '</div>' +
-        '<div class="gc-meta">' + meta + '</div></div></div>';
-    }).join("") + "</div>";
-
-    c.querySelectorAll(".game-card").forEach((card) => {
-      card.onclick = () => openHistory(card.dataset.fid, card.dataset.name);
-    });
-    // lazy-load cover images
-    c.querySelectorAll(".gc-cover[data-cover]").forEach(async (el) => {
-      try { el.style.backgroundImage = "url('" + (await getCoverUrl(el.dataset.cover)) + "')"; } catch (e) {}
-    });
+    renderGames();
   } catch (e) {
     c.innerHTML = '<div class="empty">Could not load games: ' + escapeHtml(e.message) + "</div>";
   }
 }
 
-let currentHistory = { folderId: null, name: null, saves: [] };
+function renderGames() {
+  const c = $("gamesContainer");
+  const games = activeFilter === "all" ? allGames : allGames.filter((g) => g.consoleId === activeFilter);
+  if (!games.length) {
+    const label = activeFilter === "all" ? "" : " for " + ((consoleOf(activeFilter) || {}).label || activeFilter);
+    c.innerHTML = '<div class="empty"><div class="e-icon">🎲</div>No games' + escapeHtml(label) + " yet.</div>";
+    return;
+  }
+  c.innerHTML = '<div class="games-grid">' + games.map((g) => {
+    const latest = g.saves[0];
+    const meta = latest
+      ? (g.saves.length + " backup" + (g.saves.length > 1 ? "s" : "") + " · " + relTime(latest.createdTime))
+      : "No backups yet";
+    const con = consoleOf(g.consoleId);
+    const tag = con
+      ? '<span class="gc-emu-tag" style="background:' + con.color + ';">' + con.icon + " " + escapeHtml(con.short) + "</span>"
+      : "";
+    const coverAttr = g.cover ? ' data-cover="' + g.cover.id + '"' : '';
+    return '<div class="game-card" data-fid="' + g.folder.id + '" data-name="' +
+      escapeAttr(g.folder.name) + '" data-console="' + escapeAttr(g.consoleId || "") + '">' +
+      '<div class="gc-cover"' + coverAttr + '>' + (g.cover ? '' : emojiFor(g.folder.name, con)) + tag + '</div>' +
+      '<div class="gc-body"><div class="gc-name">' + escapeHtml(g.folder.name) + '</div>' +
+      '<div class="gc-meta">' + meta + '</div></div></div>';
+  }).join("") + "</div>";
 
-async function openHistory(folderId, name) {
+  c.querySelectorAll(".game-card").forEach((card) => {
+    card.onclick = () => openHistory(card.dataset.fid, card.dataset.name, card.dataset.console || null);
+  });
+  // lazy-load cover images
+  c.querySelectorAll(".gc-cover[data-cover]").forEach(async (el) => {
+    try { el.style.backgroundImage = "url('" + (await getCoverUrl(el.dataset.cover)) + "')"; } catch (e) {}
+  });
+}
+
+let currentHistory = { folderId: null, name: null, saves: [], console: null };
+
+async function openHistory(folderId, name, consoleId) {
   $("gamesView").classList.add("hidden");
+  $("accountView").classList.add("hidden");
   $("historyView").classList.remove("hidden");
   $("historyTitle").textContent = name;
   const coverEl = $("historyCover");
   coverEl.style.backgroundImage = "";
-  coverEl.textContent = emojiFor(name);
+  coverEl.textContent = emojiFor(name, consoleOf(consoleId));
   const c = $("historyContainer");
   c.innerHTML = '<div class="empty"><span class="spinner"></span> Loading backups…</div>';
   window.scrollTo({ top: 0, behavior: "smooth" });
   try {
     const { cover, saves } = splitCover(await listSaves(folderId));
-    currentHistory = { folderId, name, saves, cover };
+    const resolved = consoleId || gameConsoleId({ appProperties: {} }, saves);
+    currentHistory = { folderId, name, saves, cover, console: resolved };
+
+    const con = consoleOf(resolved);
+    $("historyConsole").innerHTML = con
+      ? consolePill(con) + '<span style="font-size:12px;color:var(--muted);">' + escapeHtml(con.where) + "</span>"
+      : "";
+    $("uploadFolderToGameBtn").classList.toggle("hidden", !isFolderConsole(resolved));
+    $("gameSaveInput").accept = con ? con.exts.join(",") : "";
+
+    const folderSave = saves.find((s) => (s.appProperties || {}).kind === "folder");
+    $("folderNote").classList.toggle("hidden", !folderSave);
+    if (folderSave) {
+      $("folderNote").innerHTML = "📦 This game's saves are <b>folders</b>, stored as <code>.zip</code>. " +
+        "Download one and extract its contents into " +
+        (con ? "<code>" + escapeHtml(con.where) + "</code>" : "your emulator's save folder") + ".";
+    }
+
     if (cover) {
       $("setCoverBtn").textContent = "🖼️ Change cover";
       try { coverEl.style.backgroundImage = "url('" + (await getCoverUrl(cover.id)) + "')"; coverEl.textContent = ""; } catch (e) {}
@@ -822,13 +1893,15 @@ async function openHistory(folderId, name) {
       const orig = p.originalName || s.name;
       const label = p.label || "";
       const title = label || orig;
+      const sc = consoleOf(p.console) || (LEGACY_EMU_CONSOLE[emu] ? consoleOf(LEGACY_EMU_CONSOLE[emu]) : null);
       return '<div class="save-row">' +
-        '<div class="sr-icon">💾</div>' +
+        '<div class="sr-icon">' + (p.kind === "folder" ? "📦" : "💾") + '</div>' +
         '<div class="sr-main">' +
           '<div class="sr-title">' + escapeHtml(title) +
             (i === 0 ? ' <span class="badge latest">● Latest</span>' : '') + '</div>' +
           '<div class="sr-sub">' +
             '<span>🕒 ' + fmtTime(s.createdTime) + '</span>' +
+            (sc ? consolePill(sc) : '') +
             '<span class="badge device">🖥️ ' + escapeHtml(device) + '</span>' +
             (emu ? '<span class="badge">' + escapeHtml(emu) + '</span>' : '') +
             (s.size ? '<span>' + humanSize(+s.size) + '</span>' : '') +
@@ -854,13 +1927,13 @@ async function openHistory(folderId, name) {
     c.querySelectorAll("button[data-rename]").forEach((b) => {
       b.onclick = async () => {
         const cur = b.dataset.cur || "";
-        const name = prompt("Backup name (leave blank to clear the label):", cur);
-        if (name === null) return; // cancelled
+        const name2 = prompt("Backup name (leave blank to clear the label):", cur);
+        if (name2 === null) return; // cancelled
         b.disabled = true; b.innerHTML = '<span class="spinner"></span>';
         try {
-          await setLabel(b.dataset.rename, name.trim());
+          await setLabel(b.dataset.rename, name2.trim());
           toast("Backup renamed", "ok");
-          await openHistory(currentHistory.folderId, currentHistory.name);
+          await openHistory(currentHistory.folderId, currentHistory.name, currentHistory.console);
         } catch (e) {
           toast("Rename failed: " + e.message, "err");
           b.disabled = false; b.innerHTML = "✏️";
@@ -874,7 +1947,7 @@ async function openHistory(folderId, name) {
         try {
           await trashFile(b.dataset.del);
           toast("Backup deleted", "ok");
-          await openHistory(currentHistory.folderId, currentHistory.name);
+          await openHistory(currentHistory.folderId, currentHistory.name, currentHistory.console);
         } catch (e) {
           toast("Delete failed: " + e.message, "err");
           b.disabled = false; b.innerHTML = "🗑";
@@ -884,6 +1957,199 @@ async function openHistory(folderId, name) {
   } catch (e) {
     c.innerHTML = '<div class="empty">Could not load backups: ' + escapeHtml(e.message) + "</div>";
   }
+}
+
+/* ============================================================
+   QR sign-in — hand this browser's session to a phone or iPad.
+
+   There's no server to pair through, so the code carries the
+   sign-in itself. Two things keep that honest: it lives in the
+   URL *fragment* (never sent to any server, stripped from the
+   address bar on arrival), and it dies after QR_TTL seconds.
+   ============================================================ */
+const QR_TTL = 120;          // seconds a displayed code stays valid
+let qrTimer = null;
+
+// Phones and iPads only, per the login option's design. iPadOS 13+ reports
+// itself as a Mac, so a Mac with a touchscreen is really an iPad.
+function isHandheld() {
+  const ua = navigator.userAgent || "";
+  if (/Android|iPhone|iPod|IEMobile|Opera Mini|Mobile/i.test(ua)) return true;
+  if (/iPad/.test(ua)) return true;
+  if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return true;
+  return false;
+}
+
+function handoffUrl() {
+  const now = Math.floor(Date.now() / 1000);
+  const tokExp = tokenExpiresAt || (now + 3600);
+  const qrExp = Math.min(now + QR_TTL, tokExp);
+  if (qrExp <= now + 5) return null;   // session too close to expiry to hand off
+  return {
+    url: location.origin + location.pathname + "#ss=1~" + qrExp + "~" + tokExp + "~" + accessToken,
+    expiresAt: qrExp,
+  };
+}
+
+// Read a handoff out of the URL fragment, then scrub it immediately.
+function readHandoff() {
+  const h = location.hash || "";
+  if (h.indexOf("#ss=") !== 0) return null;
+  try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+  const parts = h.slice(4).split("~");
+  if (parts[0] !== "1" || parts.length < 4) return null;
+  const qrExp = Number(parts[1]), tokExp = Number(parts[2]);
+  const token = parts.slice(3).join("~");
+  if (!token || !qrExp) return null;
+  if (Math.floor(Date.now() / 1000) > qrExp) return { expired: true };
+  return { token, tokenExpiresAt: tokExp };
+}
+
+async function adoptHandoff(h) {
+  accessToken = h.token;
+  tokenExpiresAt = h.tokenExpiresAt || 0;
+  localStorage.setItem("ssw_signed_in", "1");
+  const left = (tokenExpiresAt || 0) - Math.floor(Date.now() / 1000);
+  if (left > 0) scheduleTokenRefresh(left);
+  try {
+    await onLoggedIn();   // loadUserProfile() stores the email for later hints
+    toast("Signed in from your computer ✔", "ok");
+  } catch (e) {
+    toast("That code didn't work — generate a fresh one.", "err", 5000);
+    signOut();
+    return;
+  }
+  // Try to give this browser a session of its own, so it outlives the handoff.
+  setTimeout(() => {
+    if (!gisReady || !tokenClient) return;
+    const opts = { prompt: "" };
+    const hint = localStorage.getItem("ssw_email");
+    if (hint) opts.hint = hint;
+    try { tokenClient.requestAccessToken(opts); } catch (e) {}
+  }, 2000);
+}
+
+function showQrCode() {
+  if (!accessToken) { toast("Sign in first.", "err"); return; }
+  const h = handoffUrl();
+  if (!h) { toast("Your session is about to expire — reload the page, then try again.", "err", 5000); return; }
+  try {
+    $("qrBox").innerHTML = QR.svg(h.url, 232);
+  } catch (e) {
+    toast("Could not build the code: " + e.message, "err", 5000);
+    return;
+  }
+  $("qrArea").classList.remove("hidden");
+  $("showQrBtn").classList.add("hidden");
+  startQrCountdown(h.expiresAt);
+}
+
+function startQrCountdown(expiresAt) {
+  clearInterval(qrTimer);
+  const tick = () => {
+    const left = expiresAt - Math.floor(Date.now() / 1000);
+    if (left <= 0) { expireQrCode(); return; }
+    const el = $("qrCount");
+    el.textContent = Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0");
+    el.classList.toggle("low", left <= 30);
+  };
+  tick();
+  qrTimer = setInterval(tick, 1000);
+}
+
+// Never leave a live sign-in sitting in the DOM.
+function expireQrCode() {
+  clearInterval(qrTimer);
+  $("qrBox").innerHTML = '<div class="qr-expired" style="width:232px;">Code expired</div>';
+  const el = $("qrCount");
+  el.textContent = "expired";
+  el.classList.add("low");
+}
+
+function hideQrCode() {
+  clearInterval(qrTimer);
+  $("qrBox").innerHTML = "";
+  $("qrArea").classList.add("hidden");
+  $("showQrBtn").classList.remove("hidden");
+}
+
+/* -- Scanning, on the phone side ---------------------------- */
+let scanStream = null, scanRunning = false;
+
+async function openScanner() {
+  $("gate").classList.add("hidden");
+  $("scanGate").classList.remove("hidden");
+  $("scanFallback").classList.add("hidden");
+  $("scanStatus").textContent = "";
+
+  let supported = false;
+  try {
+    supported = "BarcodeDetector" in window &&
+      (await window.BarcodeDetector.getSupportedFormats()).includes("qr_code");
+  } catch (e) { supported = false; }
+
+  if (!supported || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    // Every phone can still do this the easy way: its own camera app.
+    $("scanFallback").classList.remove("hidden");
+    return;
+  }
+
+  const video = $("scanVideo");
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" }, audio: false,
+    });
+  } catch (e) {
+    $("scanFallback").classList.remove("hidden");
+    $("scanStatus").textContent = "Camera unavailable — use your Camera app instead.";
+    return;
+  }
+  video.srcObject = scanStream;
+  video.classList.remove("hidden");
+  try { await video.play(); } catch (e) {}
+  $("scanStatus").innerHTML = '<span class="spinner"></span> Looking for a code…';
+
+  const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
+  scanRunning = true;
+  const tick = async () => {
+    if (!scanRunning) return;
+    try {
+      const found = await detector.detect(video);
+      if (found && found.length) {
+        const raw = found[0].rawValue || "";
+        if (acceptScanned(raw)) return;
+      }
+    } catch (e) { /* frame not ready — keep looking */ }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+// Only ever act on a code that points at this very page.
+function acceptScanned(raw) {
+  let u;
+  try { u = new URL(raw, location.href); } catch (e) { return false; }
+  const sameApp = u.origin === location.origin && u.pathname === location.pathname;
+  if (!sameApp || u.hash.indexOf("#ss=") !== 0) {
+    $("scanStatus").textContent = "That code isn't a Save Station sign-in.";
+    return false;
+  }
+  closeScanner();
+  location.href = u.href;    // boot reads the fragment and signs in
+  location.reload();
+  return true;
+}
+
+function closeScanner() {
+  scanRunning = false;
+  if (scanStream) {
+    scanStream.getTracks().forEach((t) => t.stop());
+    scanStream = null;
+  }
+  const v = $("scanVideo");
+  v.srcObject = null;
+  v.classList.add("hidden");
+  $("scanGate").classList.add("hidden");
 }
 
 /* ============================================================
@@ -906,13 +2172,16 @@ function wireEvents() {
   };
 
   const dz = $("dropzone");
-  dz.onclick = () => $("fileInput").click();
+  dz.onclick = (e) => { if (e.target.tagName !== "BUTTON") $("fileInput").click(); };
   $("fileInput").onchange = (e) => onFileChosen(e.target.files[0]);
+  $("pickFolderBtn").onclick = (e) => { e.stopPropagation(); $("folderInput").click(); };
+  $("folderInput").onchange = (e) => onFolderChosen(e.target.files);
   ["dragenter", "dragover"].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add("drag"); }));
   ["dragleave", "drop"].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove("drag"); }));
   dz.addEventListener("drop", (e) => { if (e.dataTransfer.files.length) onFileChosen(e.dataTransfer.files[0]); });
 
   $("uploadBtn").onclick = doUpload;
+  $("consoleSel").onchange = onConsoleChanged;
 
   $("setCoverBtn").onclick = () => $("coverInput").click();
   $("coverInput").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; setCover(f); };
@@ -920,8 +2189,55 @@ function wireEvents() {
   $("newGameBtn").onclick = openNewGamePanel;
   $("closeUploadBtn").onclick = () => $("uploadPanel").classList.add("hidden");
   $("uploadToGameBtn").onclick = () => $("gameSaveInput").click();
-  $("gameSaveInput").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; uploadToGame(currentHistory.folderId, f); };
+  $("gameSaveInput").onchange = (e) => {
+    const f = e.target.files[0]; e.target.value = "";
+    if (f) uploadToGame(currentHistory.folderId, { kind: "file", file: f, name: f.name, size: f.size });
+  };
+  $("uploadFolderToGameBtn").onclick = () => $("gameFolderInput").click();
+  $("gameFolderInput").onchange = (e) => {
+    const fl = e.target.files;
+    if (fl && fl.length) {
+      const sel = { kind: "folder", files: fl, name: folderRootName(fl), size: 0 };
+      e.target.value = "";
+      uploadToGame(currentHistory.folderId, sel);
+    }
+  };
   $("deleteGameBtn").onclick = deleteEmptyGame;
+
+  // Account + onboarding
+  $("accountBtn").onclick = () => {
+    $("gamesView").classList.add("hidden");
+    $("historyView").classList.add("hidden");
+    $("onboardView").classList.add("hidden");
+    $("uploadPanel").classList.add("hidden");
+    $("accountView").classList.remove("hidden");
+    refreshConsoleUi();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  $("acctBackBtn").onclick = () => {
+    hideQrCode();
+    $("accountView").classList.add("hidden");
+    $("gamesView").classList.remove("hidden");
+  };
+  $("acctDevice").onchange = () => {
+    const v = $("acctDevice").value.trim();
+    if (v) { localStorage.setItem("ssw_device_name", v); $("deviceName").value = v; toast("Device name saved", "ok"); }
+  };
+  // QR sign-in
+  $("showQrBtn").onclick = showQrCode;
+  $("hideQrBtn").onclick = hideQrCode;
+  $("qrRefreshBtn").onclick = showQrCode;
+  $("scanQrBtn").onclick = openScanner;
+  $("scanCancelBtn").onclick = () => { closeScanner(); $("gate").classList.remove("hidden"); };
+
+  $("editConsolesBtn").onclick = () => startOnboarding("edit");
+  $("onboardDoneBtn").onclick = finishOnboarding;
+  $("onboardCancelBtn").onclick = enterApp;
+  $("selectAllConsolesBtn").onclick = () => {
+    if (onboardSelection.size === CONSOLES.length) onboardSelection.clear();
+    else CONSOLES.forEach((c) => onboardSelection.add(c.id));
+    renderConsoleGrid();
+  };
 }
 
 /* ============================================================
@@ -933,13 +2249,6 @@ function gameNameFromFilename(fn) {
   name = name.replace(/[_]+/g, " ");                // underscores → spaces
   name = name.replace(/\s{2,}/g, " ").trim();
   return name;
-}
-
-function guessEmulator(fn) {
-  const ext = getExt(fn).toLowerCase();
-  // mGBA save states are .ss0-.ss9; Delta uses .dsv for its states.
-  if (ext.startsWith("ss") || ext === "state") $("emulator").value = "mGBA";
-  else if (ext === "dsv") $("emulator").value = "Delta";
 }
 
 function getExt(fn) { const m = fn.match(/\.([^.]+)$/); return m ? m[1] : ""; }
@@ -992,7 +2301,7 @@ function humanSize(b) {
   return (b / 1048576).toFixed(1) + " MB";
 }
 
-function emojiFor(name) {
+function emojiFor(name, con) {
   const n = name.toLowerCase();
   if (n.includes("pokemon") || n.includes("pokémon")) return "🔴";
   if (n.includes("zelda")) return "🗡️";
@@ -1002,7 +2311,7 @@ function emojiFor(name) {
   if (n.includes("kirby")) return "🌟";
   if (n.includes("sonic")) return "💨";
   if (n.includes("final fantasy")) return "💎";
-  return "🎮";
+  return con ? con.icon : "🎮";
 }
 
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }

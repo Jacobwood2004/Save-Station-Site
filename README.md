@@ -1,25 +1,88 @@
 # 🎮 Save Station Web
 
-Back up your **Delta** and **mGBA** emulator saves to your own **Google Drive**.
-Sign in with Google, drop in a `.sav`, and it's versioned in a per-game folder so
+Back up your console and emulator saves to your own **Google Drive**.
+Sign in with Google, drop in a save, and it's versioned in a per-game folder so
 you can restore any backup from any device — and see which device each one came from.
 
-- **Login gate:** nothing happens until you sign in with Google.
+- **Sign in once.** After that you're signed back in automatically, on the site
+  and in the Windows app.
 - **Your Drive is the storage.** On first use it creates a folder named
-  **`Save Station Web Saves`**.
+  **`Save Station Web Saves`**. Nothing is stored on this site's server — there
+  isn't one. The page talks straight to Google from your browser.
+- **Ten consoles supported** (below), including the ones whose saves are folders.
 - **Per-game folders + full history.** Each game gets its own subfolder; every
   upload is a new timestamped file, so old backups are never overwritten.
-- **Game name auto-detected** from the file name, editable before you upload.
-- **Device shown** on every save in the history.
-- **Windows companion app** (`windows-app/`) pulls the latest/any save to your PC.
+- **Windows app watches your saves.** Link a game to its real save file; when you
+  play and the game saves, the app asks whether to upload it.
 
 ---
 
-## ⚠️ Why this isn't a "Claude Artifact"
+## Supported consoles
 
-Claude Artifacts block all outside network calls, so they **cannot** talk to
-Google. This is a normal standalone web page you host yourself — that's the only
-way real Google Drive login/sync works. Hosting is free (see below).
+Picked once when you make your account, changeable any time under **⚙ Account**.
+
+| Console | Saves look like | Where they usually live |
+|---|---|---|
+| Game Boy | single file | mGBA / SameBoy `.sav` next to the ROM |
+| Game Boy Color | single file | mGBA / SameBoy `.sav` next to the ROM |
+| Game Boy Advance | single file | mGBA `.sav`, VBA `.srm`, or a Delta export |
+| Nintendo DS | single file | melonDS `.sav`, DeSmuME `.dsv` |
+| Nintendo 3DS | **folder** | Citra/Azahar `sdmc/Nintendo 3DS/…/title/<id>/data` |
+| Wii | either | Dolphin `.gci` / memory-card `.raw`, or a save folder |
+| Wii U | **folder** | Cemu `mlc01/usr/save/00050000/<title-id>/user/80000001` |
+| Nintendo Switch | **folder** | Ryujinx `bis/user/save/<id>` |
+| PSP | **folder** | `PSP/SAVEDATA/<game id>` (PPSSPP) |
+| PS Vita | **folder** | Vita3K `ux0/user/00/savedata/<title-id>` |
+
+**Folder saves** (3DS, Wii U, Switch, PSP, Vita) are packed into a single `.zip`
+on upload — on the website by picking the folder, in the Windows app
+automatically. Downloading gives you that `.zip` back; the Windows app can
+extract it straight into the linked folder for you.
+
+> Save Station stores and versions save files. It doesn't run games, and it
+> isn't an emulator — bring your own emulator and your own ROMs.
+
+---
+
+## Your account
+
+Signing in with Google *is* the account — there's no separate password to make.
+The first time you sign in, Save Station asks **which consoles you plan to keep
+saves for** and writes your answer to a small `station.json` inside your
+`Save Station Web Saves` folder.
+
+Because that file lives in your Drive rather than on a server:
+
+- the website and the Windows app always show the same consoles,
+- your picks follow you to a new PC the moment you sign in,
+- and nobody but you can read them.
+
+After that first visit the site signs you back in silently — no button, no
+account chooser — and quietly refreshes the session so an open tab never gets
+logged out.
+
+### Signing in on a phone or iPad by QR code
+
+Typing a Google password on a phone is miserable, so a computer that's already
+signed in can hand its session over:
+
+1. On the computer: **⚙ Account → Sign in on another device → Show QR code**.
+2. On the phone or iPad: open the **Camera app** and point it at the code (or tap
+   **Scan a QR code from a signed-in device** on the sign-in screen — that option
+   only appears on phones and iPads).
+3. The phone lands on Save Station already signed in, and quietly picks up a
+   session of its own so it stays signed in afterwards.
+
+**The code is a live sign-in — treat it like a password.** It's only valid for
+**two minutes**, the countdown is on screen, and it's wiped from the page the
+moment you hide it or the timer runs out. Don't screenshot it, share it, or show
+it on a stream. If one leaks, hit **Sign out** on the computer: that revokes the
+token and the code dies with it.
+
+The sign-in travels in the URL's `#fragment`, which browsers never send to any
+server, and it's stripped from the address bar the instant the phone reads it.
+The QR code itself is generated on your own machine — the page loads no
+third-party scripts, so your session never leaves this origin.
 
 ---
 
@@ -78,30 +141,46 @@ way — just add the resulting URL as an authorized origin.
 
 ```
 Save Station Web Saves/
+├── station.json                                    ← your account profile
 ├── Pokemon - Emerald/
-│   ├── 2026-07-31_14-30-00__Windows PC (Chrome).sav
-│   └── 2026-07-31_16-05-12__iPhone.sav        ← newer backup, kept separately
-└── Pokemon - FireRed/
-    └── 2026-07-31_09-12-44__Mac.sav
+│   ├── 2026-08-16_14-30-00__Windows PC (Chrome).sav
+│   └── 2026-08-16_16-05-12__iPhone.sav             ← newer backup, kept separately
+└── Crisis Core/
+    └── 2026-08-16_09-12-44__Gaming PC.zip          ← a PSP folder save
 ```
 
-Each file also carries hidden metadata (game, device, emulator, original file
-name, timestamp) that the website and the Windows app read to build the history.
+Each file also carries hidden metadata — game, console, device, emulator,
+original file name, timestamp, and a SHA-256 of the contents — that the website
+and the Windows app read to build the history and to avoid re-uploading a save
+that hasn't actually changed.
 
-## Supported files
-
-Delta & mGBA saves: `.sav`, `.srm`, and save states (`.dsv`, `.ss0`–`.ss9`,
-`.state`). The emulator is guessed from the extension and you can change it.
+---
 
 ## Windows companion app
 
 See [`windows-app/BUILD.md`](windows-app/BUILD.md) to run it or build the `.exe`.
-It connects to the same Drive folder and pulls the latest (or any) save to your PC.
+It signs into the same account, reads the same `station.json`, and adds the one
+thing a website can't do: **watching your save files**.
+
+Link a game to its save file on your PC and the app checks it every few seconds.
+When you play and the game writes its save, it waits for the writing to finish
+and then asks:
+
+> 💾 **Save file updated** — Pokemon Emerald
+> `D:\Emulation\mGBA\Pokemon Emerald.sav` · 128.0 KB
+> Upload this as a new backup? **[⬆ Upload now] [Not now] [Always upload this game]**
+
+Pick *Always* and that game uploads silently from then on. Restoring works the
+other way too: pull any backup and the app offers to write it straight back over
+the linked save (keeping a copy of the old one first).
 
 ---
 
 ## Privacy note
 
 The website uses the **`drive.file`** scope — it can only see files **it**
-creates. It can't read the rest of your Drive. The Windows app uses read-only
-Drive access so it can locate the folder the website made.
+creates. It can't read the rest of your Drive. The Windows app uses full Drive
+access so it can find the folder the website made and upload into it.
+
+Nothing — not your saves, not your console picks, not your email — is ever sent
+anywhere except Google Drive, under your own account.
