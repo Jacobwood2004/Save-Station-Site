@@ -630,6 +630,7 @@
       <div class="acct-row">Save Station account <b id="acctName">—</b></div>
       <div class="acct-row">Email <b id="acctEmail">—</b></div>
       <div class="acct-row">Google Drive linked <b id="acctGoogle">—</b></div>
+      <div class="acct-row">Drive session <b id="acctDriveState">—</b></div>
       <div class="acct-row">Saves live in your Drive under <b id="acctFolder">—</b></div>
       <div class="acct-row">Nothing is stored on this site's server — only in your Google Drive.</div>
       <div class="acct-row hidden" id="acctQrNote">
@@ -1573,7 +1574,25 @@ function refreshAccountHeader() {
   $("acctQrNote").classList.toggle("hidden", !linkedViaQr);
   $("sbUserMail").textContent = (fbUser && fbUser.email) ||
     (profile && profile.account && profile.account.email) || googleEmail || "";
+
+  // Visible state for the Drive session, so "why is it asking me again?" has an
+  // answer without opening devtools.
+  const el = $("acctDriveState");
+  if (el) {
+    const left = tokenExpiresAt ? tokenExpiresAt - Math.floor(Date.now() / 1000) : 0;
+    const remembered = !!cachedDriveToken();
+    el.textContent = !accessToken ? "not connected"
+      : left > 0
+        ? "active · " + Math.max(1, Math.round(left / 60)) + " min left" +
+          (remembered ? " · remembered for next launch" : " · not remembered")
+        : "active";
+  }
 }
+
+// Re-tick the Drive session line while the Account page is open.
+setInterval(() => {
+  if (!$("accountView").classList.contains("hidden")) refreshAccountHeader();
+}, 30000);
 
 /* ============================================================
    Drive helpers
