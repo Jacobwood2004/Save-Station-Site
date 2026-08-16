@@ -1014,6 +1014,7 @@ window.addEventListener("load", () => {
   waitForGis().then(() => {
     gisReady = true;
     if (!GOOGLE_CLIENT_ID.startsWith("PASTE_")) initTokenClient();
+    markTokenClientReady();
   });
 
   wireEvents();
@@ -1266,10 +1267,11 @@ function initTokenClient() {
         if (interactiveLogin) toast("Login failed: " + resp.error, "err");
         interactiveLogin = false;
         settleTokenWaiters(false);
-        showGateAgain();
+        handleSilentFailure();   // retries a couple of times before giving up
         return;
       }
       interactiveLogin = false;
+      restoringDrive = false;
       accessToken = resp.access_token;
       if (resp.expires_in) {
         tokenExpiresAt = Math.floor(Date.now() / 1000) + Number(resp.expires_in);
@@ -1281,9 +1283,18 @@ function initTokenClient() {
     },
     // Fires when a silent restore can't complete without interaction — stay quiet
     // and just put the sign-in button back.
-    error_callback: () => { interactiveLogin = false; settleTokenWaiters(false); showGateAgain(); },
+    error_callback: () => {
+      interactiveLogin = false;
+      settleTokenWaiters(false);
+      handleSilentFailure();   // retries a couple of times before giving up
+    },
   });
 }
+
+// Resolves once initTokenClient() has actually run, so nothing tries to use
+// tokenClient while it's still null.
+let markTokenClientReady;
+const tokenClientReady = new Promise((r) => { markTokenClientReady = r; });
 
 // Anything waiting on a fresh token (the QR screen) gets told how it went.
 let tokenWaiters = [];
@@ -1311,13 +1322,38 @@ function refreshTokenNow(timeoutMs) {
   });
 }
 
-// Ask for a token without any UI. login_hint means a returning user goes
-// straight back in instead of getting an account chooser.
-function silentRestore() {
+/* Silent reconnect ----------------------------------------------------------
+   Ask for a token with no UI. login_hint means a returning user goes straight
+   back in rather than getting an account chooser. Two things matter here: not
+   firing before the Google client exists (that used to throw and drop straight
+   to the Reconnect screen), and not giving up on the first miss — the hidden
+   flow is flaky for a moment right after a cold browser start. */
+let restoringDrive = false;
+let silentTries = 0;
+
+async function silentRestore() {
+  await tokenClientReady;
+  if (!tokenClient) { showGateAgain(); return; }
+  restoringDrive = true;
+  silentTries = 0;
+  requestSilentToken();
+}
+
+function requestSilentToken() {
+  silentTries++;
   const opts = { prompt: "" };
   const hint = localStorage.getItem("ssw_email");
   if (hint) opts.hint = hint;
-  try { tokenClient.requestAccessToken(opts); } catch (e) { showGateAgain(); }
+  try { tokenClient.requestAccessToken(opts); } catch (e) { handleSilentFailure(); }
+}
+
+function handleSilentFailure() {
+  if (restoringDrive && silentTries < 3) {
+    setTimeout(requestSilentToken, 900 * silentTries);
+    return;
+  }
+  restoringDrive = false;
+  showGateAgain();
 }
 
 // A silent Drive reconnect couldn't finish without the user — ask explicitly.
@@ -1448,15 +1484,18 @@ function markNav(view) {
    forever on its own. Two things keep you from re-approving Google constantly:
    the grant itself is left alone when you sign out (only "Disconnect Drive"
    revokes it), and the live token is kept for the tab so a refresh is free. */
+// localStorage, not sessionStorage: closing the browser shouldn't cost you the
+// Drive connection. Google's tokens die after about an hour regardless, so this
+// only ever shortens the gap — it can't keep you connected indefinitely.
 function cacheDriveToken() {
   try {
-    sessionStorage.setItem("ssw_tok", JSON.stringify({ t: accessToken, e: tokenExpiresAt }));
+    localStorage.setItem("ssw_tok", JSON.stringify({ t: accessToken, e: tokenExpiresAt }));
   } catch (e) {}
 }
 
 function cachedDriveToken() {
   try {
-    const v = JSON.parse(sessionStorage.getItem("ssw_tok") || "null");
+    const v = JSON.parse(localStorage.getItem("ssw_tok") || "null");
     // Needs enough life left to be worth using.
     if (v && v.t && v.e && v.e - Math.floor(Date.now() / 1000) > 120) return v;
   } catch (e) {}
@@ -1466,7 +1505,8 @@ function cachedDriveToken() {
 function clearDriveToken() {
   accessToken = null;
   tokenExpiresAt = 0;
-  try { sessionStorage.removeItem("ssw_tok"); } catch (e) {}
+  try { localStorage.removeItem("ssw_tok"); } catch (e) {}
+  try { sessionStorage.removeItem("ssw_tok"); } catch (e) {}   // older builds
 }
 
 // Deliberately give up Drive access. Separate from signing out.
