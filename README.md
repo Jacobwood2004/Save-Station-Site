@@ -110,16 +110,28 @@ emails, and it doesn't ask for a credit card. Firebase only stores accounts — 
 few hundred bytes each. Your saves never touch it; they go straight from the
 browser into each user's own Drive.
 
-1. Go to <https://console.firebase.google.com> → **Add project**.
-   Pick the **same Google Cloud project** you already made for the Drive API and
-   Firebase will just attach itself to it.
-2. **Build → Authentication → Get started**.
+1. Go to <https://console.firebase.google.com> → **Add project** → give it any
+   name (e.g. `save-station`).
+
+   > Make this a **brand-new project**, not the one holding your Drive OAuth
+   > client. Firebase Auth and the Drive API are completely independent here, so
+   > a separate project means nothing you do in Firebase can affect the working
+   > site. (Attaching Firebase to the existing project also works, but there's
+   > no benefit and a fresh one is impossible to break.)
+
+   Google Analytics is offered during setup — **turn it off**, it isn't used.
+2. Open **Authentication**. Firebase moves this around — the reliable way is the
+   **Search for products** box at the top of the sidebar; type `Authentication`.
+   (Older consoles list it under **Build**, newer ones under **Security**.)
+   Then **Get started**.
 3. **Sign-in method** tab → **Email/Password** → toggle **Enable** → **Save**.
    (Leave "Email link / passwordless" off.)
 4. **Settings → Authorized domains** → **Add domain** → `YOURNAME.github.io`.
    `localhost` is already on the list for local testing.
-5. **Project settings** (⚙ top left) → scroll to **Your apps** → click the
-   **web** icon `</>` → give it a nickname → **Register app**.
+5. Register the web app: **+ Add app** on the Project Overview page (or ⚙
+   **Project settings** → **Your apps**) → the **web** icon `</>` → give it a
+   nickname → **Register app**. Don't tick "Also set up Firebase Hosting" —
+   GitHub Pages already hosts the site.
 6. Copy the `firebaseConfig` values it shows you into `index.html`:
    ```js
    const FIREBASE_CONFIG = {
