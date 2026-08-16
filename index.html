@@ -1265,6 +1265,7 @@ function initTokenClient() {
       if (resp.error) {
         if (interactiveLogin) toast("Login failed: " + resp.error, "err");
         interactiveLogin = false;
+        settleTokenWaiters(false);
         showGateAgain();
         return;
       }
@@ -1275,11 +1276,38 @@ function initTokenClient() {
         scheduleTokenRefresh(Number(resp.expires_in));
       }
       cacheDriveToken();
+      settleTokenWaiters(true);
       if ($("app").classList.contains("hidden")) await onLoggedIn();
     },
     // Fires when a silent restore can't complete without interaction — stay quiet
     // and just put the sign-in button back.
-    error_callback: () => { interactiveLogin = false; showGateAgain(); },
+    error_callback: () => { interactiveLogin = false; settleTokenWaiters(false); showGateAgain(); },
+  });
+}
+
+// Anything waiting on a fresh token (the QR screen) gets told how it went.
+let tokenWaiters = [];
+function settleTokenWaiters(ok) {
+  const list = tokenWaiters;
+  tokenWaiters = [];
+  list.forEach((fn) => { try { fn(ok); } catch (e) {} });
+}
+
+// Force a silent token refresh and resolve once it lands (or times out).
+function refreshTokenNow(timeoutMs) {
+  return new Promise((resolve) => {
+    if (!tokenClient) { resolve(false); return; }
+    let done = false;
+    const finish = (ok) => { if (done) return; done = true; clearTimeout(timer); resolve(ok); };
+    const timer = setTimeout(() => {
+      tokenWaiters = tokenWaiters.filter((f) => f !== finish);
+      finish(false);
+    }, timeoutMs || 9000);
+    tokenWaiters.push(finish);
+    const opts = { prompt: "" };
+    const hint = localStorage.getItem("ssw_email");
+    if (hint) opts.hint = hint;
+    try { tokenClient.requestAccessToken(opts); } catch (e) { finish(false); }
   });
 }
 
@@ -1720,7 +1748,9 @@ function refreshConsoleUi() {
   // Account panel
   $("acctFolder").textContent = ROOT_FOLDER_NAME;
   $("acctDevice").value = getDeviceName();
-  $("acctConsoles").innerHTML = mine.map(consolePill).join("") ||
+  // NB: not `.map(consolePill)` — map passes the index, which consolePill
+  // would render as a stray number next to every console after the first.
+  $("acctConsoles").innerHTML = mine.map((c) => consolePill(c)).join("") ||
     '<span style="color:var(--muted);font-size:13px;">None picked yet.</span>';
 
   // Filter chips over the games list
@@ -2681,11 +2711,15 @@ function isHandheld() {
   return false;
 }
 
+// A handed-over token has to survive the scan *and* be usable afterwards, so
+// insist on real headroom rather than a few seconds.
+const QR_MIN_TOKEN_LIFE = 300;   // 5 minutes
+
 function handoffUrl() {
   const now = Math.floor(Date.now() / 1000);
   const tokExp = tokenExpiresAt || (now + 3600);
   const qrExp = Math.min(now + QR_TTL, tokExp);
-  if (qrExp <= now + 5) return null;   // session too close to expiry to hand off
+  if (tokExp - now < QR_MIN_TOKEN_LIFE) return null;  // caller refreshes first
   return {
     url: location.origin + location.pathname + "#ss=1~" + qrExp + "~" + tokExp + "~" + accessToken,
     expiresAt: qrExp,
@@ -2716,7 +2750,13 @@ async function adoptHandoff(h) {
     await onLoggedIn();   // loadUserProfile() stores the email for later hints
     toast("Signed in from your computer ✔", "ok");
   } catch (e) {
-    toast("That code didn't work — generate a fresh one.", "err", 5000);
+    // A 401 here means the computer handed over a token Google had already
+    // retired — the usual cause is a tab that sat open too long. Say so, rather
+    // than blaming the code itself.
+    const msg = String((e && e.message) || e);
+    toast(msg.indexOf("401") >= 0
+      ? "That code's Google session had already expired. On the computer, hit ↻ New code and scan again."
+      : "Couldn't finish signing in: " + msg, "err", 8000);
     signOut();
     return;
   }
@@ -2730,10 +2770,25 @@ async function adoptHandoff(h) {
   }, 2000);
 }
 
-function showQrCode() {
+async function showQrCode() {
   if (!accessToken) { toast("Sign in first.", "err"); return; }
-  const h = handoffUrl();
-  if (!h) { toast("Your session is about to expire — reload the page, then try again.", "err", 5000); return; }
+
+  // Don't put a dying token on screen. If this tab's Google session is close to
+  // expiry, quietly get a fresh one first — otherwise the phone scans a code
+  // that Drive rejects the moment it's used.
+  let h = handoffUrl();
+  if (!h) {
+    $("qrArea").classList.remove("hidden");
+    $("showQrBtn").classList.add("hidden");
+    $("qrBox").innerHTML = '<div class="qr-expired" style="width:232px;"><span class="spinner"></span><br>Refreshing…</div>';
+    const ok = await refreshTokenNow();
+    h = ok ? handoffUrl() : null;
+    if (!h) {
+      hideQrCode();
+      toast("Couldn't refresh your Google session — reload the page, then try again.", "err", 6000);
+      return;
+    }
+  }
   try {
     $("qrBox").innerHTML = QR.svg(h.url, 232);
   } catch (e) {
