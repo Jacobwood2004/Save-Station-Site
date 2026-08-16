@@ -5,6 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Save Station Web</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<!-- Firebase Authentication runs the Save Station account (email + password).
+     Google sign-in is separate and comes later, to link your Drive. -->
+<script type="module">
+  const V = "10.12.2";
+  try {
+    const app = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`);
+    const auth = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-auth.js`);
+    window.__fb = {
+      initializeApp: app.initializeApp,
+      getAuth: auth.getAuth,
+      createUserWithEmailAndPassword: auth.createUserWithEmailAndPassword,
+      signInWithEmailAndPassword: auth.signInWithEmailAndPassword,
+      fbSignOut: auth.signOut,
+      onAuthStateChanged: auth.onAuthStateChanged,
+      updateProfile: auth.updateProfile,
+      sendPasswordResetEmail: auth.sendPasswordResetEmail,
+      setPersistence: auth.setPersistence,
+      browserLocalPersistence: auth.browserLocalPersistence,
+    };
+  } catch (e) {
+    window.__fbError = String(e && e.message || e);
+  }
+  window.dispatchEvent(new Event("fb-ready"));
+</script>
 <style>
   :root {
     --bg: #0e1116;
@@ -96,6 +120,61 @@
   .gbtn:hover { filter: brightness(.97); }
   .gbtn svg { width: 20px; height: 20px; }
   .gate-restoring { color: var(--muted); font-size: 13px; margin-top: 18px; }
+
+  /* Account login / sign-up */
+  .auth-tabs {
+    display: flex; gap: 6px; background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 5px; margin-bottom: 22px;
+  }
+  .auth-tab {
+    flex: 1; background: none; color: var(--muted); border-radius: 9px; padding: 9px 10px;
+    font-size: 14px;
+  }
+  .auth-tab.on { background: var(--accent); color: #fff; }
+  .auth-tab:not(.on):hover { color: var(--text); }
+
+  #authForm { text-align: left; }
+  #authForm .field { margin-bottom: 14px; }
+  #authForm input {
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 10px; padding: 12px 13px; font-size: 15px; font-family: inherit; width: 100%;
+  }
+  #authForm input:focus { outline: none; border-color: var(--accent); }
+  #authForm .field label {
+    font-size: 12px; color: var(--muted); font-weight: 600;
+    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; display: block;
+  }
+  #authSubmit { width: 100%; padding: 13px; font-size: 15px; margin-top: 4px; }
+  .auth-error {
+    background: rgba(255,107,107,.1); border: 1px solid rgba(255,107,107,.4); color: #ff9d9d;
+    padding: 11px 13px; border-radius: 10px; font-size: 13px; line-height: 1.45;
+    margin-bottom: 14px; text-align: left;
+  }
+  .auth-note {
+    background: rgba(63,185,80,.1); border: 1px solid rgba(63,185,80,.35); color: #86e29b;
+    padding: 11px 13px; border-radius: 10px; font-size: 13px; line-height: 1.45;
+    margin-bottom: 14px; text-align: left;
+  }
+  .linklike {
+    background: none; color: var(--muted); font-size: 13px; font-weight: 500;
+    padding: 8px 4px; text-decoration: underline; text-underline-offset: 3px;
+  }
+  .linklike:hover { color: var(--accent-2); }
+  .pw-hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  /* Link-your-Drive step */
+  .link-steps {
+    text-align: left; font-size: 13px; color: var(--muted); line-height: 1.6;
+    background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 22px;
+  }
+  .link-steps b { color: var(--text); }
+  .who-chip {
+    display: inline-flex; align-items: center; gap: 8px; background: var(--panel-2);
+    border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px;
+    font-size: 13px; color: var(--muted); margin-bottom: 20px;
+  }
+  .who-chip b { color: var(--text); }
 
   .config-warn {
     background: #2a1f12; border: 1px solid #6b4a1f; color: #f0c674;
@@ -322,28 +401,70 @@
   </div>
 </header>
 
-<!-- LOGIN GATE -->
+<!-- ACCOUNT GATE — log in / create a Save Station account -->
 <div class="gate" id="gate">
   <div class="gate-card">
     <div class="biglogo">🎮</div>
-    <h2>Save Station Web</h2>
-    <p>Back up your console and emulator saves straight to your own Google Drive.
-       Every upload is versioned so you can restore any backup, anytime.</p>
-    <div class="config-warn hidden" id="configWarn">
-      ⚠️ <b>Not configured yet.</b> This app needs your own Google OAuth Client ID.
-      Open <code>index.html</code> and set <code>GOOGLE_CLIENT_ID</code> near the top of the script.
-      See <code>README.md</code> for the 5-minute setup.
+    <h2>Save Station</h2>
+    <p id="gateBlurb">Your game saves, versioned and backed up to your own Google Drive.</p>
+
+    <div class="config-warn hidden" id="configWarn"></div>
+
+    <div class="auth-tabs" id="authTabs">
+      <button class="auth-tab on" id="tabLogin" type="button">Log in</button>
+      <button class="auth-tab" id="tabSignup" type="button">Create account</button>
     </div>
-    <button class="gbtn" id="loginBtn">
-      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-      Sign in with Google
-    </button>
+
+    <div class="auth-error hidden" id="authError"></div>
+    <div class="auth-note hidden" id="authNote"></div>
+
+    <form id="authForm" autocomplete="on">
+      <div class="field hidden" id="nameField">
+        <label for="authName">Display name</label>
+        <input type="text" id="authName" autocomplete="nickname" placeholder="Jacob">
+      </div>
+      <div class="field">
+        <label for="authEmail">Email</label>
+        <input type="email" id="authEmail" autocomplete="username" placeholder="you@example.com" required>
+      </div>
+      <div class="field">
+        <label for="authPassword">Password</label>
+        <input type="password" id="authPassword" autocomplete="current-password" required>
+        <div class="pw-hint hidden" id="pwHint">At least 8 characters.</div>
+      </div>
+      <button class="btn-primary" id="authSubmit" type="submit">Log in</button>
+    </form>
+
+    <button class="linklike" id="forgotBtn" type="button">Forgot your password?</button>
+
     <!-- Phones and iPads only: sign in by scanning a signed-in computer's code. -->
     <div id="qrLoginOption" class="hidden">
       <div class="gate-or">— or —</div>
       <button class="btn-scan" id="scanQrBtn">📷 Scan a QR code from a signed-in device</button>
     </div>
     <div class="gate-restoring hidden" id="gateRestoring"><span class="spinner"></span> Signing you back in…</div>
+  </div>
+</div>
+
+<!-- LINK GATE — connect Google Drive (required; this is where saves live) -->
+<div class="gate hidden" id="linkGate">
+  <div class="gate-card">
+    <div class="biglogo">📁</div>
+    <h2 id="linkTitle">Connect your Google Drive</h2>
+    <div class="who-chip" id="linkWho"></div>
+    <div class="link-steps">
+      Save Station doesn't store your saves — <b>your Google Drive does</b>. Connect it and
+      we'll make one folder called <b>Save Station Web Saves</b> and use only that.
+      <br><br>
+      We ask for the <b>drive.file</b> permission, which lets this site see
+      <b>only the files it creates</b> — never the rest of your Drive.
+    </div>
+    <button class="gbtn" id="linkDriveBtn">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Connect Google Drive
+    </button>
+    <div id="linkStatus" style="font-size:13px;color:var(--muted);margin-top:16px;min-height:18px;"></div>
+    <button class="linklike" id="linkSignOutBtn" type="button">Sign out</button>
   </div>
 </div>
 
@@ -395,9 +516,17 @@
     <button class="back-link" id="acctBackBtn">← Back</button>
     <div class="panel">
       <h3>👤 Account</h3>
-      <div class="acct-row">Signed in as <b id="acctEmail">—</b></div>
+      <div class="acct-row">Save Station account <b id="acctName">—</b></div>
+      <div class="acct-row">Email <b id="acctEmail">—</b></div>
+      <div class="acct-row">Google Drive linked <b id="acctGoogle">—</b></div>
       <div class="acct-row">Saves live in your Drive under <b id="acctFolder">—</b></div>
       <div class="acct-row">Nothing is stored on this site's server — only in your Google Drive.</div>
+      <div class="acct-row hidden" id="acctQrNote">
+        📱 This device was signed in by scanning a QR code.
+      </div>
+      <div style="margin-top:14px;">
+        <button class="btn-ghost btn-sm" id="changePwBtn">✉ Send me a password reset</button>
+      </div>
       <div style="margin-top:18px;">
         <div class="field" style="max-width:340px;">
           <label for="acctDevice">This device's name</label>
@@ -548,6 +677,23 @@
    ============================================================ */
 const GOOGLE_CLIENT_ID = "1043116488819-uehkbdpe89r2032gim7kqigpv3e7mk6j.apps.googleusercontent.com";
 
+/* ============================================================
+   Save Station accounts run on Firebase Authentication.
+   Create a free project at https://console.firebase.google.com
+   (you can add it to the Google Cloud project you already have),
+   turn on Email/Password sign-in, then paste the web config here.
+   Full walkthrough in README.md.
+
+   These values are public identifiers, not secrets — Firebase web
+   apps are designed to ship them in the page.
+   ============================================================ */
+const FIREBASE_CONFIG = {
+  apiKey: "PASTE_FIREBASE_API_KEY",
+  authDomain: "PASTE_PROJECT.firebaseapp.com",
+  projectId: "PASTE_PROJECT_ID",
+  appId: "PASTE_FIREBASE_APP_ID",
+};
+
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 const SCOPES = "https://www.googleapis.com/auth/drive.file";
 const PROFILE_FILE = "station.json";
@@ -631,7 +777,13 @@ let gisReady = false;
 let refreshTimer = null;
 let interactiveLogin = false;
 let tokenExpiresAt = 0;        // epoch seconds; drives the QR handoff window
-let profile = null;            // { version, consoles:[], createdAt, updatedAt }
+let fbAuth = null;             // Firebase Auth instance
+let fbUser = null;             // the Save Station account
+let authMode = "login";        // "login" | "signup"
+let justSignedUp = false;
+let linkedViaQr = false;       // signed in by scanning a computer's code
+let googleEmail = "";          // the Google account whose Drive is linked
+let profile = null;            // { version, consoles:[], account:{}, createdAt, updatedAt }
 let onboardSelection = new Set();
 let onboardMode = "first";     // "first" | "edit"
 let allGames = [];             // enriched game list, for client-side filtering
@@ -641,18 +793,21 @@ const $ = (id) => document.getElementById(id);
 
 /* ============================================================
    Boot
+
+   Order of business:
+     1. Save Station account  (Firebase email + password)
+     2. Google Drive link     (where the saves actually go)
+     3. Console picker        (first run only)
+     4. The app
+   A QR handoff jumps straight to step 3/4 — it carries a Drive
+   session from a computer that already did steps 1 and 2.
    ============================================================ */
 window.addEventListener("load", () => {
-  const notConfigured = GOOGLE_CLIENT_ID.startsWith("PASTE_");
-  if (notConfigured) $("configWarn").classList.remove("hidden");
-
-  // Prefill device name
   $("deviceName").value = getDeviceName();
 
   // The scan-to-sign-in option is for phones and iPads only.
   if (isHandheld()) $("qrLoginOption").classList.remove("hidden");
 
-  // Arrived from a scanned QR code? That beats everything else.
   const handoff = readHandoff();
   if (handoff && handoff.expired) {
     toast("That QR code has expired — show a fresh one on your computer.", "err", 6000);
@@ -660,23 +815,229 @@ window.addEventListener("load", () => {
 
   waitForGis().then(() => {
     gisReady = true;
-    if (!notConfigured) initTokenClient();
+    if (!GOOGLE_CLIENT_ID.startsWith("PASTE_")) initTokenClient();
   });
 
+  wireEvents();
+
+  // A scanned code hands over a Drive session; use it and skip the login screen.
   if (handoff && !handoff.expired) {
+    linkedViaQr = true;
     $("gateRestoring").classList.remove("hidden");
-    $("loginBtn").classList.add("hidden");
+    $("authForm").classList.add("hidden");
+    $("authTabs").classList.add("hidden");
     adoptHandoff(handoff);
-  } else if (!notConfigured && localStorage.getItem("ssw_signed_in") === "1") {
-    // Returning user? Silently restore their session — no button click and no
-    // account chooser, because we pass the email they used last time as a hint.
-    $("gateRestoring").classList.remove("hidden");
-    $("loginBtn").classList.add("hidden");
-    waitForGis().then(silentRestore);
+    return;
   }
 
-  wireEvents();
+  startFirebase();
 });
+
+/* ============================================================
+   Save Station account (Firebase Authentication)
+   ============================================================ */
+function configProblem() {
+  if (GOOGLE_CLIENT_ID.startsWith("PASTE_")) {
+    return "This site needs your Google OAuth <b>Client ID</b>. Open <code>index.html</code> " +
+           "and set <code>GOOGLE_CLIENT_ID</code>. See <code>README.md</code>.";
+  }
+  if (Object.values(FIREBASE_CONFIG).some((v) => String(v).startsWith("PASTE_"))) {
+    return "Accounts need a free <b>Firebase</b> project. Open <code>index.html</code> and fill in " +
+           "<code>FIREBASE_CONFIG</code>. The 5-minute walkthrough is in <code>README.md</code>.";
+  }
+  if (window.__fbError) {
+    return "Couldn't load Firebase (" + escapeHtml(window.__fbError) + "). Check your connection and reload.";
+  }
+  return null;
+}
+
+function showConfigWarning(msg) {
+  const el = $("configWarn");
+  el.innerHTML = "⚠️ <b>Not set up yet.</b> " + msg;
+  el.classList.remove("hidden");
+  $("authForm").classList.add("hidden");
+  $("authTabs").classList.add("hidden");
+  $("forgotBtn").classList.add("hidden");
+}
+
+async function startFirebase() {
+  if (!window.__fb && !window.__fbError) {
+    await new Promise((res) => {
+      if (window.__fb || window.__fbError) return res();
+      window.addEventListener("fb-ready", res, { once: true });
+      setTimeout(res, 8000);
+    });
+  }
+  const problem = configProblem();
+  if (problem) { showConfigWarning(problem); return; }
+
+  try {
+    const app = __fb.initializeApp(FIREBASE_CONFIG);
+    fbAuth = __fb.getAuth(app);
+    // Keep people signed in across visits and tabs.
+    await __fb.setPersistence(fbAuth, __fb.browserLocalPersistence);
+  } catch (e) {
+    showConfigWarning("Firebase wouldn't start (" + escapeHtml(e.message) + ").");
+    return;
+  }
+
+  __fb.onAuthStateChanged(fbAuth, (user) => {
+    fbUser = user || null;
+    if (!user) {
+      if (!linkedViaQr) showGate();
+      return;
+    }
+    // Signed into Save Station — now we need Drive.
+    if (accessToken) return;             // already linked in this tab
+    $("gateRestoring").classList.remove("hidden");
+    $("authForm").classList.add("hidden");
+    $("authTabs").classList.add("hidden");
+    $("forgotBtn").classList.add("hidden");
+    if (localStorage.getItem("ssw_linked") === "1") {
+      waitForGis().then(silentRestore);  // returning device: reconnect quietly
+    } else {
+      showLinkGate();
+    }
+  });
+}
+
+function showGate() {
+  $("gateRestoring").classList.add("hidden");
+  $("linkGate").classList.add("hidden");
+  $("app").classList.add("hidden");
+  $("appHeader").classList.add("hidden");
+  $("gate").classList.remove("hidden");
+  $("authForm").classList.remove("hidden");
+  $("authTabs").classList.remove("hidden");
+  $("forgotBtn").classList.remove("hidden");
+}
+
+function showLinkGate() {
+  $("gate").classList.add("hidden");
+  $("app").classList.add("hidden");
+  $("appHeader").classList.add("hidden");
+  $("linkGate").classList.remove("hidden");
+  const who = fbUser ? (fbUser.displayName || fbUser.email) : "";
+  $("linkWho").innerHTML = who ? "Signed in as <b>" + escapeHtml(who) + "</b>" : "";
+  $("linkTitle").textContent = localStorage.getItem("ssw_linked") === "1"
+    ? "Reconnect your Google Drive" : "Connect your Google Drive";
+  $("linkStatus").textContent = "";
+}
+
+function setAuthMode(mode) {
+  authMode = mode;
+  const signup = mode === "signup";
+  $("tabLogin").classList.toggle("on", !signup);
+  $("tabSignup").classList.toggle("on", signup);
+  $("nameField").classList.toggle("hidden", !signup);
+  $("pwHint").classList.toggle("hidden", !signup);
+  $("authSubmit").textContent = signup ? "Create account" : "Log in";
+  $("authPassword").setAttribute("autocomplete", signup ? "new-password" : "current-password");
+  $("forgotBtn").classList.toggle("hidden", signup);
+  $("gateBlurb").textContent = signup
+    ? "Make an account, then link the Google Drive your saves will live in."
+    : "Your game saves, versioned and backed up to your own Google Drive.";
+  clearAuthMessages();
+}
+
+function clearAuthMessages() {
+  $("authError").classList.add("hidden");
+  $("authNote").classList.add("hidden");
+}
+
+function authError(msg) {
+  $("authNote").classList.add("hidden");
+  const el = $("authError");
+  el.innerHTML = msg;
+  el.classList.remove("hidden");
+}
+
+function authNote(msg) {
+  $("authError").classList.add("hidden");
+  const el = $("authNote");
+  el.innerHTML = msg;
+  el.classList.remove("hidden");
+}
+
+// Firebase's raw codes are unhelpful to a person; say what actually went wrong.
+function friendlyAuthError(e) {
+  const code = (e && e.code) || "";
+  switch (code) {
+    case "auth/invalid-email": return "That doesn't look like a valid email address.";
+    case "auth/user-disabled": return "That account has been disabled.";
+    case "auth/user-not-found":
+    case "auth/wrong-password":
+    case "auth/invalid-credential":
+      return "Wrong email or password. Try again, or reset your password below.";
+    case "auth/email-already-in-use":
+      return "There's already an account with that email — switch to <b>Log in</b>.";
+    case "auth/weak-password": return "Pick a password of at least 8 characters.";
+    case "auth/too-many-requests":
+      return "Too many attempts. Wait a minute and try again, or reset your password.";
+    case "auth/network-request-failed": return "Network problem — check your connection and try again.";
+    case "auth/operation-not-allowed":
+      return "Email/password sign-in isn't switched on in your Firebase project yet (Authentication → Sign-in method).";
+    case "auth/unauthorized-domain":
+      return "This site's domain isn't in your Firebase <b>Authorized domains</b> list yet.";
+    default: return "Couldn't sign in: " + escapeHtml((e && e.message) || String(e));
+  }
+}
+
+async function submitAuth(ev) {
+  if (ev) ev.preventDefault();
+  if (!fbAuth) return;
+  clearAuthMessages();
+  const email = $("authEmail").value.trim();
+  const password = $("authPassword").value;
+  const name = $("authName").value.trim();
+
+  if (!email) { authError("Enter your email address."); return; }
+  if (!password) { authError("Enter your password."); return; }
+  if (authMode === "signup" && password.length < 8) {
+    authError("Pick a password of at least 8 characters."); return;
+  }
+
+  const btn = $("authSubmit");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> ' +
+    (authMode === "signup" ? "Creating your account…" : "Logging in…");
+  try {
+    if (authMode === "signup") {
+      const cred = await __fb.createUserWithEmailAndPassword(fbAuth, email, password);
+      if (name) {
+        try { await __fb.updateProfile(cred.user, { displayName: name }); } catch (e) {}
+      }
+      fbUser = fbAuth.currentUser;
+      justSignedUp = true;
+      showLinkGate();                    // sign-up always continues into linking Drive
+    } else {
+      await __fb.signInWithEmailAndPassword(fbAuth, email, password);
+      // onAuthStateChanged takes it from here.
+    }
+    $("authPassword").value = "";
+  } catch (e) {
+    authError(friendlyAuthError(e));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = authMode === "signup" ? "Create account" : "Log in";
+  }
+}
+
+async function sendReset() {
+  if (!fbAuth) return;
+  const email = $("authEmail").value.trim();
+  if (!email) { authError("Type your email address first, then hit reset."); return; }
+  try {
+    await __fb.sendPasswordResetEmail(fbAuth, email);
+    authNote("Password reset sent to <b>" + escapeHtml(email) + "</b>. Check your inbox (and spam).");
+  } catch (e) {
+    authError(friendlyAuthError(e));
+  }
+}
+
+/* ============================================================
+   Boot helpers
+   ============================================================ */
 
 function waitForGis() {
   return new Promise((resolve) => {
@@ -722,9 +1083,11 @@ function silentRestore() {
   try { tokenClient.requestAccessToken(opts); } catch (e) { showGateAgain(); }
 }
 
+// A silent Drive reconnect couldn't finish without the user — ask explicitly.
 function showGateAgain() {
   $("gateRestoring").classList.add("hidden");
-  $("loginBtn").classList.remove("hidden");
+  if (fbUser || linkedViaQr) showLinkGate();
+  else showGate();
 }
 
 // Keep the session alive: silently get a fresh token shortly before the current
@@ -743,28 +1106,31 @@ function scheduleTokenRefresh(expiresInSec) {
 }
 
 /* ============================================================
-   Auth
+   Step 2 — link the Google Drive the saves live in
    ============================================================ */
-function login() {
+function connectDrive() {
   if (GOOGLE_CLIENT_ID.startsWith("PASTE_")) {
     toast("Set your Google Client ID in index.html first (see README).", "err", 4500);
     return;
   }
   if (!tokenClient) { toast("Still loading Google sign-in… try again in a moment.", "err"); return; }
   interactiveLogin = true;
-  const opts = { prompt: "" };
+  $("linkStatus").innerHTML = '<span class="spinner"></span> Waiting for Google…';
+  // No prompt override here: this is the deliberate grant, so let Google show
+  // its account chooser and consent screen.
+  const opts = {};
   const hint = localStorage.getItem("ssw_email");
   if (hint) opts.hint = hint;
   tokenClient.requestAccessToken(opts);
 }
 
 async function onLoggedIn() {
-  localStorage.setItem("ssw_signed_in", "1");
+  localStorage.setItem("ssw_linked", "1");
   $("gate").classList.add("hidden");
+  $("linkGate").classList.add("hidden");
   $("app").classList.remove("hidden");
   $("appHeader").classList.remove("hidden");
   await loadUserProfile();
-  toast("Signed in — connecting to Drive…", "ok");
   rootFolderId = await ensureRootFolder();
 
   profile = await loadProfile();
@@ -773,7 +1139,23 @@ async function onLoggedIn() {
     startOnboarding("first");
     return;
   }
+  await stampAccount();
+  if (justSignedUp) { justSignedUp = false; toast("Drive connected ✔", "ok"); }
   enterApp();
+}
+
+// Record which Save Station account owns this Drive folder, so the app and any
+// other device can show the right name.
+async function stampAccount() {
+  if (!profile || !fbUser) return;
+  const want = {
+    uid: fbUser.uid,
+    email: fbUser.email || "",
+    name: fbUser.displayName || "",
+  };
+  const cur = profile.account || {};
+  if (cur.uid === want.uid && cur.email === want.email && cur.name === want.name) return;
+  try { profile = await saveProfile(Object.assign(profile, { account: want })); } catch (e) {}
 }
 
 function enterApp() {
@@ -785,32 +1167,53 @@ function enterApp() {
 }
 
 function signOut() {
-  localStorage.removeItem("ssw_signed_in");
+  localStorage.removeItem("ssw_linked");
   clearTimeout(refreshTimer);
   hideQrCode();
   if (accessToken) {
     try { google.accounts.oauth2.revoke(accessToken, () => {}); } catch (e) {}
   }
   accessToken = null; rootFolderId = null; profile = null; tokenExpiresAt = 0;
+  linkedViaQr = false;
   $("app").classList.add("hidden");
   $("appHeader").classList.add("hidden");
-  $("gate").classList.remove("hidden");
-  showGateAgain();
+  $("linkGate").classList.add("hidden");
+  if (fbAuth && fbUser && window.__fb) {
+    try { __fb.fbSignOut(fbAuth); } catch (e) {}
+  }
+  fbUser = null;
+  setAuthMode("login");
+  showGate();
 }
 
 async function loadUserProfile() {
+  // The header shows the Save Station account; the Google account is the
+  // storage it's linked to, shown under ⚙ Account.
   try {
     const r = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
       headers: { Authorization: "Bearer " + accessToken },
     });
     if (r.ok) {
       const u = await r.json();
-      $("userName").textContent = u.email || u.name || "";
-      $("acctEmail").textContent = u.email || u.name || "—";
+      googleEmail = u.email || u.name || "";
       if (u.email) localStorage.setItem("ssw_email", u.email);
       if (u.picture) { $("userAvatar").src = u.picture; $("userAvatar").classList.remove("hidden"); }
     }
   } catch (e) { /* non-fatal */ }
+  refreshAccountHeader();
+}
+
+function refreshAccountHeader() {
+  const name = fbUser ? (fbUser.displayName || fbUser.email || "") : "";
+  const shown = name || (profile && profile.account && (profile.account.name || profile.account.email)) ||
+                googleEmail || "Linked device";
+  $("userName").textContent = shown;
+  $("acctName").textContent = (fbUser && fbUser.displayName) ||
+    (profile && profile.account && profile.account.name) || "—";
+  $("acctEmail").textContent = (fbUser && fbUser.email) ||
+    (profile && profile.account && profile.account.email) || "—";
+  $("acctGoogle").textContent = googleEmail || localStorage.getItem("ssw_email") || "—";
+  $("acctQrNote").classList.toggle("hidden", !linkedViaQr);
 }
 
 /* ============================================================
@@ -2008,7 +2411,7 @@ function readHandoff() {
 async function adoptHandoff(h) {
   accessToken = h.token;
   tokenExpiresAt = h.tokenExpiresAt || 0;
-  localStorage.setItem("ssw_signed_in", "1");
+  localStorage.setItem("ssw_linked", "1");
   const left = (tokenExpiresAt || 0) - Math.floor(Date.now() / 1000);
   if (left > 0) scheduleTokenRefresh(left);
   try {
@@ -2156,7 +2559,26 @@ function closeScanner() {
    Events
    ============================================================ */
 function wireEvents() {
-  $("loginBtn").onclick = login;
+  // Step 1 — the Save Station account
+  $("tabLogin").onclick = () => setAuthMode("login");
+  $("tabSignup").onclick = () => setAuthMode("signup");
+  $("authForm").onsubmit = submitAuth;
+  $("forgotBtn").onclick = sendReset;
+  // Step 2 — link Drive
+  $("linkDriveBtn").onclick = connectDrive;
+  $("linkSignOutBtn").onclick = signOut;
+  $("changePwBtn").onclick = async () => {
+    if (!fbAuth || !fbUser || !fbUser.email) {
+      toast("No Save Station account on this device.", "err"); return;
+    }
+    try {
+      await __fb.sendPasswordResetEmail(fbAuth, fbUser.email);
+      toast("Password reset sent to " + fbUser.email + " ✔", "ok", 5000);
+    } catch (e) {
+      toast("Couldn't send it: " + ((e && e.message) || e), "err", 5000);
+    }
+  };
+
   $("signOutBtn").onclick = signOut;
   $("refreshBtn").onclick = loadGames;
   $("backBtn").onclick = () => {

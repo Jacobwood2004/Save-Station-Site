@@ -103,11 +103,52 @@ Full parity with the website, plus the watcher:
 - **Per-game download folders** — a fixed path per game (saved in
   `%USERPROFILE%\.save_station\config.json`).
 
+## Scopes and publishing
+
+The app asks for **`drive.file`** — read and write, but only for files this
+project created. It cannot see anything else in your Drive.
+
+That's the same non-sensitive scope the website uses, and it's deliberate. The
+full `drive` scope this app used to request is **restricted**: because the OAuth
+consent screen is shared by every client in the Cloud project, leaving it in the
+project's scope list would drag the whole project into Google's verification
+process the moment you publish the consent screen — potentially including a paid
+third-party security assessment.
+
+With only `drive.file` in the project you can publish freely: no review, no fee,
+and no manual test-user list, so anyone can sign themselves in.
+
+**After switching, sign in once more.** Tokens cached from the old broader scope
+no longer satisfy the new one, so the app will ask you to sign in again — once.
+
+**If you're upgrading**, also remove `.../auth/drive` from
+*Google Cloud console → APIs & Services → OAuth consent screen → Scopes*,
+leaving `drive.file`. Publishing while the restricted scope is still listed is
+the thing that triggers verification.
+
+## I can't see my saves
+
+`drive.file` only shows an app the files **this Cloud project** created, so if the
+app starts up and can't find your `Save Station Web Saves` folder, it makes a new
+one and tells you it did.
+
+Almost always that means **the app is signed in to a different Google account
+than the website**. Hit *Sign out*, then sign in with the same account and the
+folder appears.
+
+If it happens even with the right account, the two OAuth clients aren't sharing
+per-file access. Either do your uploads from one place, or set
+
+```python
+SCOPES = ["https://www.googleapis.com/auth/drive"]
+```
+
+back in `save_station.py` for personal use — just keep the consent screen in
+**Testing** mode if you do, since that restricted scope is what makes publishing
+expensive.
+
 ## Notes
 
-- The app uses the full read-write `drive` scope so it can upload as well as
-  download. This is a restricted scope, so you'll see the same
-  "unverified app → Advanced → continue" screen on first sign-in.
 - Because Google can't reliably read a game's title out of a raw `.sav`, the
   game name is taken from the **file name** (editable before upload), and the
   device is this PC's Windows name (editable, remembered).

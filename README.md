@@ -1,14 +1,17 @@
 # 🎮 Save Station Web
 
 Back up your console and emulator saves to your own **Google Drive**.
-Sign in with Google, drop in a save, and it's versioned in a per-game folder so
-you can restore any backup from any device — and see which device each one came from.
+Make an account, link your Drive, drop in a save, and it's versioned in a
+per-game folder so you can restore any backup from any device — and see which
+device each one came from.
 
+- **Real accounts.** Email and password, with a sign-up page; Google Drive is
+  linked to your account as the storage, not used as the login.
 - **Sign in once.** After that you're signed back in automatically, on the site
   and in the Windows app.
 - **Your Drive is the storage.** On first use it creates a folder named
-  **`Save Station Web Saves`**. Nothing is stored on this site's server — there
-  isn't one. The page talks straight to Google from your browser.
+  **`Save Station Web Saves`**. No save file ever touches this site's server —
+  there isn't one. The page talks straight to Google from your browser.
 - **Ten consoles supported** (below), including the ones whose saves are folders.
 - **Per-game folders + full history.** Each game gets its own subfolder; every
   upload is a new timestamped file, so old backups are never overwritten.
@@ -46,10 +49,21 @@ extract it straight into the linked folder for you.
 
 ## Your account
 
-Signing in with Google *is* the account — there's no separate password to make.
-The first time you sign in, Save Station asks **which consoles you plan to keep
-saves for** and writes your answer to a small `station.json` inside your
-`Save Station Web Saves` folder.
+Save Station has its own accounts — **email and password**, with a sign-up page.
+Opening the site gives you a **Log in / Create account** screen, not a Google
+button.
+
+Creating an account is two steps:
+
+1. **Make the account** — display name, email, password.
+2. **Link your Google Drive** — this is where the saves actually go, so sign-up
+   walks straight into it. You can't finish without it.
+
+Then it asks **which consoles you plan to keep saves for** and writes your answer
+to a small `station.json` inside your `Save Station Web Saves` folder.
+
+Keeping the two separate is deliberate: the Save Station account is your
+identity, and Google Drive is just the storage it's pointed at.
 
 Because that file lives in your Drive rather than on a server:
 
@@ -86,7 +100,47 @@ third-party scripts, so your session never leaves this origin.
 
 ---
 
-## Setup — get your Google Client ID (about 5 minutes)
+## Setup 1 of 2 — Firebase, for the accounts (about 5 minutes)
+
+Accounts need somewhere to check the password, and a static site can't do that on
+its own. Firebase Authentication handles it without you running a server.
+
+**This is free.** The Spark plan covers email/password sign-in and password-reset
+emails, and it doesn't ask for a credit card. Firebase only stores accounts — a
+few hundred bytes each. Your saves never touch it; they go straight from the
+browser into each user's own Drive.
+
+1. Go to <https://console.firebase.google.com> → **Add project**.
+   Pick the **same Google Cloud project** you already made for the Drive API and
+   Firebase will just attach itself to it.
+2. **Build → Authentication → Get started**.
+3. **Sign-in method** tab → **Email/Password** → toggle **Enable** → **Save**.
+   (Leave "Email link / passwordless" off.)
+4. **Settings → Authorized domains** → **Add domain** → `YOURNAME.github.io`.
+   `localhost` is already on the list for local testing.
+5. **Project settings** (⚙ top left) → scroll to **Your apps** → click the
+   **web** icon `</>` → give it a nickname → **Register app**.
+6. Copy the `firebaseConfig` values it shows you into `index.html`:
+   ```js
+   const FIREBASE_CONFIG = {
+     apiKey: "AIza…",
+     authDomain: "your-project.firebaseapp.com",
+     projectId: "your-project",
+     appId: "1:123…:web:abc…",
+   };
+   ```
+
+> These four values are **public identifiers, not secrets** — Firebase web apps
+> are designed to ship them in the page, and what actually protects your data is
+> the Drive `drive.file` scope plus your Firebase sign-in settings. There is no
+> secret to leak here.
+
+Until you fill them in, the site shows a "Not set up yet" notice instead of a
+login form, so nobody hits a box that can't work.
+
+---
+
+## Setup 2 of 2 — get your Google Client ID (about 5 minutes)
 
 You need one free Google OAuth "Web" client ID. Do this once:
 
@@ -95,8 +149,10 @@ You need one free Google OAuth "Web" client ID. Do this once:
 3. **Configure the consent screen:** APIs & Services → OAuth consent screen.
    - User type **External**, fill in the app name + your email.
    - Add the scopes `.../auth/drive.file` and `userinfo.email` (optional).
-   - Under **Test users**, add your own Google account. (Keeps it in "Testing"
-     mode — fine for personal use, no Google verification needed.)
+     **Only `drive.file`** — do not add `.../auth/drive`; it's a *restricted*
+     scope and listing it is what forces Google's verification review.
+   - Then hit **Publish app** (status becomes "In production"). See
+     "Letting other people sign in" below for why.
 4. **Create the client ID:** APIs & Services → Credentials →
    **Create Credentials → OAuth client ID → Web application**.
    - Under **Authorized JavaScript origins**, add the exact origin you'll open
@@ -159,8 +215,13 @@ that hasn't actually changed.
 ## Windows companion app
 
 See [`windows-app/BUILD.md`](windows-app/BUILD.md) to run it or build the `.exe`.
-It signs into the same account, reads the same `station.json`, and adds the one
-thing a website can't do: **watching your save files**.
+It reads the same `station.json` and adds the one thing a website can't do:
+**watching your save files**.
+
+> **Note:** the desktop app still signs in with Google directly — it doesn't yet
+> show the Save Station email/password screen the website does. It reaches the
+> same Drive folder and the same profile, so everything stays in sync; it just
+> skips the account front door. Bringing it in line is a follow-up.
 
 Link a game to its save file on your PC and the app checks it every few seconds.
 When you play and the game writes its save, it waits for the writing to finish
@@ -176,11 +237,41 @@ the linked save (keeping a copy of the old one first).
 
 ---
 
+## Letting other people sign in
+
+**Your users never do any of the setup above.** They open the site, create an
+account, click **Connect Google Drive**, and approve Google's consent screen.
+No Cloud console, no client ID, no secret — and you never see or touch their
+Google account.
+
+One thing gates that: while the OAuth consent screen sits in **Testing** mode,
+only Google accounts you've manually pasted into the **Test users** list can sign
+in at all — capped at 100. So publish it:
+
+> Google Cloud console → APIs & Services → **OAuth consent screen** → **Publish app**
+
+Because this project only uses the non-sensitive `drive.file` scope, publishing
+needs **no verification review and costs nothing**. Check the **Scopes** list
+first and remove `.../auth/drive` if it's there — that one is restricted, and
+it's the thing that would force a review (and possibly a paid security
+assessment) for the whole project.
+
+Publishing is worth doing even if it's only ever you: in Testing mode Google
+expires refresh tokens after **7 days**, which would make the desktop app ask you
+to sign in again every week.
+
+---
+
 ## Privacy note
 
-The website uses the **`drive.file`** scope — it can only see files **it**
-creates. It can't read the rest of your Drive. The Windows app uses full Drive
-access so it can find the folder the website made and upload into it.
+Both the website and the Windows app use the **`drive.file`** scope — they can
+only see files **they** create, never the rest of your Drive.
+
+That also keeps the project free to run. `drive.file` is a **non-sensitive**
+scope, so once you publish the consent screen (below) there's no verification
+review, no fee, and no list of approved testers to maintain: anyone can make
+their own account and connect their own Drive with no involvement from you. You
+never see or touch anyone else's Google account.
 
 Nothing — not your saves, not your console picks, not your email — is ever sent
 anywhere except Google Drive, under your own account.

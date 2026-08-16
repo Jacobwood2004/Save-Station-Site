@@ -53,10 +53,18 @@ try:
 except Exception:
     HAVE_PIL = False
 
-# Read + write, so the app can upload as well as download. (Restricted scope —
-# same "unverified app / Advanced" flow as before.)
-SCOPES = ["https://www.googleapis.com/auth/drive"]
+# drive.file — read + write, but ONLY for files this project created. It cannot
+# see the rest of your Drive. Deliberately the same non-sensitive scope the
+# website uses: full "drive" is a restricted scope, which would drag the whole
+# Cloud project into Google's verification process once the consent screen is
+# published. See BUILD.md → "Scopes and publishing".
+SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 ROOT_FOLDER_NAME = "Save Station Web Saves"
+
+# If this PC previously signed in with the broader "drive" scope, Google may hand
+# back a token still carrying it. Without this, oauthlib treats the wider grant as
+# a mismatch and raises instead of accepting the sign-in.
+os.environ.setdefault("OAUTHLIB_RELAX_TOKEN_SCOPE", "1")
 PROFILE_FILE = "station.json"
 
 APP_DIR = os.path.join(os.path.expanduser("~"), ".save_station")
@@ -351,6 +359,7 @@ def hash_file(path):
 class Drive:
     def __init__(self):
         self.service = None
+        self.root_created = False
 
     def has_cached_token(self):
         return os.path.exists(TOKEN_PATH)
@@ -423,11 +432,20 @@ class Drive:
         return self.service.files().create(body=meta, fields="id").execute()["id"]
 
     def ensure_root(self):
+        """Find the Save Station folder, creating it if this account has none.
+
+        Sets `root_created` so the caller can tell "brand new setup" apart from
+        "found the existing folder" — with drive.file we only ever see files this
+        project made, so a miss is worth mentioning rather than silently making a
+        second folder the user never finds."""
         rid = self.find_root()
         if rid:
+            self.root_created = False
             return rid
         meta = {"name": ROOT_FOLDER_NAME, "mimeType": "application/vnd.google-apps.folder"}
-        return self.service.files().create(body=meta, fields="id").execute()["id"]
+        rid = self.service.files().create(body=meta, fields="id").execute()["id"]
+        self.root_created = True
+        return rid
 
     def list_subfolders(self, parent_id):
         q = ("mimeType='application/vnd.google-apps.folder' and trashed=false "
@@ -1037,6 +1055,19 @@ class App(tk.Tk):
             self.root_id, self.profile, email = payload
             self.show_main()
             self.set_status(f"Signed in{(' — ' + email) if email else ''} ✔")
+            # We had to make the folder ourselves and there's no profile in it —
+            # so either this really is a first run, or the website's folder is
+            # sitting in a different Google account. Say so once, plainly.
+            if self.drive.root_created and not self.profile:
+                messagebox.showinfo(
+                    "New Save Station folder",
+                    f'Created a fresh "{ROOT_FOLDER_NAME}" folder in this Google '
+                    "account's Drive.\n\n"
+                    "If you already have saves from the website and don't see them "
+                    "here, this app is probably signed in to a different Google "
+                    "account — use Sign out, then sign in with the same one the "
+                    "website uses.\n\n"
+                    "See BUILD.md → \"I can't see my saves\".")
             if not self.profile:
                 # Brand-new account → ask which consoles, same as the website.
                 self.ask_consoles(first_run=True)
