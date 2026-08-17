@@ -811,6 +811,19 @@ const FIREBASE_CONFIG = {
   appId: "1:592025400935:web:ff6a529aff3c32a029c6c2",
 };
 
+/* ============================================================
+   Optional: the Drive token broker (worker/ in this repo).
+
+   Leave blank and the site behaves as it always has — Google
+   hands the browser a one-hour token and you reconnect when it
+   lapses. Point it at your deployed Worker and the Drive link
+   becomes permanent, because a refresh token can then live
+   somewhere Google is willing to put one: a server.
+
+   e.g. "https://save-station-drive.yourname.workers.dev"
+   ============================================================ */
+const WORKER_URL = "";
+
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 const SCOPES = "https://www.googleapis.com/auth/drive.file";
 const PROFILE_FILE = "station.json";
@@ -1007,6 +1020,19 @@ window.addEventListener("load", () => {
   // The scan-to-sign-in option is for phones and iPads only.
   if (isHandheld()) $("qrLoginOption").classList.remove("hidden");
 
+  // Coming back from Google via the broker?
+  const driveResult = readDriveResult();
+  if (driveResult && driveResult !== "ok") {
+    const why = {
+      denied: "You didn't approve Google Drive access, so nothing was linked.",
+      expired: "That link attempt timed out — try Connect Google Drive again.",
+      no_refresh_token: "Google didn't return a lasting permission. Try again, and approve on the consent screen.",
+      exchange_failed: "Google refused the link. Check the Worker's client secret.",
+      bad_request: "That link came back malformed — try again.",
+    }[driveResult] || ("Linking failed: " + driveResult);
+    toast(why, "err", 8000);
+  }
+
   const handoff = readHandoff();
   if (handoff && handoff.expired) {
     toast("That QR code has expired — show a fresh one on your computer.", "err", 6000);
@@ -1094,13 +1120,23 @@ async function startFirebase() {
     $("authTabs").classList.add("hidden");
     $("forgotBtn").classList.add("hidden");
 
-    // Still holding a live token from earlier in this tab? Walk straight in.
+    // With the broker in play, Drive access is permanent: ask it for a token
+    // and we're in, however long it's been.
+    if (workerEnabled()) {
+      refreshDriveToken().then((ok) => {
+        if (ok) { onLoggedIn().catch(driveStartupFailed); return; }
+        showLinkGate();
+      });
+      return;
+    }
+
+    // Still holding a live token? Walk straight in.
     const cached = cachedDriveToken();
     if (cached) {
       accessToken = cached.t;
       tokenExpiresAt = cached.e;
       scheduleTokenRefresh(cached.e - Math.floor(Date.now() / 1000));
-      onLoggedIn();
+      onLoggedIn().catch(driveStartupFailed);
       return;
     }
     if (localStorage.getItem("ssw_linked") === "1") {
@@ -1109,6 +1145,14 @@ async function startFirebase() {
       showLinkGate();
     }
   });
+}
+
+// A stored token that Drive won't accept: drop it and ask for a real link
+// rather than leaving a half-signed-in screen.
+function driveStartupFailed(e) {
+  clearDriveToken();
+  showLinkGate();
+  $("linkStatus").textContent = "That Drive session had expired — connect again.";
 }
 
 function showGate() {
@@ -1370,7 +1414,9 @@ function scheduleTokenRefresh(expiresInSec) {
   clearTimeout(refreshTimer);
   const ms = Math.max((expiresInSec - 120) * 1000, 30000);
   refreshTimer = setTimeout(() => {
-    if (accessToken && tokenClient) {
+    if (!accessToken) return;
+    if (workerEnabled()) { refreshDriveToken(); return; }
+    if (tokenClient) {
       const opts = { prompt: "" };
       const hint = localStorage.getItem("ssw_email");
       if (hint) opts.hint = hint;
@@ -1383,6 +1429,7 @@ function scheduleTokenRefresh(expiresInSec) {
    Step 2 — link the Google Drive the saves live in
    ============================================================ */
 function connectDrive() {
+  if (workerEnabled()) { connectDriveViaWorker(); return; }
   if (GOOGLE_CLIENT_ID.startsWith("PASTE_")) {
     toast("Set your Google Client ID in index.html first (see README).", "err", 4500);
     return;
@@ -1480,6 +1527,80 @@ function markNav(view) {
   });
 }
 
+/* ============================================================
+   Drive token broker client
+   ============================================================ */
+function workerEnabled() { return /^https?:\/\/\S+/.test(WORKER_URL); }
+function workerPath(p) { return WORKER_URL.replace(/\/+$/, "") + p; }
+
+// Proves to the Worker who's asking. Firebase signs this; the Worker checks the
+// signature against Google's keys, so it can't be faked.
+async function firebaseIdToken() {
+  if (!fbUser || !fbUser.getIdToken) return null;
+  try { return await fbUser.getIdToken(); } catch (e) { return null; }
+}
+
+// { token, expiresIn } | { notLinked:true } | null
+async function workerAccessToken() {
+  const idt = await firebaseIdToken();
+  if (!idt) return null;
+  let r;
+  try {
+    r = await fetch(workerPath("/token"), {
+      method: "POST", headers: { Authorization: "Bearer " + idt },
+    });
+  } catch (e) { return null; }
+  if (r.status === 404) return { notLinked: true };
+  if (!r.ok) return null;
+  try {
+    const d = await r.json();
+    return d.access_token ? { token: d.access_token, expiresIn: d.expires_in || 3600 } : null;
+  } catch (e) { return null; }
+}
+
+// Send the user to Google to grant offline access, via the Worker.
+async function connectDriveViaWorker() {
+  const idt = await firebaseIdToken();
+  if (!idt) { toast("Sign in first.", "err"); return; }
+  $("linkStatus").innerHTML = '<span class="spinner"></span> Taking you to Google…';
+  try {
+    const r = await fetch(workerPath("/link/start"), {
+      method: "POST", headers: { Authorization: "Bearer " + idt },
+    });
+    if (!r.ok) throw new Error("broker said " + r.status);
+    const d = await r.json();
+    if (!d.url) throw new Error("no authorization URL came back");
+    location.href = d.url;
+  } catch (e) {
+    $("linkStatus").textContent = "";
+    toast("Couldn't reach the Drive broker: " + ((e && e.message) || e), "err", 6000);
+  }
+}
+
+// One way to get a usable token, whichever mode we're in.
+async function refreshDriveToken() {
+  if (workerEnabled()) {
+    const got = await workerAccessToken();
+    if (got && got.token) {
+      accessToken = got.token;
+      tokenExpiresAt = Math.floor(Date.now() / 1000) + got.expiresIn;
+      cacheDriveToken();
+      scheduleTokenRefresh(got.expiresIn);
+      return true;
+    }
+    return false;
+  }
+  return await refreshTokenNow();
+}
+
+// Google bounced back through the Worker; the fragment says how it went.
+function readDriveResult() {
+  const m = (location.hash || "").match(/^#drive=(\w+)$/);
+  if (!m) return null;
+  try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+  return m[1];
+}
+
 /* Drive token lifetime -------------------------------------------------------
    Browsers never get a refresh token, so the Drive session can't survive
    forever on its own. Two things keep you from re-approving Google constantly:
@@ -1511,10 +1632,19 @@ function clearDriveToken() {
 }
 
 // Deliberately give up Drive access. Separate from signing out.
-function disconnectDrive() {
+async function disconnectDrive() {
   if (!confirm("Disconnect Google Drive?\n\nYour saves stay safely in your Drive — this only unlinks it " +
                "from Save Station. You'll be asked to approve Google again next time you sign in.")) return;
-  if (accessToken) {
+  if (workerEnabled()) {
+    // Tell the broker to forget (and revoke) the stored refresh token, or it
+    // would happily keep minting access tokens after we'd "disconnected".
+    const idt = await firebaseIdToken();
+    if (idt) {
+      try {
+        await fetch(workerPath("/unlink"), { method: "POST", headers: { Authorization: "Bearer " + idt } });
+      } catch (e) { toast("Couldn't reach the broker — try again in a moment.", "err", 5000); return; }
+    }
+  } else if (accessToken) {
     try { google.accounts.oauth2.revoke(accessToken, () => {}); } catch (e) {}
   }
   localStorage.removeItem("ssw_linked");
@@ -2840,7 +2970,7 @@ async function showQrCode() {
     $("qrArea").classList.remove("hidden");
     $("showQrBtn").classList.add("hidden");
     $("qrBox").innerHTML = '<div class="qr-expired" style="width:232px;"><span class="spinner"></span><br>Refreshing…</div>';
-    const ok = await refreshTokenNow();
+    const ok = await refreshDriveToken();
     h = ok ? handoffUrl() : null;
     if (!h) {
       hideQrCode();
