@@ -74,6 +74,21 @@
   .btn-ghost.danger:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
   .sr-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
+  /* Choice modal — for the questions a native confirm()'s two buttons can't
+     ask. Options stack, so the destructive one is never the reflex click. */
+  .modal-back {
+    position: fixed; inset: 0; z-index: 60; display: grid; place-items: center;
+    background: rgba(8,11,16,.68); backdrop-filter: blur(6px); padding: 20px;
+  }
+  .modal-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 18px;
+    padding: 24px; width: 100%; max-width: 460px; box-shadow: 0 24px 60px rgba(0,0,0,.5);
+  }
+  .modal-card h3 { margin: 0 0 10px; font-size: 18px; word-break: break-word; }
+  .modal-body { font-size: 13.5px; color: var(--muted); line-height: 1.65; }
+  .modal-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
+  .modal-actions button { width: 100%; justify-content: center; padding: 11px 14px; }
+
   header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 16px 24px; border-bottom: 1px solid var(--border);
@@ -827,7 +842,7 @@
           <button class="btn-ghost btn-sm" id="pinGameBtn">📌 Pin</button>
           <button class="btn-ghost btn-sm" id="setCoverBtn">🖼️ Add cover</button>
           <button class="btn-ghost btn-sm" id="downloadLatestBtn">⬇ Download latest</button>
-          <button class="btn-ghost btn-sm danger hidden" id="deleteGameBtn">🗑 Delete game</button>
+          <button class="btn-ghost btn-sm danger" id="deleteGameBtn">🗑 Delete game</button>
         </div>
       </div>
     </div>
@@ -842,6 +857,15 @@
 </main>
 
 <div id="toast"></div>
+
+<!-- Choice modal (see askChoice) -->
+<div class="modal-back hidden" id="modalBack">
+  <div class="modal-card">
+    <h3 id="modalTitle"></h3>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
 
 <script>
 /* ============================================================
@@ -881,6 +905,10 @@ const FIREBASE_CONFIG = {
 const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
+// Deleting a game while keeping its saves parks the whole game folder in here,
+// still inside your Drive and still named after the game. Adding that game back
+// pulls it out again, history intact.
+const ARCHIVE_FOLDER_NAME = "Archived games";
 const SCOPES = "https://www.googleapis.com/auth/drive.file";
 const PROFILE_FILE = "station.json";
 
@@ -1970,6 +1998,49 @@ async function ensureRootFolder() {
   return await ensureFolder(ROOT_FOLDER_NAME, null);
 }
 
+async function ensureArchiveFolder() {
+  return await ensureFolder(ARCHIVE_FOLDER_NAME, rootFolderId, { role: "archive" });
+}
+
+// Drive has no "move" — a move is a reparent, both ends named explicitly.
+async function moveFolder(id, addParent, removeParent) {
+  const url = "https://www.googleapis.com/drive/v3/files/" + id +
+    "?addParents=" + encodeURIComponent(addParent) +
+    "&removeParents=" + encodeURIComponent(removeParent) + "&fields=id";
+  await driveFetch(url, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
+  });
+}
+
+// Retire a game without touching a single save: the folder and everything in
+// it slides into the archive.
+async function archiveGameFolder(folderId, name, consoleId) {
+  const archiveId = await ensureArchiveFolder();
+  await moveFolder(folderId, archiveId, rootFolderId);
+  const props = { role: "archived", game: name, archivedAt: new Date().toISOString() };
+  if (consoleId) props.console = consoleId;
+  try { await setFolderProps(folderId, props); } catch (e) {}
+}
+
+/* Adding a game back should bring its history with it, so every genuinely new
+   game looks in the archive first. One extra listing, and only when the game
+   isn't already in the library — the common case costs nothing.
+   Matching is on the sanitised name, case-insensitively, because that's what
+   the folder was named when it went in. */
+async function restoreArchivedGame(name) {
+  const archiveId = await findFolder(ARCHIVE_FOLDER_NAME, rootFolderId);
+  if (!archiveId) return null;
+  const wanted = sanitizeFolderName(name).toLowerCase();
+  const hit = (await listSubfolders(archiveId)).find((f) => f.name.toLowerCase() === wanted);
+  if (!hit) return null;
+  await moveFolder(hit.id, rootFolderId, archiveId);
+  // null clears a key in Drive's appProperties map, so the archive stamp goes.
+  try { await setFolderProps(hit.id, { role: "game", archivedAt: null }); } catch (e) {}
+  return hit.id;
+}
+
 async function listSubfolders(parentId) {
   const q = "mimeType='application/vnd.google-apps.folder' and trashed=false and '" + parentId + "' in parents";
   const url = "https://www.googleapis.com/drive/v3/files?q=" + encodeURIComponent(q) +
@@ -2823,8 +2894,18 @@ async function doUpload() {
 
   try {
     const { blob, filename, isFolder } = await selectionToBlob(selectedUpload);
-    const gameFolderId = await ensureFolder(sanitizeFolderName(gameName), rootFolderId,
-                                            { console: consoleId, role: "game" });
+    const folderName = sanitizeFolderName(gameName);
+    // Already in the library? Use it. Only a genuinely new game pays for the
+    // archive lookup — and if it's in there, it comes back with its history.
+    let gameFolderId = await findFolder(folderName, rootFolderId);
+    let restored = false;
+    if (!gameFolderId) {
+      gameFolderId = await restoreArchivedGame(gameName);
+      restored = !!gameFolderId;
+    }
+    if (!gameFolderId) {
+      gameFolderId = await createFolder(folderName, rootFolderId, { console: consoleId, role: "game" });
+    }
     // Make sure an existing folder learns its console too.
     try { await setFolderProps(gameFolderId, { console: consoleId, role: "game" }); } catch (e) {}
 
@@ -2846,7 +2927,9 @@ async function doUpload() {
     if (label) appProperties.label = label;
     await uploadSave(gameFolderId, versionedName, blob, appProperties);
     $("uploadStatus").textContent = "";
-    toast("Saved “" + gameName + "” backup to Drive ✔", "ok");
+    toast(restored
+      ? "📦 Welcome back — “" + gameName + "” came out of " + ARCHIVE_FOLDER_NAME + " with its old backups ✔"
+      : "Saved “" + gameName + "” backup to Drive ✔", "ok", restored ? 6000 : 3000);
     clearFile();
     $("uploadPanel").classList.add("hidden");
     await loadGames();
@@ -2911,19 +2994,57 @@ async function uploadToGame(folderId, selection) {
   }
 }
 
-// Delete a game — only allowed when it has no saves.
-async function deleteEmptyGame() {
+/* Deleting a game is two questions, deliberately. The first is whether to
+   remove it at all; the second is what happens to the backups, which is the
+   part that's actually irreversible. Neither can be answered by accident. */
+async function deleteGame() {
   if (!currentHistory.folderId) return;
-  if (currentHistory.saves.length) { toast("This game still has saves — delete them first.", "err"); return; }
-  if (!confirm('Delete the game "' + currentHistory.name + '"?\n\nThe empty game folder will be moved to your Google Drive trash.')) return;
+  const name = currentHistory.name;
+  const n = currentHistory.saves.length;
+
+  const sure = await askChoice(
+    'Delete "' + name + '"?',
+    n
+      ? "It has <b>" + n + " backup" + (n > 1 ? "s" : "") + "</b>. You'll choose what happens to " +
+        (n > 1 ? "them" : "it") + " next."
+      : "This game has no backups yet.",
+    [
+      { label: "Yes, delete the game", value: "yes", className: "btn-primary" },
+      { label: "Cancel", value: null },
+    ]
+  );
+  if (sure !== "yes") return;
+
+  // No saves, nothing to decide — the folder just goes.
+  let mode = "delete";
+  if (n) {
+    mode = await askChoice(
+      "What about the saves?",
+      "<b>Keep them</b> and the backups move to <b>" + escapeHtml(ARCHIVE_FOLDER_NAME) + "</b> in your " +
+      "Drive, still under the game's own name. Add the game back later and they return with it." +
+      "<br><br><b>Delete them</b> and the whole folder goes to your Drive trash, where it's " +
+      "recoverable for 30 days.",
+      [
+        { label: "📦 Keep the saves", value: "archive", className: "btn-primary" },
+        { label: "🗑 Delete the saves too", value: "delete", className: "btn-ghost danger" },
+        { label: "Cancel", value: null },
+      ]
+    );
+    if (mode !== "archive" && mode !== "delete") return;
+  }
+
   try {
-    await trashFile(currentHistory.folderId);
-    toast("Game deleted", "ok");
-    $("historyView").classList.add("hidden");
-    $("gamesView").classList.remove("hidden");
-    await loadGames();
+    if (mode === "archive") {
+      await archiveGameFolder(currentHistory.folderId, name, currentHistory.console);
+      toast("📦 “" + name + "” archived — its saves are safe in " + ARCHIVE_FOLDER_NAME, "ok", 5500);
+    } else {
+      await trashFile(currentHistory.folderId);
+      toast("“" + name + "” deleted", "ok");
+    }
+    navigate("games");
+    await loadGames();   // also drops the pin, via pruneStalePins
   } catch (e) {
-    toast("Delete failed: " + e.message, "err");
+    toast("Delete failed: " + e.message, "err", 5000);
   }
 }
 
@@ -2946,7 +3067,9 @@ async function loadGames() {
   const c = $("gamesContainer");
   c.innerHTML = '<div class="empty"><span class="spinner"></span> Loading your games…</div>';
   try {
-    const folders = await listSubfolders(rootFolderId);
+    // The archive sits alongside the games in the same root; it isn't one.
+    const folders = (await listSubfolders(rootFolderId)).filter((f) =>
+      f.name !== ARCHIVE_FOLDER_NAME && !(f.appProperties && f.appProperties.role === "archive"));
     if (!folders.length) {
       allGames = [];
       $("sbGameCount").textContent = "";
@@ -3077,11 +3200,9 @@ async function openHistory(folderId, name, consoleId) {
     if (!saves.length) {
       c.innerHTML = '<div class="empty"><div class="e-icon">📭</div>No backups for this game yet.</div>';
       $("downloadLatestBtn").disabled = true;
-      $("deleteGameBtn").classList.remove("hidden");  // only deletable when empty
       return;
     }
     $("downloadLatestBtn").disabled = false;
-    $("deleteGameBtn").classList.add("hidden");
     c.innerHTML = '<div class="history-list">' + saves.map((s, i) => {
       const p = s.appProperties || {};
       const device = p.device || "Unknown device";
@@ -3440,7 +3561,7 @@ function wireEvents() {
       uploadToGame(currentHistory.folderId, sel);
     }
   };
-  $("deleteGameBtn").onclick = deleteEmptyGame;
+  $("deleteGameBtn").onclick = deleteGame;
 
   // Sidebar
   $("sbToggle").onclick = () => setSidebarCollapsed(!document.body.classList.contains("sb-collapsed"));
@@ -3554,6 +3675,41 @@ function emojiFor(name, con) {
 
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 function escapeAttr(s) { return escapeHtml(s); }
+
+/* A confirm() that can ask more than a yes/no. Resolves to the chosen value,
+   or null if they backed out — Escape, the backdrop, or an explicit Cancel.
+   Backing out always means "do nothing", so there's no way to destroy
+   something by dismissing a dialog. */
+function askChoice(title, bodyHtml, options) {
+  return new Promise((resolve) => {
+    const back = $("modalBack");
+    $("modalTitle").textContent = title;
+    $("modalBody").innerHTML = bodyHtml;
+    const acts = $("modalActions");
+    acts.innerHTML = "";
+    let settled = false;
+    const finish = (v) => {
+      if (settled) return;
+      settled = true;
+      back.classList.add("hidden");
+      document.removeEventListener("keydown", onKey);
+      resolve(v === undefined ? null : v);
+    };
+    const onKey = (e) => { if (e.key === "Escape") finish(null); };
+    options.forEach((o) => {
+      const b = document.createElement("button");
+      b.className = o.className || "btn-ghost";
+      b.textContent = o.label;
+      b.onclick = () => finish(o.value);
+      acts.appendChild(b);
+    });
+    back.onclick = (e) => { if (e.target === back) finish(null); };
+    document.addEventListener("keydown", onKey);
+    back.classList.remove("hidden");
+    const first = acts.querySelector("button");
+    if (first) first.focus();
+  });
+}
 
 let toastTimer = null;
 function toast(msg, type, ms) {
