@@ -120,7 +120,15 @@
   }
   .sb-toggle:hover { color: var(--text); }
 
-  .sb-nav { padding: 6px 10px; display: flex; flex-direction: column; gap: 3px; }
+  /* The nav is the part that scrolls: pinned games and ten consoles can
+     easily outrun a short viewport, and the footer must stay put. */
+  .sb-nav {
+    padding: 6px 10px; display: flex; flex-direction: column; gap: 3px;
+    flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  }
+  .sb-nav::-webkit-scrollbar { width: 8px; }
+  .sb-nav::-webkit-scrollbar-thumb { background: var(--panel-2); border-radius: 8px; }
+  .sb-group { display: flex; flex-direction: column; gap: 3px; }
   .sb-sec {
     font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted);
     padding: 14px 10px 6px; font-weight: 700; white-space: nowrap; overflow: hidden;
@@ -131,6 +139,8 @@
     padding: 10px 11px; font-size: 14px; text-align: left; white-space: nowrap; overflow: hidden;
   }
   .sb-item .sb-ico { width: 22px; flex-shrink: 0; display: grid; place-items: center; font-size: 16px; }
+  /* Game names run long; clip rather than let a row break the column. */
+  .sb-item .sb-label { overflow: hidden; text-overflow: ellipsis; }
   .sb-item:hover { background: var(--panel-2); color: var(--text); }
   .sb-item.on { background: rgba(124,92,255,.16); color: #c7b8ff; }
   .sb-item .sb-count {
@@ -138,7 +148,22 @@
     background: var(--panel-2); border-radius: 20px; padding: 2px 8px;
   }
 
-  .sb-spacer { flex: 1; }
+  /* Trailing control on a nav row. Counts sit quietly; the unpin button
+     stays hidden until you're actually on the row, so the pinned list reads
+     as names rather than a column of buttons. */
+  .sb-item .sb-pin {
+    margin-left: auto; flex-shrink: 0; opacity: 0; transition: opacity .12s;
+    font-size: 12px; color: var(--muted); padding: 2px 5px; border-radius: 6px; background: none;
+  }
+  .sb-item:hover .sb-pin { opacity: .75; }
+  .sb-item .sb-pin:hover { opacity: 1; color: #ff8f8f; background: var(--panel); }
+  .sb-ico-img { display: grid; place-items: center; }
+  .sb-empty {
+    font-size: 11px; color: var(--muted); padding: 2px 11px 6px;
+    line-height: 1.5; white-space: normal;
+  }
+  .sidebar.collapsed .sb-empty { display: none; }
+
   .sb-foot { padding: 10px; border-top: 1px solid var(--border); }
   .sb-user { display: flex; align-items: center; gap: 10px; padding: 8px 10px; overflow: hidden; }
   .sb-user img { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; }
@@ -151,7 +176,8 @@
   .sidebar.collapsed .sb-label,
   .sidebar.collapsed .sb-sec,
   .sidebar.collapsed .sb-count,
-  .sidebar.collapsed .sb-who { display: none; }
+  .sidebar.collapsed .sb-who,
+  .sidebar.collapsed .sb-pin { display: none; }
   .sidebar.collapsed .sb-item { justify-content: center; padding: 10px 0; }
   .sidebar.collapsed .sb-head { justify-content: center; padding: 16px 0; }
   .sidebar.collapsed .sb-user { justify-content: center; padding: 8px 0; }
@@ -165,7 +191,8 @@
     .sidebar { width: 68px; }
     main#app, body.sb-collapsed main#app { margin-left: 68px; }
     .sidebar .sb-title, .sidebar .sb-label, .sidebar .sb-sec,
-    .sidebar .sb-count, .sidebar .sb-who { display: none; }
+    .sidebar .sb-count, .sidebar .sb-who, .sidebar .sb-empty,
+    .sidebar .sb-pin { display: none; }
     .sidebar .sb-item { justify-content: center; padding: 10px 0; }
     .sidebar .sb-head { justify-content: center; padding: 16px 0; }
     .sidebar .sb-user { justify-content: center; padding: 8px 0; }
@@ -306,7 +333,6 @@
   .gc-emu-tag { display: inline-flex; align-items: center; gap: 5px; }
   .console-card .cc-icon { display: grid; place-items: center; }
   .console-card { align-items: center; }
-  #acctConsoles .cpill { padding: 4px 11px; font-size: 12px; }
 
   /* Console picker grid (onboarding + account) */
   .console-grid {
@@ -369,6 +395,23 @@
   .game-card .gc-body { padding: 14px 16px; }
   .game-card .gc-name { font-weight: 700; font-size: 15px; line-height: 1.25; word-break: break-word; }
   .game-card .gc-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  /* Pin toggle. Hidden until hover so the grid stays about the cover art —
+     except once pinned, when it has to stay visible to explain the state. */
+  .game-card .gc-pin {
+    position: absolute; top: 8px; left: 8px; z-index: 2;
+    width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+    font-size: 13px; line-height: 1; color: #fff; background: rgba(8,11,16,.6);
+    opacity: 0; transition: opacity .12s, transform .12s, background .12s;
+    backdrop-filter: blur(4px); box-shadow: 0 2px 8px rgba(0,0,0,.35);
+  }
+  .game-card:hover .gc-pin { opacity: 1; }
+  .game-card .gc-pin.on { opacity: 1; background: var(--accent); }
+  .game-card .gc-pin:hover { transform: scale(1.12); }
+  /* Touch screens have no hover, so the control would never appear. */
+  @media (hover: none) {
+    .game-card .gc-pin { opacity: 1; }
+    .sb-item .sb-pin { opacity: .75; }
+  }
 
   /* history hero with cover */
   .history-hero { display: flex; gap: 18px; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; }
@@ -480,23 +523,27 @@
 
   <div class="sb-nav" id="sbNav">
     <div class="sb-sec">Library</div>
-    <button class="sb-item on" data-view="games" title="Games">
-      <span class="sb-ico">🕹️</span><span class="sb-label">Games</span>
+    <button class="sb-item on" data-view="games" title="All games">
+      <span class="sb-ico">🕹️</span><span class="sb-label">All games</span>
       <span class="sb-count" id="sbGameCount"></span>
     </button>
     <button class="sb-item" data-view="upload" title="Add a game">
       <span class="sb-ico">＋</span><span class="sb-label">New game</span>
     </button>
+
+    <!-- Both filled in by renderSidebar(): pins come from your profile,
+         consoles from the CONSOLES table. -->
+    <div class="sb-sec">Pinned</div>
+    <div class="sb-group" id="sbPinned"></div>
+
+    <div class="sb-sec">Consoles</div>
+    <div class="sb-group" id="sbConsoles"></div>
+
     <div class="sb-sec">Settings</div>
-    <button class="sb-item" data-view="account" title="Account">
-      <span class="sb-ico">👤</span><span class="sb-label">Account</span>
-    </button>
-    <button class="sb-item" data-view="consoles" title="Consoles">
-      <span class="sb-ico">🎮</span><span class="sb-label">Consoles</span>
+    <button class="sb-item" data-view="settings" title="Settings">
+      <span class="sb-ico">⚙</span><span class="sb-label">Settings</span>
     </button>
   </div>
-
-  <div class="sb-spacer"></div>
 
   <div class="sb-foot">
     <div class="sb-user">
@@ -622,8 +669,8 @@
     </div>
   </div>
 
-  <!-- ACCOUNT panel -->
-  <div id="accountView" class="hidden">
+  <!-- SETTINGS — account and console preferences, one place -->
+  <div id="settingsView" class="hidden">
     <button class="back-link" id="acctBackBtn">← Back</button>
     <div class="panel">
       <h3>👤 Account</h3>
@@ -654,8 +701,16 @@
     </div>
     <div class="panel">
       <h3>🎮 Your consoles</h3>
-      <div id="acctConsoles" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
-      <button class="btn-ghost btn-sm" id="editConsolesBtn">✎ Change consoles</button>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:16px;">
+        Tick the ones you keep saves for. This tailors the upload form and picks which
+        consoles lead the sidebar — <b>unticking one never deletes saves</b>, and every
+        console stays reachable in the sidebar regardless.
+      </div>
+      <div class="console-grid" id="settingsConsoleGrid"></div>
+      <div style="margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <button class="btn-ghost btn-sm" id="settingsSelectAllBtn">Select all</button>
+        <span id="consolePrefStatus" style="font-size:12px;color:var(--muted);min-height:16px;"></span>
+      </div>
     </div>
     <div class="panel">
       <h3>📱 Sign in on another device</h3>
@@ -748,13 +803,13 @@
   <!-- Games list -->
   <div id="gamesView">
     <div class="section-title">
-      <h3>🕹️ Your games</h3>
+      <h3 id="gamesTitle">🕹️ Your games</h3>
       <div style="display:flex;gap:8px;">
+        <button class="btn-ghost btn-sm hidden" id="clearFilterBtn">✕ All consoles</button>
         <button class="btn-primary btn-sm" id="newGameBtn">＋ New game</button>
         <button class="btn-ghost btn-sm" id="refreshBtn">↻ Refresh</button>
       </div>
     </div>
-    <div class="chips" id="filterChips"></div>
     <div id="gamesContainer"></div>
   </div>
 
@@ -769,6 +824,7 @@
         <div class="hh-actions">
           <button class="btn-primary btn-sm" id="uploadToGameBtn">⬆ Upload save</button>
           <button class="btn-ghost btn-sm hidden" id="uploadFolderToGameBtn">📂 Upload save folder</button>
+          <button class="btn-ghost btn-sm" id="pinGameBtn">📌 Pin</button>
           <button class="btn-ghost btn-sm" id="setCoverBtn">🖼️ Add cover</button>
           <button class="btn-ghost btn-sm" id="downloadLatestBtn">⬇ Download latest</button>
           <button class="btn-ghost btn-sm danger hidden" id="deleteGameBtn">🗑 Delete game</button>
@@ -1497,34 +1553,179 @@ function setSidebarCollapsed(on) {
 }
 
 // One place that decides which view is on screen.
+let currentNav = "games";
+
 function navigate(view) {
   const views = {
     games: "gamesView",
-    account: "accountView",
-    consoles: "onboardView",
+    settings: "settingsView",
     history: "historyView",
+    onboard: "onboardView",
   };
   if (view === "upload") {
     navigate("games");
     openNewGamePanel();
     return;
   }
-  if (view === "consoles") { startOnboarding("edit"); markNav("consoles"); return; }
 
   Object.values(views).forEach((id) => $(id).classList.add("hidden"));
   if (view !== "games") $("uploadPanel").classList.add("hidden");
   hideQrCode();
   $(views[view] || "gamesView").classList.remove("hidden");
-  if (view === "account") refreshConsoleUi();
+  if (view === "settings") { refreshConsoleUi(); renderSettingsConsoles(); }
   markNav(view);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function markNav(view) {
-  const key = view === "history" ? "games" : view;
-  $("sbNav").querySelectorAll(".sb-item[data-view]").forEach((b) => {
-    b.classList.toggle("on", b.dataset.view === key);
+  currentNav = view;
+  updateNavHighlight();
+}
+
+/* ============================================================
+   Sidebar contents — pinned games, then every console
+
+   Pins live in the Drive profile rather than localStorage, so a
+   shortlist built at the desk is the same one waiting on the
+   phone. They're stored as folder ids: renaming a game keeps its
+   pin, and a deleted one falls out on the next load.
+   ============================================================ */
+const MAX_PINS = 12;
+
+function pinnedIds() { return (profile && Array.isArray(profile.pinned)) ? profile.pinned : []; }
+function isPinned(folderId) { return pinnedIds().indexOf(folderId) >= 0; }
+function gameById(folderId) { return allGames.find((g) => g.folder.id === folderId) || null; }
+
+let pinSaveTimer = null;
+function persistPins(ids) {
+  if (!profile) return;
+  profile.pinned = ids;
+  // Draw first, save second — pinning should feel instant, and a slow Drive
+  // round-trip shouldn't hold the UI still. Coalesced so rapid pinning is one
+  // write rather than five.
+  clearTimeout(pinSaveTimer);
+  pinSaveTimer = setTimeout(async () => {
+    try { profile = await saveProfile(Object.assign(profile, { pinned: profile.pinned })); }
+    catch (e) { toast("Couldn't save your pins: " + e.message, "err", 5000); }
+  }, 700);
+}
+
+function togglePin(folderId, name) {
+  if (!folderId) return;
+  const ids = pinnedIds().slice();
+  const at = ids.indexOf(folderId);
+  if (at >= 0) {
+    ids.splice(at, 1);
+    toast("Unpinned" + (name ? " " + name : ""));
+  } else {
+    if (ids.length >= MAX_PINS) {
+      toast("That's the limit of " + MAX_PINS + " pins — unpin one first.", "err", 4000);
+      return;
+    }
+    ids.push(folderId);
+    toast("📌 Pinned" + (name ? " " + name : ""), "ok");
+  }
+  persistPins(ids);
+  renderSidebar();
+  renderGames();
+  syncHistoryPinButton();
+}
+
+// A game deleted on another device shouldn't haunt the sidebar. Only ever run
+// this against a finished load — against an empty allGames it would wipe the lot.
+function pruneStalePins() {
+  const ids = pinnedIds();
+  if (!ids.length || !allGames.length) return;
+  const live = {};
+  allGames.forEach((g) => { live[g.folder.id] = true; });
+  const kept = ids.filter((id) => live[id]);
+  if (kept.length !== ids.length) persistPins(kept);
+}
+
+function renderSidebar() {
+  renderPinnedNav();
+  renderConsoleNav();
+  updateNavHighlight();
+}
+
+function renderPinnedNav() {
+  const box = $("sbPinned");
+  const ids = pinnedIds();
+  if (!ids.length) {
+    box.innerHTML = '<div class="sb-empty">Nothing pinned yet — hover a game and hit 📌 to park it here.</div>';
+    return;
+  }
+  // Profile order is pin order, which is the order they chose.
+  box.innerHTML = ids.map((id) => {
+    const g = gameById(id);
+    const name = g ? g.folder.name : "Loading…";
+    const con = g ? consoleOf(g.consoleId) : null;
+    return '<button class="sb-item sb-pinned" data-pin="' + escapeAttr(id) + '" title="' + escapeAttr(name) + '">' +
+      '<span class="sb-ico">' + (g ? emojiFor(name, con) : "📌") + '</span>' +
+      '<span class="sb-label">' + escapeHtml(name) + '</span>' +
+      '<span class="sb-pin" data-unpin="' + escapeAttr(id) + '" title="Unpin">✕</span>' +
+    '</button>';
+  }).join("");
+  box.querySelectorAll(".sb-pinned").forEach((b) => {
+    b.onclick = (e) => {
+      const un = e.target.closest("[data-unpin]");
+      if (un) { e.stopPropagation(); togglePin(un.dataset.unpin, null); return; }
+      const g = gameById(b.dataset.pin);
+      if (g) openHistory(g.folder.id, g.folder.name, g.consoleId);
+      else toast("That game hasn't loaded yet — try ↻ Refresh.", "err");
+    };
   });
+}
+
+function renderConsoleNav() {
+  const counts = {};
+  allGames.forEach((g) => { if (g.consoleId) counts[g.consoleId] = (counts[g.consoleId] || 0) + 1; });
+  // Their picks lead, but every supported console stays listed — this section
+  // is the map of what the site handles, not just what they ticked.
+  const picked = (profile && profile.consoles) || [];
+  const mine = CONSOLES.filter((c) => picked.indexOf(c.id) >= 0);
+  const rest = CONSOLES.filter((c) => picked.indexOf(c.id) < 0);
+  $("sbConsoles").innerHTML = mine.concat(rest).map((c) =>
+    '<button class="sb-item sb-console" data-cid="' + c.id + '" title="' + escapeAttr(c.label) + '">' +
+      '<span class="sb-ico sb-ico-img">' + consoleIcon(c.id, 18, 5) + '</span>' +
+      '<span class="sb-label">' + escapeHtml(c.label) + '</span>' +
+      (counts[c.id] ? '<span class="sb-count">' + counts[c.id] + '</span>' : '') +
+    '</button>').join("");
+  $("sbConsoles").querySelectorAll(".sb-console").forEach((b) => {
+    b.onclick = () => filterByConsole(b.dataset.cid);
+  });
+}
+
+// Clicking the console you're already filtered to clears the filter — the
+// same button gets you both ways, so there's no dead end.
+function filterByConsole(id) {
+  activeFilter = activeFilter === id ? "all" : id;
+  navigate("games");
+  renderGames();
+}
+
+function updateNavHighlight() {
+  const listish = currentNav === "games" || currentNav === "history";
+  $("sbNav").querySelectorAll(".sb-item[data-view]").forEach((b) => {
+    const v = b.dataset.view;
+    b.classList.toggle("on", v === "games"
+      ? (listish && activeFilter === "all")
+      : v === currentNav);
+  });
+  $("sbConsoles").querySelectorAll(".sb-console").forEach((b) => {
+    b.classList.toggle("on", listish && activeFilter === b.dataset.cid);
+  });
+  $("sbPinned").querySelectorAll(".sb-pinned").forEach((b) => {
+    b.classList.toggle("on", currentNav === "history" && currentHistory.folderId === b.dataset.pin);
+  });
+}
+
+function syncHistoryPinButton() {
+  const b = $("pinGameBtn");
+  if (!b) return;
+  const on = isPinned(currentHistory.folderId);
+  b.textContent = on ? "📌 Pinned" : "📌 Pin";
+  b.title = on ? "Remove from the sidebar" : "Keep this game in the sidebar";
 }
 
 /* ============================================================
@@ -1721,7 +1922,7 @@ function refreshAccountHeader() {
 
 // Re-tick the Drive session line while the Account page is open.
 setInterval(() => {
-  if (!$("accountView").classList.contains("hidden")) refreshAccountHeader();
+  if (!$("settingsView").classList.contains("hidden")) refreshAccountHeader();
 }, 30000);
 
 /* ============================================================
@@ -1853,7 +2054,7 @@ function startOnboarding(mode) {
   onboardSelection = new Set(mode === "edit" && profile ? profile.consoles : []);
   $("gamesView").classList.add("hidden");
   $("historyView").classList.add("hidden");
-  $("accountView").classList.add("hidden");
+  $("settingsView").classList.add("hidden");
   $("uploadPanel").classList.add("hidden");
   $("onboardView").classList.remove("hidden");
   $("onboardTitle").textContent = mode === "edit" ? "Your consoles" : "Welcome to Save Station 👋";
@@ -1934,23 +2135,65 @@ function refreshConsoleUi() {
   $("consoleSel").innerHTML = html;
   onConsoleChanged();
 
-  // Account panel
+  // Settings panel
   $("acctFolder").textContent = ROOT_FOLDER_NAME;
   $("acctDevice").value = getDeviceName();
-  // NB: not `.map(consolePill)` — map passes the index, which consolePill
-  // would render as a stray number next to every console after the first.
-  $("acctConsoles").innerHTML = mine.map((c) => consolePill(c)).join("") ||
-    '<span style="color:var(--muted);font-size:13px;">None picked yet.</span>';
 
-  // Filter chips over the games list
-  const chips = ['<button class="chip' + (activeFilter === "all" ? " on" : "") + '" data-f="all">All</button>']
-    .concat(mine.map((c) =>
-      '<button class="chip' + (activeFilter === c.id ? " on" : "") + '" data-f="' + c.id + '">' +
-      consoleIcon(c.id, 14, 4) + " " + escapeHtml(c.short) + "</button>"));
-  $("filterChips").innerHTML = chips.join("");
-  $("filterChips").querySelectorAll(".chip").forEach((b) => {
-    b.onclick = () => { activeFilter = b.dataset.f; refreshConsoleUi(); renderGames(); };
+  // Filtering lives in the sidebar now, which lists every console rather than
+  // only the ticked ones — one place to navigate from instead of two.
+  renderSidebar();
+}
+
+/* ---------------------------------------------- console prefs, in Settings
+   The same grid as onboarding, but inline and saving as you tick rather than
+   behind a Save button — there's nothing here to get half-finished. */
+function renderSettingsConsoles() {
+  const picked = (profile && profile.consoles) || [];
+  $("settingsConsoleGrid").innerHTML = CONSOLES.map((c) =>
+    '<div class="console-card' + (picked.indexOf(c.id) >= 0 ? " on" : "") + '" data-cid="' + c.id + '">' +
+      '<div class="cc-icon">' + consoleIcon(c.id, 30) + '</div>' +
+      '<div><div class="cc-name">' + escapeHtml(c.label) + '</div></div>' +
+      '<div class="cc-check">✓</div>' +
+    '</div>').join("");
+  $("settingsConsoleGrid").querySelectorAll(".console-card").forEach((el) => {
+    el.onclick = () => {
+      const id = el.dataset.cid;
+      const now = ((profile && profile.consoles) || []).slice();
+      const at = now.indexOf(id);
+      if (at >= 0) now.splice(at, 1); else now.push(id);
+      el.classList.toggle("on");
+      saveConsolePrefs(now);
+    };
   });
+  syncSelectAllLabel();
+}
+
+function syncSelectAllLabel() {
+  const n = ((profile && profile.consoles) || []).length;
+  $("settingsSelectAllBtn").textContent = n === CONSOLES.length ? "Clear all" : "Select all";
+}
+
+let consolePrefTimer = null;
+function saveConsolePrefs(ids) {
+  if (!profile) return;
+  // Store in CONSOLES order, not click order, so the sidebar and the upload
+  // dropdown stay in a predictable sequence.
+  profile.consoles = CONSOLES.filter((c) => ids.indexOf(c.id) >= 0).map((c) => c.id);
+  $("consolePrefStatus").textContent = "Saving…";
+  refreshConsoleUi();
+  syncSelectAllLabel();
+  clearTimeout(consolePrefTimer);
+  consolePrefTimer = setTimeout(async () => {
+    try {
+      profile = await saveProfile(Object.assign(profile, { consoles: profile.consoles }));
+      $("consolePrefStatus").textContent = "Saved ✔";
+      setTimeout(() => {
+        if ($("consolePrefStatus").textContent === "Saved ✔") $("consolePrefStatus").textContent = "";
+      }, 2500);
+    } catch (e) {
+      $("consolePrefStatus").textContent = "Couldn't save: " + e.message;
+    }
+  }, 600);
 }
 
 function consolePill(c, extra) {
@@ -2706,6 +2949,8 @@ async function loadGames() {
     const folders = await listSubfolders(rootFolderId);
     if (!folders.length) {
       allGames = [];
+      $("sbGameCount").textContent = "";
+      renderSidebar();
       c.innerHTML = '<div class="empty"><div class="e-icon">🎲</div>No games yet — click <b>＋ New game</b> to upload your first save.</div>';
       return;
     }
@@ -2714,6 +2959,9 @@ async function loadGames() {
       const { cover, saves } = splitCover(await listSaves(f.id));
       return { folder: f, saves, cover, consoleId: gameConsoleId(f, saves) };
     }));
+    // Only safe once the load has actually succeeded — see pruneStalePins.
+    pruneStalePins();
+    renderSidebar();
     renderGames();
   } catch (e) {
     c.innerHTML = '<div class="empty">Could not load games: ' + escapeHtml(e.message) + "</div>";
@@ -2724,6 +2972,16 @@ function renderGames() {
   const c = $("gamesContainer");
   const games = activeFilter === "all" ? allGames : allGames.filter((g) => g.consoleId === activeFilter);
   $("sbGameCount").textContent = allGames.length || "";
+
+  // The heading carries the active filter, since the chips row that used to
+  // say so has moved into the sidebar.
+  const filterCon = activeFilter === "all" ? null : consoleOf(activeFilter);
+  $("gamesTitle").innerHTML = filterCon
+    ? consoleIcon(filterCon.id, 18, 5) + " " + escapeHtml(filterCon.label)
+    : "🕹️ Your games";
+  $("clearFilterBtn").classList.toggle("hidden", activeFilter === "all");
+  updateNavHighlight();
+
   if (!games.length) {
     const label = activeFilter === "all" ? "" : " for " + ((consoleOf(activeFilter) || {}).label || activeFilter);
     c.innerHTML = '<div class="empty"><div class="e-icon">🎲</div>No games' + escapeHtml(label) + " yet.</div>";
@@ -2740,15 +2998,27 @@ function renderGames() {
         consoleIcon(con.id, 13, 4) + " " + escapeHtml(con.short) + "</span>"
       : "";
     const coverAttr = g.cover ? ' data-cover="' + g.cover.id + '"' : '';
+    const pinned = isPinned(g.folder.id);
+    const pin = '<button class="gc-pin' + (pinned ? " on" : "") + '" data-pin="' + escapeAttr(g.folder.id) +
+      '" title="' + (pinned ? "Unpin from sidebar" : "Pin to sidebar") + '">📌</button>';
     return '<div class="game-card" data-fid="' + g.folder.id + '" data-name="' +
       escapeAttr(g.folder.name) + '" data-console="' + escapeAttr(g.consoleId || "") + '">' +
-      '<div class="gc-cover"' + coverAttr + '>' + (g.cover ? '' : emojiFor(g.folder.name, con)) + tag + '</div>' +
+      '<div class="gc-cover"' + coverAttr + '>' + pin + (g.cover ? '' : emojiFor(g.folder.name, con)) + tag + '</div>' +
       '<div class="gc-body"><div class="gc-name">' + escapeHtml(g.folder.name) + '</div>' +
       '<div class="gc-meta">' + meta + '</div></div></div>';
   }).join("") + "</div>";
 
   c.querySelectorAll(".game-card").forEach((card) => {
     card.onclick = () => openHistory(card.dataset.fid, card.dataset.name, card.dataset.console || null);
+  });
+  // Bound after the card handler and stopping propagation, so pinning doesn't
+  // also open the game.
+  c.querySelectorAll(".gc-pin").forEach((b) => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      const card = b.closest(".game-card");
+      togglePin(b.dataset.pin, card ? card.dataset.name : null);
+    };
   });
   // lazy-load cover images
   c.querySelectorAll(".gc-cover[data-cover]").forEach(async (el) => {
@@ -2760,12 +3030,18 @@ let currentHistory = { folderId: null, name: null, saves: [], console: null };
 
 async function openHistory(folderId, name, consoleId) {
   $("gamesView").classList.add("hidden");
-  $("accountView").classList.add("hidden");
+  $("settingsView").classList.add("hidden");
   $("onboardView").classList.add("hidden");
   $("uploadPanel").classList.add("hidden");
   $("historyView").classList.remove("hidden");
   markNav("history");
   $("historyTitle").textContent = name;
+  // Set before the backups finish loading, so the sidebar highlight and the
+  // pin button are right even while the list is still spinning.
+  currentHistory.folderId = folderId;
+  currentHistory.name = name;
+  syncHistoryPinButton();
+  updateNavHighlight();
   const coverEl = $("historyCover");
   coverEl.style.backgroundImage = "";
   coverEl.textContent = emojiFor(name, consoleOf(consoleId));
@@ -3184,13 +3460,21 @@ function wireEvents() {
   $("scanQrBtn").onclick = openScanner;
   $("scanCancelBtn").onclick = () => { closeScanner(); $("gate").classList.remove("hidden"); };
 
-  $("editConsolesBtn").onclick = () => startOnboarding("edit");
   $("onboardDoneBtn").onclick = finishOnboarding;
   $("onboardCancelBtn").onclick = enterApp;
   $("selectAllConsolesBtn").onclick = () => {
     if (onboardSelection.size === CONSOLES.length) onboardSelection.clear();
     else CONSOLES.forEach((c) => onboardSelection.add(c.id));
     renderConsoleGrid();
+  };
+
+  // Pins and filtering
+  $("pinGameBtn").onclick = () => togglePin(currentHistory.folderId, currentHistory.name);
+  $("clearFilterBtn").onclick = () => { activeFilter = "all"; renderGames(); };
+  $("settingsSelectAllBtn").onclick = () => {
+    const all = ((profile && profile.consoles) || []).length === CONSOLES.length;
+    saveConsolePrefs(all ? [] : CONSOLES.map((c) => c.id));
+    renderSettingsConsoles();
   };
 }
 
