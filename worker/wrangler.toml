@@ -9,8 +9,9 @@ GOOGLE_CLIENT_ID = "1043116488819-uehkbdpe89r2032gim7kqigpv3e7mk6j.apps.googleus
 FIREBASE_PROJECT_ID = "save-station-fd3a9"
 SITE_URL = "https://jacobwood2004.github.io/Save-Station-Site/"
 SITE_ORIGIN = "https://jacobwood2004.github.io"
-# Set this to the Worker's own URL after the first deploy tells you what it is.
-WORKER_ORIGIN = "https://save-station-drive.YOUR-SUBDOMAIN.workers.dev"
+# The Worker's own URL. Must match the redirect URI registered with Google,
+# character for character, `/callback` included.
+WORKER_ORIGIN = "https://save-station-drive.jacob-wood2038.workers.dev"
 
 # Holds one Google refresh token per user, keyed by Firebase uid, plus
 # short-lived link states. Create it with:
@@ -18,4 +19,4 @@ WORKER_ORIGIN = "https://save-station-drive.YOUR-SUBDOMAIN.workers.dev"
 # then paste the id it prints below.
 [[kv_namespaces]]
 binding = "TOKENS"
-id = "PASTE_KV_NAMESPACE_ID"
+id = "9ff2b53a8c49478aa21ba94d51cb6338"

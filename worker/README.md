@@ -49,7 +49,26 @@ npm install -g wrangler
 wrangler login
 ```
 
-### 2. Create the KV namespace
+### 2. Register a workers.dev subdomain
+
+Every Cloudflare account needs one before it can publish, and a fresh account
+hasn't got one. Without it `wrangler deploy` stops with *"You need to register a
+workers.dev subdomain"* and tries to invent one from your folder name.
+
+Open **Workers & Pages** in the dashboard — visiting the page is enough to
+register one:
+
+```
+https://dash.cloudflare.com/?to=/:account/workers-and-pages
+```
+
+It appears under **Account Details → Subdomain** on the right. To change it,
+click the pencil beside it. (Wrangler's own error points at
+`/workers/onboarding`, which is a dead URL now.)
+
+Your Worker ends up at `save-station-drive.<subdomain>.workers.dev`.
+
+### 3. Create the KV namespace
 
 ```bash
 cd worker
@@ -58,7 +77,7 @@ wrangler kv namespace create TOKENS
 
 It prints an `id`. Paste it into `wrangler.toml` over `PASTE_KV_NAMESPACE_ID`.
 
-### 3. Add the client secret
+### 4. Add the client secret
 
 Google Cloud console → **Clients** → **Save Station Web** → copy the **Client
 secret** (same client the site already uses; it has one even though the browser
@@ -71,20 +90,25 @@ wrangler secret put GOOGLE_CLIENT_SECRET
 Paste it when prompted. It's stored encrypted by Cloudflare and never appears in
 this repo — which is why it's a secret rather than a `[vars]` entry.
 
-### 4. Deploy once to learn your URL
+### 5. Set WORKER_ORIGIN and deploy
+
+You already know the URL from step 2 — it's `save-station-drive` plus your
+subdomain. Put it in `wrangler.toml` as `WORKER_ORIGIN`:
+
+```toml
+WORKER_ORIGIN = "https://save-station-drive.yourname.workers.dev"
+```
+
+Then:
 
 ```bash
 wrangler deploy
 ```
 
-It prints something like `https://save-station-drive.yourname.workers.dev`.
-Put that in `wrangler.toml` as `WORKER_ORIGIN`, then deploy again:
+The Worker builds this into its own redirect URI, so if it's wrong or still the
+placeholder, Google rejects the callback with `redirect_uri_mismatch`.
 
-```bash
-wrangler deploy
-```
-
-### 5. Tell Google the callback is allowed
+### 6. Tell Google the callback is allowed
 
 Google Cloud console → **Clients** → **Save Station Web** → **Authorized
 redirect URIs** → **Add URI**:
@@ -96,7 +120,7 @@ https://save-station-drive.yourname.workers.dev/callback
 Save. (This is the *redirect URI* box, not *JavaScript origins* — the browser
 flow uses that one, this flow uses this one. Both can be set at once.)
 
-### 6. Switch the site over
+### 7. Switch the site over
 
 In `index.html`, near the top of the script:
 
@@ -106,7 +130,7 @@ const WORKER_URL = "https://save-station-drive.yourname.workers.dev";
 
 Commit and push. Leave it `""` and nothing changes.
 
-### 7. Reconnect once
+### 8. Reconnect once
 
 Existing users have no refresh token stored yet, so each signs in and hits
 **Connect Google Drive** one final time. Google will show the consent screen —
@@ -128,10 +152,11 @@ it's active.
 
 | Symptom | Cause |
 |---|---|
-| `#drive=exchange_failed` | Client secret wrong or missing — redo step 3 |
-| `#drive=no_refresh_token` | Google skipped the lasting permission. The Worker already forces `prompt=consent`, so this usually means the redirect URI doesn't match step 5 exactly |
+| `#drive=exchange_failed` | Client secret wrong or missing — redo step 4 |
+| `#drive=no_refresh_token` | Google skipped the lasting permission. The Worker already forces `prompt=consent`, so this usually means the redirect URI doesn't match step 6 exactly |
 | `#drive=expired` | More than 10 minutes between starting and finishing the Google screen |
-| `redirect_uri_mismatch` from Google | Step 5's URI doesn't match `WORKER_ORIGIN` character for character, `/callback` included |
+| `redirect_uri_mismatch` from Google | Step 6's URI doesn't match `WORKER_ORIGIN` character for character, `/callback` included |
+| `You need to register a workers.dev subdomain` | Step 2 — the account hasn't got one yet |
 | Everything 401s | `FIREBASE_PROJECT_ID` in `wrangler.toml` doesn't match the project in `index.html` |
 
 ## Turning it off
