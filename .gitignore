@@ -17,3 +17,8 @@ __pycache__/
 
 # Wrangler's local state (account cache, build temp) — machine-specific
 worker/.wrangler/
+
+# Electron desktop app — installed deps and anything generated from assets/
+desktop-app/node_modules/
+desktop-app/build/
+desktop-app/dist/

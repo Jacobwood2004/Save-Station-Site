@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Save Station">
+  <title>Save Station</title>
+  <!--
+    The mark: everything you play on, in orbit around one saved file.
+
+    Five tiles ride the ring — a PC, a Switch, a phone, a clamshell handheld and
+    the cloud they all sync through — with a floppy disk at the centre, because
+    the thing this app actually moves around is a save file.
+
+    Drawn with a transparent background so it can sit on the app's dark panels.
+    assets/icon.svg is the same mark on its own tile, for the taskbar and the
+    favicon.
+  -->
+  <defs>
+    <linearGradient id="ssFloppy" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9a80ff"/>
+      <stop offset="1" stop-color="#5b8cff"/>
+    </linearGradient>
+    <linearGradient id="ssRing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c5cff"/>
+      <stop offset="1" stop-color="#4ad2c9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- the orbit the devices ride on -->
+  <circle cx="64" cy="64" r="46" fill="none" stroke="url(#ssRing)" stroke-width="2.6" opacity=".5"/>
+
+  <!-- hub: the disc the whole ring is about -->
+  <circle cx="64" cy="64" r="29" fill="#111823" stroke="#2e3a4a" stroke-width="1.6"/>
+
+  <!-- the floppy, chamfered top-right like the real thing -->
+  <path d="M49.5 44.5h26.4l8.1 8.1v26.9a4.5 4.5 0 0 1-4.5 4.5h-30a4.5 4.5 0 0 1-4.5-4.5V49a4.5 4.5 0 0 1 4.5-4.5Z" fill="url(#ssFloppy)"/>
+  <!-- shutter -->
+  <path d="M57.5 44.5h13v13.5a1.6 1.6 0 0 1-1.6 1.6h-9.8a1.6 1.6 0 0 1-1.6-1.6Z" fill="#e9eefc"/>
+  <rect x="65.4" y="47.4" width="3.4" height="9" rx="1" fill="#8ea0c4"/>
+  <!-- label -->
+  <rect x="52.5" y="64.5" width="23" height="15.5" rx="2" fill="#f2f5ff"/>
+  <path d="M56 70.4h16M56 75h10.5" stroke="#a99bff" stroke-width="1.9" stroke-linecap="round"/>
+
+  <!-- ============ tiles on the ring ============ -->
+
+  <!-- cloud, top: where every one of them syncs to -->
+  <circle cx="64" cy="18" r="14" fill="#141c26" stroke="#3a4a5e" stroke-width="1.6"/>
+  <g transform="translate(64 18)">
+    <path d="M-7.6 4.6a4.3 4.3 0 0 1 .6-8.5 5.9 5.9 0 0 1 11.3-.6 4.2 4.2 0 0 1 .5 8.3Z" fill="#4ad2c9"/>
+    <path d="M0 3.4V-2m0 0-2.6 2.6M0-2l2.6 2.6" stroke="#141c26" stroke-width="1.9"
+          stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+
+  <!-- Switch, upper right -->
+  <circle cx="107.7" cy="49.8" r="14" fill="#141c26" stroke="#3a4a5e" stroke-width="1.6"/>
+  <g transform="translate(107.7 49.8)" fill="none" stroke="#e6edf3" stroke-width="1.8"
+     stroke-linecap="round" stroke-linejoin="round">
+    <rect x="-8.8" y="-6.6" width="17.6" height="13.2" rx="2.6"/>
+    <path d="M-4.3-6.6v13.2M4.3-6.6v13.2"/>
+    <circle cx="-6.5" cy="-2.6" r="1.15" fill="#e6edf3" stroke="none"/>
+    <circle cx="6.5" cy="2.6" r="1.15" fill="#e6edf3" stroke="none"/>
+  </g>
+
+  <!-- phone, lower right -->
+  <circle cx="90.9" cy="100.5" r="14" fill="#141c26" stroke="#3a4a5e" stroke-width="1.6"/>
+  <g transform="translate(90.9 100.5)" fill="none" stroke="#e6edf3" stroke-width="1.9"
+     stroke-linecap="round" stroke-linejoin="round">
+    <rect x="-5.6" y="-8.4" width="11.2" height="16.8" rx="2.4"/>
+    <path d="M-1.8-5.6h3.6"/>
+    <path d="M-1.6 5.4h3.2"/>
+  </g>
+
+  <!-- clamshell handheld, lower left -->
+  <circle cx="37.1" cy="100.5" r="14" fill="#141c26" stroke="#3a4a5e" stroke-width="1.6"/>
+  <g transform="translate(37.1 100.5)" fill="none" stroke="#e6edf3" stroke-width="1.9"
+     stroke-linecap="round" stroke-linejoin="round">
+    <rect x="-7.6" y="-8.6" width="15.2" height="17.2" rx="2.2"/>
+    <path d="M-7.6 0h15.2"/>
+    <path d="M-4.6 4.4h3.4M-2.9 2.7v3.4"/>
+    <path d="M3.4 3.2h.02M4.9 5.4h.02" stroke-width="2.4"/>
+  </g>
+
+  <!-- desktop PC, upper left -->
+  <circle cx="20.3" cy="49.8" r="14" fill="#141c26" stroke="#3a4a5e" stroke-width="1.6"/>
+  <g transform="translate(20.3 49.8)" fill="none" stroke="#e6edf3" stroke-width="1.9"
+     stroke-linecap="round" stroke-linejoin="round">
+    <rect x="-8.4" y="-7.8" width="16.8" height="11.6" rx="2"/>
+    <path d="M0 3.8v3.2M-4.2 7h8.4"/>
+  </g>
+</svg>

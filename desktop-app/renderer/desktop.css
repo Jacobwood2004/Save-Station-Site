@@ -1,0 +1,53 @@
+/*
+  Styles for the one panel the desktop app adds to the page.
+
+  It borrows the site's own variables rather than defining colours, so it stays
+  in step with index.html — and so it reads as part of the app, not as a plugin
+  bolted onto it.
+*/
+
+.ds-panel {
+  background: linear-gradient(180deg, rgba(74, 210, 201, .05), transparent 60%), var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.ds-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.ds-badge {
+  font-size: 11px; font-weight: 700; letter-spacing: .04em;
+  color: var(--accent-2); background: rgba(74, 210, 201, .12);
+  padding: 3px 9px; border-radius: 20px; white-space: nowrap;
+}
+.ds-sub { font-size: 12px; color: var(--muted); line-height: 1.5; flex: 1; min-width: 220px; }
+
+.ds-empty { font-size: 13px; color: var(--text); line-height: 1.6; }
+.ds-where { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.ds-where code, .ds-panel code {
+  background: rgba(0, 0, 0, .3); padding: 1px 5px; border-radius: 4px; font-size: 11.5px;
+}
+
+.ds-linked .ds-path {
+  font-size: 13px; font-weight: 600; word-break: break-all; line-height: 1.4;
+}
+.ds-linked .ds-meta {
+  font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.6;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.ds-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--ok);
+  box-shadow: 0 0 0 3px rgba(63, 185, 80, .16); display: inline-block; flex-shrink: 0;
+}
+/* An uncommitted change is the one thing here worth interrupting for. */
+.ds-dot.changed {
+  background: #e3b341; box-shadow: 0 0 0 3px rgba(227, 179, 65, .18);
+}
+
+.ds-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+.ds-auto {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--muted); cursor: pointer; user-select: none;
+}
+.ds-auto input { accent-color: var(--accent); cursor: pointer; }

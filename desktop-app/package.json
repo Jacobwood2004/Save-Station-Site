@@ -1,0 +1,46 @@
+{
+  "name": "save-station-desktop",
+  "productName": "Save Station",
+  "version": "1.0.0",
+  "description": "Save Station on the desktop — watches your emulator saves and commits them to your own Google Drive.",
+  "main": "main.js",
+  "author": "Save Station",
+  "private": true,
+  "scripts": {
+    "start": "electron tools/make-icons.js --if-missing && electron .",
+    "icons": "electron tools/make-icons.js",
+    "pack": "electron tools/make-icons.js && electron-builder --dir",
+    "dist": "electron tools/make-icons.js && electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^43.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.savestation.desktop",
+    "productName": "Save Station",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": [
+      "main.js",
+      "preload.js",
+      "lib/**/*",
+      "renderer/**/*",
+      "commit/**/*",
+      "build/icon.*"
+    ],
+    "extraResources": [
+      { "from": "../index.html", "to": "site/index.html" },
+      { "from": "../assets", "to": "site/assets" }
+    ],
+    "win": {
+      "target": ["nsis", "portable"],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Save Station"
+    }
+  }
+}

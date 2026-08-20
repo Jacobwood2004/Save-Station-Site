@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Save Station Web</title>
+<!-- The mark, simplified for 16px. Inline so the page still needs no network. -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20width%3D%2264%22%20height%3D%2264%22%20role%3D%22img%22%20aria-label%3D%22Save%20Station%22%3E%20%3Cdefs%3E%20%3ClinearGradient%20id%3D%22fvFloppy%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%239a80ff%22%2F%3E%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%235b8cff%22%2F%3E%20%3C%2FlinearGradient%3E%20%3ClinearGradient%20id%3D%22fvTile%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%231b2330%22%2F%3E%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230e1420%22%2F%3E%20%3C%2FlinearGradient%3E%20%3C%2Fdefs%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22url(%23fvTile)%22%2F%3E%20%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2224%22%20fill%3D%22none%22%20stroke%3D%22%237c5cff%22%20stroke-width%3D%222%22%20opacity%3D%22.45%22%2F%3E%20%3Ccircle%20cx%3D%2232%22%20cy%3D%228%22%20r%3D%225.2%22%20fill%3D%22%234ad2c9%22%2F%3E%20%3Ccircle%20cx%3D%2254.8%22%20cy%3D%2224.6%22%20r%3D%224.4%22%20fill%3D%22%23c8d3e2%22%2F%3E%20%3Ccircle%20cx%3D%2246.1%22%20cy%3D%2251.4%22%20r%3D%224.4%22%20fill%3D%22%23c8d3e2%22%2F%3E%20%3Ccircle%20cx%3D%2217.9%22%20cy%3D%2251.4%22%20r%3D%224.4%22%20fill%3D%22%23c8d3e2%22%2F%3E%20%3Ccircle%20cx%3D%229.2%22%20cy%3D%2224.6%22%20r%3D%224.4%22%20fill%3D%22%23c8d3e2%22%2F%3E%20%3Cpath%20d%3D%22M22.6%2018.8h16.6l6%206V42a3.2%203.2%200%200%201-3.2%203.2H22.6A3.2%203.2%200%200%201%2019.4%2042V22a3.2%203.2%200%200%201%203.2-3.2Z%22%20fill%3D%22url(%23fvFloppy)%22%2F%3E%20%3Cpath%20d%3D%22M27.2%2018.8h9.2v8.8a1.2%201.2%200%200%201-1.2%201.2h-6.8a1.2%201.2%200%200%201-1.2-1.2Z%22%20fill%3D%22%23e9eefc%22%2F%3E%20%3Crect%20x%3D%2224.2%22%20y%3D%2233.4%22%20width%3D%2215.6%22%20height%3D%229.6%22%20rx%3D%221.6%22%20fill%3D%22%23f2f5ff%22%2F%3E%20%3Cpath%20d%3D%22M26.8%2037.4h10.4%22%20stroke%3D%22%23a99bff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%2F%3E%20%3C%2Fsvg%3E">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <!-- Firebase Authentication runs the Save Station account (email + password).
      Google sign-in is separate and comes later, to link your Drive. -->
@@ -121,10 +123,10 @@
 
   .sb-head { display: flex; align-items: center; gap: 10px; padding: 16px 14px; min-height: 68px; }
   .sb-logo {
-    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    display: grid; place-items: center; font-size: 19px;
+    width: 40px; height: 40px; flex-shrink: 0;
+    display: grid; place-items: center;
   }
+  .sb-logo svg { display: block; }
   .sb-title { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; }
   .sb-title small { display: block; font-size: 11px; color: var(--muted); font-weight: 500; }
 
@@ -201,20 +203,6 @@
   main { max-width: 1000px; margin: 0 auto; padding: 24px; }
   main#app { margin: 0 0 0 236px; max-width: 1180px; transition: margin-left .16s ease; }
   body.sb-collapsed main#app { margin-left: 68px; }
-
-  @media (max-width: 760px) {
-    .sidebar { width: 68px; }
-    main#app, body.sb-collapsed main#app { margin-left: 68px; }
-    .sidebar .sb-title, .sidebar .sb-label, .sidebar .sb-sec,
-    .sidebar .sb-count, .sidebar .sb-who, .sidebar .sb-empty,
-    .sidebar .sb-pin { display: none; }
-    .sidebar .sb-item { justify-content: center; padding: 10px 0; }
-    .sidebar .sb-head { justify-content: center; padding: 16px 0; }
-    .sidebar .sb-user { justify-content: center; padding: 8px 0; }
-    .sb-toggle { display: none; }
-    main { padding: 16px; }
-  }
-
   /* Login gate */
   .gate {
     min-height: 70vh; display: grid; place-items: center; text-align: center;
@@ -225,10 +213,10 @@
     box-shadow: var(--shadow);
   }
   .gate-card .biglogo {
-    width: 72px; height: 72px; border-radius: 18px; margin: 0 auto 20px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    display: grid; place-items: center; font-size: 38px;
+    width: 92px; height: 92px; margin: 0 auto 18px;
+    display: grid; place-items: center;
   }
+  .gate-card .biglogo svg { display: block; }
   .gate-card h2 { margin: 0 0 8px; font-size: 24px; }
   .gate-card p { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 0 0 28px; }
   .gbtn {
@@ -391,7 +379,7 @@
   /* Games grid */
   .section-title { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 16px; }
   .section-title h3 { margin: 0; font-size: 16px; }
-  .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; }
+  .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(190px, 100%), 1fr)); gap: 18px; }
   .game-card {
     background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
     cursor: pointer; transition: transform .12s, border .15s, box-shadow .15s; overflow: hidden;
@@ -445,6 +433,35 @@
     border-radius: 10px; padding: 10px 13px; font-size: 12px; line-height: 1.5; margin-bottom: 16px;
   }
   .folder-note code { background: rgba(0,0,0,.3); padding: 1px 5px; border-radius: 4px; }
+
+  /* Save slots — the tabs across a game's history.
+
+     One game can have more than one save file on the go: a second playthrough,
+     a co-op file, a nuzlocke. Each slot is its own lane, so the two timelines
+     never mix and restoring the wrong one can't happen by accident. */
+  .slot-bar {
+    display: flex; align-items: flex-end; gap: 4px; flex-wrap: wrap;
+    border-bottom: 1px solid var(--border); margin-bottom: 16px;
+  }
+  .slot-tab {
+    background: transparent; color: var(--muted); border: 1px solid transparent;
+    border-radius: 10px 10px 0 0; padding: 9px 14px; font-size: 13px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 8px; margin-bottom: -1px;
+  }
+  .slot-tab:hover:not(.on) { color: var(--text); background: rgba(255,255,255,.035); }
+  .slot-tab.on {
+    color: var(--text); background: var(--panel-2);
+    border-color: var(--border); border-bottom-color: var(--panel-2);
+  }
+  .slot-tab .slot-n {
+    font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 20px;
+    background: rgba(255,255,255,.07); color: var(--muted);
+  }
+  .slot-tab.on .slot-n { background: rgba(124,92,255,.22); color: #b9a6ff; }
+  .slot-tab.slot-add { color: var(--accent-2); }
+  .slot-tools { margin-left: auto; display: flex; gap: 6px; padding-bottom: 7px; }
+  .slot-hint { font-size: 12px; color: var(--muted); margin: -6px 0 16px; line-height: 1.5; }
+  .badge.slot { background: rgba(124,92,255,.15); color: #b9a6ff; }
 
   /* History view */
   .history-list { display: flex; flex-direction: column; gap: 10px; }
@@ -522,13 +539,104 @@
 
   .hidden { display: none !important; }
   @media (max-width: 620px) { .form-grid { grid-template-columns: 1fr; } }
+  /* Narrow windows.
+
+     Three sizes, because a fixed sidebar is fine at desktop width, cramped on a
+     tablet and ruinous on a phone — where 236px of navigation would leave the
+     games with nothing. So: full sidebar, then an icon rail, then a drawer that
+     slides over the content and gets out of the way again.
+
+     The desktop app resizes through all three, which is how you find out that
+     "it works on my monitor" was never the test. */
+
+  /* Tablet, or an app window pulled in: the rail. */
+  @media (max-width: 960px) {
+    .sidebar { width: 68px; }
+    main#app, body.sb-collapsed main#app { margin-left: 68px; }
+    .sidebar .sb-title, .sidebar .sb-label, .sidebar .sb-sec,
+    .sidebar .sb-count, .sidebar .sb-who, .sidebar .sb-empty,
+    .sidebar .sb-pin { display: none; }
+    .sidebar .sb-item { justify-content: center; padding: 10px 0; }
+    .sidebar .sb-head { justify-content: center; padding: 16px 0; }
+    .sidebar .sb-user { justify-content: center; padding: 8px 0; }
+    .sb-toggle { display: none; }
+    main { padding: 16px; }
+    .history-hero .hh-cover { width: 116px; }
+  }
+
+  /* Phone, or an app window squeezed right down: the drawer. */
+  @media (max-width: 620px) {
+    .sidebar {
+      width: 236px; transform: translateX(-100%);
+      transition: transform .18s ease; box-shadow: none;
+    }
+    body.sb-open .sidebar { transform: none; box-shadow: 0 0 40px rgba(0,0,0,.55); }
+    /* Everything the rail hid comes back — there's room for it in the drawer. */
+    .sidebar .sb-title, .sidebar .sb-label, .sidebar .sb-sec,
+    .sidebar .sb-count, .sidebar .sb-who, .sidebar .sb-pin { display: revert; }
+    .sidebar .sb-item { justify-content: flex-start; padding: 10px 12px; }
+    .sidebar .sb-head { justify-content: flex-start; padding: 16px 14px; }
+    .sidebar .sb-user { justify-content: flex-start; padding: 8px 4px; }
+    main#app, body.sb-collapsed main#app { margin-left: 0; padding: 14px 14px 30px; }
+    .sb-open-btn:not(.hidden) { display: grid; }
+    body.sb-open .sb-scrim { display: block; }
+    main#app { padding-top: 58px; }        /* room for the ☰ button */
+
+    .section-title { flex-wrap: wrap; gap: 10px; }
+    .games-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+    /* Stacked, not side by side: at this width a cover and a title sharing a
+       row leaves neither with enough room, and the buttons end up two-up. */
+    .history-hero { gap: 12px; flex-direction: column; align-items: stretch; }
+    .history-hero .hh-cover { width: 100%; }
+    .history-hero .hh-cover.no-cover {
+      width: 92px; aspect-ratio: 1; font-size: 38px;
+    }
+    .panel { padding: 16px; }
+    .gate-card { padding: 32px 22px; }
+    /* Actions drop under what they act on, rather than squeezing it to nothing. */
+    .save-row { flex-wrap: wrap; }
+    .save-row .sr-main { flex-basis: calc(100% - 54px); }
+    .save-row .sr-actions { width: 100%; justify-content: flex-end; }
+  }
+
+  /* The button that opens the drawer, and the tap-anywhere-else that closes it. */
+  .sb-open-btn {
+    display: none; position: fixed; top: 12px; left: 12px; z-index: 40;
+    width: 38px; height: 38px; padding: 0; place-items: center;
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 10px; font-size: 16px; box-shadow: var(--shadow);
+  }
+  .sb-scrim {
+    display: none; position: fixed; inset: 0; z-index: 29;
+    background: rgba(6,9,13,.6); backdrop-filter: blur(2px);
+  }
+
+  /* Anything that can't shrink gets to scroll on its own rather than pushing
+     the whole page sideways. */
+  .slot-bar {
+    flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
+    /* The tabs scroll sideways when there are more than fit; the bar itself
+       shouldn't advertise that with a scrollbar sitting in the middle of the UI. */
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .slot-bar::-webkit-scrollbar { display: none; }
+  .slot-bar .slot-tab { flex-shrink: 0; }
+  .slot-tools { flex-shrink: 0; padding-left: 10px; }
+  .games-grid { grid-template-columns: repeat(auto-fill, minmax(min(190px, 100%), 1fr)); }
+  .hh-info, .sr-main, .gc-name { min-width: 0; }
+  .ds-linked .ds-path, .acct-row b { word-break: break-word; }
 </style>
 </head>
 <body>
 
+<!-- On a narrow window the sidebar becomes a drawer; these two open and
+     dismiss it. Both are invisible at any width where the sidebar just fits. -->
+<button class="sb-open-btn hidden" id="sbOpenBtn" title="Menu" aria-label="Open the menu">&#9776;</button>
+<div class="sb-scrim" id="sbScrim"></div>
+
 <aside class="sidebar hidden" id="appHeader">
   <div class="sb-head">
-    <div class="sb-logo">🎮</div>
+    <div class="sb-logo" data-logo="40"></div>
     <div class="sb-title">Save Station<small>your saves, your Drive</small></div>
   </div>
 
@@ -577,7 +685,7 @@
 <!-- ACCOUNT GATE — log in / create a Save Station account -->
 <div class="gate" id="gate">
   <div class="gate-card">
-    <div class="biglogo">🎮</div>
+    <div class="biglogo" data-logo="92"></div>
     <h2>Save Station</h2>
     <p id="gateBlurb">Your game saves, versioned and backed up to your own Google Drive.</p>
 
@@ -622,7 +730,7 @@
 <!-- LINK GATE — connect Google Drive (required; this is where saves live) -->
 <div class="gate hidden" id="linkGate">
   <div class="gate-card">
-    <div class="biglogo">📁</div>
+    <div class="biglogo" data-logo="92"></div>
     <h2 id="linkTitle">Connect your Google Drive</h2>
     <div class="who-chip" id="linkWho"></div>
     <div class="link-steps">
@@ -846,6 +954,13 @@
         </div>
       </div>
     </div>
+    <!-- Save slots. Filled in by renderSlotBar(); a game with one slot still
+         gets its tab, so adding a second is one click away. -->
+    <div class="slot-bar" id="slotBar"></div>
+    <div class="slot-hint hidden" id="slotHint"></div>
+    <!-- The desktop app hangs its "linked save on this PC" panel here. Stays
+         empty in a browser — nothing on the website looks for it. -->
+    <div id="desktopPanel"></div>
     <div class="folder-note hidden" id="folderNote"></div>
     <div id="historyContainer"></div>
   </div>
@@ -1039,6 +1154,86 @@ const ICON_GLYPHS = {
         'stroke-linecap="round" stroke-linejoin="round"/>' +
         '<circle cx="12" cy="19.6" r="1.35" fill="#fff"/>',
 };
+
+/* ============================================================
+   The Save Station mark — everything you play on, in orbit
+   around one save file, with the cloud they all sync through.
+
+   Inline, so the page still loads no assets and the mark stays
+   sharp at any size. The same artwork lives in assets/logo.svg
+   (and assets/icon.svg, the desktop app's icon), so if you edit
+   one, re-run `npm run icons` in desktop-app/ to match.
+
+   __U__ namespaces the gradient ids, because the mark appears
+   more than once on the page and duplicate ids would make the
+   second copy borrow the first one's fills.
+   ============================================================ */
+const LOGO_MARK = `
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="__S__" height="__S__" role="img" aria-label="Save Station">
+    <defs>
+      <linearGradient id="__U__ssFloppy" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#9a80ff"/>
+        <stop offset="1" stop-color="#5b8cff"/>
+      </linearGradient>
+      <linearGradient id="__U__ssRing" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#7c5cff"/>
+        <stop offset="1" stop-color="#4ad2c9"/>
+      </linearGradient>
+    </defs>
+    <circle cx="64" cy="64" r="46" fill="none" stroke="url(#__U__ssRing)" stroke-width="2.6" opacity=".5"/>
+    <circle cx="64" cy="64" r="29" fill="#111823" stroke="#2e3a4a" stroke-width="1.6"/>
+    <path d="M49.5 44.5h26.4l8.1 8.1v26.9a4.5 4.5 0 0 1-4.5 4.5h-30a4.5 4.5 0 0 1-4.5-4.5V49a4.5 4.5 0 0 1 4.5-4.5Z" fill="url(#__U__ssFloppy)"/>
+    <path d="M57.5 44.5h13v13.5a1.6 1.6 0 0 1-1.6 1.6h-9.8a1.6 1.6 0 0 1-1.6-1.6Z" fill="#e9eefc"/>
+    <rect x="65.4" y="47.4" width="3.4" height="9" rx="1" fill="#8ea0c4"/>
+    <rect x="52.5" y="64.5" width="23" height="15.5" rx="2" fill="#f2f5ff"/>
+    <path d="M56 70.4h16M56 75h10.5" stroke="#a99bff" stroke-width="1.9" stroke-linecap="round"/>
+    <circle cx="64" cy="18" r="14" fill="#141c26" stroke="#3a4a5e" stroke-width="1.6"/>
+    <g transform="translate(64 18)">
+      <path d="M-7.6 4.6a4.3 4.3 0 0 1 .6-8.5 5.9 5.9 0 0 1 11.3-.6 4.2 4.2 0 0 1 .5 8.3Z" fill="#4ad2c9"/>
+      <path d="M0 3.4V-2m0 0-2.6 2.6M0-2l2.6 2.6" stroke="#141c26" stroke-width="1.9"
+            stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </g>
+    <circle cx="107.7" cy="49.8" r="14" fill="#141c26" stroke="#3a4a5e" stroke-width="1.6"/>
+    <g transform="translate(107.7 49.8)" fill="none" stroke="#e6edf3" stroke-width="1.8"
+       stroke-linecap="round" stroke-linejoin="round">
+      <rect x="-8.8" y="-6.6" width="17.6" height="13.2" rx="2.6"/>
+      <path d="M-4.3-6.6v13.2M4.3-6.6v13.2"/>
+      <circle cx="-6.5" cy="-2.6" r="1.15" fill="#e6edf3" stroke="none"/>
+      <circle cx="6.5" cy="2.6" r="1.15" fill="#e6edf3" stroke="none"/>
+    </g>
+    <circle cx="90.9" cy="100.5" r="14" fill="#141c26" stroke="#3a4a5e" stroke-width="1.6"/>
+    <g transform="translate(90.9 100.5)" fill="none" stroke="#e6edf3" stroke-width="1.9"
+       stroke-linecap="round" stroke-linejoin="round">
+      <rect x="-5.6" y="-8.4" width="11.2" height="16.8" rx="2.4"/>
+      <path d="M-1.8-5.6h3.6"/>
+      <path d="M-1.6 5.4h3.2"/>
+    </g>
+    <circle cx="37.1" cy="100.5" r="14" fill="#141c26" stroke="#3a4a5e" stroke-width="1.6"/>
+    <g transform="translate(37.1 100.5)" fill="none" stroke="#e6edf3" stroke-width="1.9"
+       stroke-linecap="round" stroke-linejoin="round">
+      <rect x="-7.6" y="-8.6" width="15.2" height="17.2" rx="2.2"/>
+      <path d="M-7.6 0h15.2"/>
+      <path d="M-4.6 4.4h3.4M-2.9 2.7v3.4"/>
+      <path d="M3.4 3.2h.02M4.9 5.4h.02" stroke-width="2.4"/>
+    </g>
+    <circle cx="20.3" cy="49.8" r="14" fill="#141c26" stroke="#3a4a5e" stroke-width="1.6"/>
+    <g transform="translate(20.3 49.8)" fill="none" stroke="#e6edf3" stroke-width="1.9"
+       stroke-linecap="round" stroke-linejoin="round">
+      <rect x="-8.4" y="-7.8" width="16.8" height="11.6" rx="2"/>
+      <path d="M0 3.8v3.2M-4.2 7h8.4"/>
+    </g>
+  </svg>
+`.trim();
+
+function logoSvg(size, uid) {
+  return LOGO_MARK.replace(/__U__/g, uid || "l").replace(/__S__/g, size || 128);
+}
+
+// Every [data-logo] box on the page gets the mark at its own size. This runs
+// as the script parses — all of them are above it in the document.
+document.querySelectorAll("[data-logo]").forEach((el, i) => {
+  el.innerHTML = logoSvg(el.dataset.logo, "m" + i);
+});
 
 // A colour tile with the glyph on top. `size` is the box in px.
 function consoleIcon(id, size, radius) {
@@ -1244,6 +1439,9 @@ function showGate() {
   $("linkGate").classList.add("hidden");
   $("app").classList.add("hidden");
   $("appHeader").classList.add("hidden");
+  // The drawer and its button belong to the app, not the sign-in screen.
+  $("sbOpenBtn").classList.add("hidden");
+  setDrawer(false);
   $("gate").classList.remove("hidden");
   $("authForm").classList.remove("hidden");
   $("authTabs").classList.remove("hidden");
@@ -1535,6 +1733,7 @@ async function onLoggedIn() {
   $("linkGate").classList.add("hidden");
   $("app").classList.remove("hidden");
   $("appHeader").classList.remove("hidden");
+  $("sbOpenBtn").classList.remove("hidden");
   await loadUserProfile();
   rootFolderId = await ensureRootFolder();
 
@@ -1567,11 +1766,30 @@ function enterApp() {
   navigate("games");
   refreshConsoleUi();
   loadGames();
+  // The desktop app waits for this before drawing anything of its own.
+  window.dispatchEvent(new CustomEvent("savestation:ready"));
+}
+
+// Both loadGames() paths end here, so the desktop app hears about an empty
+// library as clearly as a full one.
+function announceGames() {
+  window.dispatchEvent(new CustomEvent("savestation:games", { detail: { games: allGames } }));
 }
 
 /* ============================================================
    Sidebar navigation
    ============================================================ */
+/* The drawer, for when the window is too narrow to give the sidebar its own
+   column. Opening it is explicit; almost anything else closes it, because a
+   navigation drawer that lingers is just a thing covering your games. */
+function setDrawer(open) {
+  document.body.classList.toggle("sb-open", !!open);
+}
+
+function closeDrawerIfNarrow() {
+  if (window.matchMedia("(max-width: 620px)").matches) setDrawer(false);
+}
+
 function setSidebarCollapsed(on) {
   document.body.classList.toggle("sb-collapsed", !!on);
   $("appHeader").classList.toggle("collapsed", !!on);
@@ -1584,6 +1802,7 @@ function setSidebarCollapsed(on) {
 let currentNav = "games";
 
 function navigate(view) {
+  closeDrawerIfNarrow();
   const views = {
     games: "gamesView",
     settings: "settingsView",
@@ -1670,6 +1889,270 @@ function pruneStalePins() {
   if (kept.length !== ids.length) persistPins(kept);
 }
 
+/* ============================================================
+   Save slots — one game, more than one save file
+
+   Two playthroughs of the same game are two different saves,
+   and mixing them up is how forty hours disappear. A slot is a
+   lane through a game's history: the list filters to one, an
+   upload lands in one, and the desktop app watches a different
+   file on your PC for each one.
+
+   Where a slot lives: its name is in station.json, so every
+   device and the desktop app agree on it, and every backup also
+   carries its slot id in Drive metadata, so the lanes survive
+   even if the profile file is lost. A backup with no slot at
+   all — anything uploaded before slots existed — belongs to the
+   first one, which is why nothing needs migrating.
+   ============================================================ */
+const DEFAULT_SLOT = { id: "main", name: "Slot 1" };
+const MAX_SLOT_NAME = 40;
+let activeSlot = "all";        // "all" | a slot id
+
+function slotRegistry(folderId) {
+  const all = (profile && profile.slots) || {};
+  return Array.isArray(all[folderId]) ? all[folderId] : [];
+}
+
+// The slots a game actually has: what the profile knows, then anything the
+// backups themselves mention — a slot made on another device, or one whose
+// profile entry went missing — then the default, if there'd otherwise be none.
+function slotsFor(folderId, saves) {
+  const out = slotRegistry(folderId).map((s) => ({ id: s.id, name: s.name }));
+  const seen = {};
+  out.forEach((s) => { seen[s.id] = true; });
+  (saves || []).forEach((f) => {
+    const p = f.appProperties || {};
+    const id = p.slot || DEFAULT_SLOT.id;
+    if (seen[id]) return;
+    seen[id] = true;
+    out.push({ id, name: p.slotName || (id === DEFAULT_SLOT.id ? DEFAULT_SLOT.name : "Slot") });
+  });
+  if (!out.length) out.push({ id: DEFAULT_SLOT.id, name: DEFAULT_SLOT.name });
+  return out;
+}
+
+function slotOf(save) { return (save.appProperties || {}).slot || DEFAULT_SLOT.id; }
+function savesInSlot(saves, slotId) {
+  return slotId === "all" ? (saves || []) : (saves || []).filter((s) => slotOf(s) === slotId);
+}
+function slotById(slots, id) { return (slots || []).find((s) => s.id === id) || null; }
+
+// Where an upload goes when nothing has been picked: the game's first slot.
+function firstSlotFor(folderId) {
+  const reg = slotRegistry(folderId);
+  return reg.length ? { id: reg[0].id, name: reg[0].name }
+                    : { id: DEFAULT_SLOT.id, name: DEFAULT_SLOT.name };
+}
+
+function newSlotId() { return "s" + Math.random().toString(36).slice(2, 8); }
+
+let slotSaveTimer = null;
+function persistSlots(folderId, list) {
+  if (!profile) return;
+  if (!profile.slots || typeof profile.slots !== "object") profile.slots = {};
+  if (folderId) {
+    if (list && list.length) profile.slots[folderId] = list;
+    else delete profile.slots[folderId];
+  }
+  // Same bargain as the pins: redraw now, write to Drive a beat later, and
+  // coalesce a flurry of edits into one round-trip.
+  clearTimeout(slotSaveTimer);
+  slotSaveTimer = setTimeout(async () => {
+    try { profile = await saveProfile(profile); }
+    catch (e) { toast("Couldn't save your slots: " + e.message, "err", 5000); }
+  }, 700);
+}
+
+// A game deleted elsewhere shouldn't leave its slots behind. Same rule as the
+// pins: only ever run against a load that actually returned something.
+function pruneStaleSlots() {
+  const all = (profile && profile.slots) || null;
+  if (!all || !allGames.length) return;
+  const live = {};
+  allGames.forEach((g) => { live[g.folder.id] = true; });
+  let changed = false;
+  Object.keys(all).forEach((id) => { if (!live[id]) { delete all[id]; changed = true; } });
+  if (changed) persistSlots(null, null);      // saves the profile; the keys are already gone
+}
+
+async function addSlot() {
+  const folderId = currentHistory.folderId;
+  if (!folderId) return;
+  const list = (currentHistory.slots || []).slice();
+  const name = (prompt(
+    "Name this save slot — a second playthrough, a co-op file, a nuzlocke:",
+    "Slot " + (list.length + 1)) || "").trim();
+  if (!name) return;
+  const slot = { id: newSlotId(), name: name.slice(0, MAX_SLOT_NAME), createdAt: new Date().toISOString() };
+  list.push(slot);
+  currentHistory.slots = list;
+  persistSlots(folderId, list);
+  activeSlot = slot.id;
+  renderSlotBar();
+  renderHistory();
+  const g = gameById(folderId);
+  if (g) { g.slots = list; renderGames(); }
+  toast("\ud83d\uddc2\ufe0f Slot \u201c" + slot.name + "\u201d added — the next save you upload here lands in it",
+        "ok", 5000);
+}
+
+function renameSlot(id) {
+  const list = (currentHistory.slots || []).slice();
+  const i = list.findIndex((s) => s.id === id);
+  if (i < 0) return;
+  const name = prompt("Slot name:", list[i].name);
+  if (name === null) return;                       // cancelled
+  const trimmed = name.trim();
+  if (!trimmed) { toast("A slot needs a name.", "err"); return; }
+  // Only the profile is rewritten. The name stamped on each backup is a
+  // fallback for when the profile can't be read, not the thing on screen.
+  list[i] = Object.assign({}, list[i], { name: trimmed.slice(0, MAX_SLOT_NAME) });
+  currentHistory.slots = list;
+  persistSlots(currentHistory.folderId, list);
+  renderSlotBar();
+  renderHistory();
+  const g = gameById(currentHistory.folderId);
+  if (g) { g.slots = list; renderGames(); }
+}
+
+// Deleting a slot asks the only question that matters: what happens to the
+// backups in it. Moving them is the default, because it's the reversible one.
+async function deleteSlot(id) {
+  const list = (currentHistory.slots || []).slice();
+  if (list.length < 2) { toast("A game keeps at least one slot.", "err", 4000); return; }
+  const gone = slotById(list, id);
+  const others = list.filter((s) => s.id !== id);
+  const mine = savesInSlot(currentHistory.saves, id);
+  let what = "move";
+
+  if (mine.length) {
+    what = await askChoice(
+      "Delete the slot \u201c" + (gone ? gone.name : "") + "\u201d?",
+      "It holds <b>" + mine.length + " backup" + (mine.length > 1 ? "s" : "") + "</b>. They can move " +
+      "into <b>" + escapeHtml(others[0].name) + "</b>, or go to your Drive trash, where they're " +
+      "recoverable for 30 days.",
+      [
+        { label: "\u21aa Move them to \u201c" + others[0].name + "\u201d", value: "move", className: "btn-primary" },
+        { label: "\ud83d\uddd1 Delete the backups too", value: "delete", className: "btn-ghost danger" },
+        { label: "Cancel", value: null },
+      ]);
+    if (what !== "move" && what !== "delete") return;
+  }
+
+  try {
+    for (const f of mine) {
+      if (what === "move") await setSaveSlot(f.id, others[0]);
+      else await trashFile(f.id);
+    }
+    currentHistory.slots = others;
+    persistSlots(currentHistory.folderId, others);
+    activeSlot = others.length > 1 ? "all" : others[0].id;
+    toast("Slot deleted" + (mine.length && what === "move"
+      ? " — its backups are in \u201c" + others[0].name + "\u201d" : ""), "ok", 4500);
+    await openHistory(currentHistory.folderId, currentHistory.name, currentHistory.console);
+  } catch (e) {
+    toast("Couldn't delete the slot: " + e.message, "err", 5000);
+  }
+}
+
+// Re-file one backup under a different slot. Metadata only — the file itself
+// isn't touched, so this is instant and costs no upload.
+async function setSaveSlot(fileId, slot) {
+  await driveFetch("https://www.googleapis.com/drive/v3/files/" + fileId, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ appProperties: { slot: slot.id, slotName: slot.name.slice(0, MAX_SLOT_NAME) } }),
+  });
+}
+
+async function moveSaveToSlot(fileId) {
+  const slots = currentHistory.slots || [];
+  if (slots.length < 2) return;
+  const pick = await askChoice("Move this backup", "Which slot does it belong to?",
+    slots.map((s, i) => ({ label: "\ud83d\udcbe " + s.name, value: s.id,
+                           className: i === 0 ? "btn-primary" : "btn-ghost" }))
+         .concat([{ label: "Cancel", value: null }]));
+  if (!pick) return;
+  try {
+    await setSaveSlot(fileId, slotById(slots, pick));
+    toast("Moved to \u201c" + slotById(slots, pick).name + "\u201d", "ok");
+    await openHistory(currentHistory.folderId, currentHistory.name, currentHistory.console);
+  } catch (e) {
+    toast("Move failed: " + e.message, "err", 5000);
+  }
+}
+
+// Which slot does an upload belong to? With one slot there's no question. With
+// several, "All" isn't an answer — so ask rather than guess.
+async function pickTargetSlot() {
+  const slots = currentHistory.slots || [];
+  if (!slots.length) return { id: DEFAULT_SLOT.id, name: DEFAULT_SLOT.name };
+  if (slots.length === 1) return slots[0];
+  if (activeSlot !== "all") {
+    const s = slotById(slots, activeSlot);
+    if (s) return s;
+  }
+  const pick = await askChoice("Which slot?",
+    "This game has more than one save file on the go. Pick the one this backup belongs to.",
+    slots.map((s, i) => ({ label: "\ud83d\udcbe " + s.name, value: s.id,
+                           className: i === 0 ? "btn-primary" : "btn-ghost" }))
+         .concat([{ label: "Cancel", value: null }]));
+  return pick ? slotById(slots, pick) : null;
+}
+
+function renderSlotBar() {
+  const bar = $("slotBar");
+  const hint = $("slotHint");
+  if (!currentHistory.folderId) { bar.innerHTML = ""; hint.classList.add("hidden"); return; }
+  const slots = currentHistory.slots || [];
+  const saves = currentHistory.saves || [];
+  if (activeSlot !== "all" && !slotById(slots, activeSlot)) activeSlot = "all";
+  if (slots.length === 1) activeSlot = slots[0].id;      // nothing to choose between
+
+  const tab = (id, label, n, cls) =>
+    '<button class="slot-tab' + (activeSlot === id ? " on" : "") + (cls ? " " + cls : "") +
+    '" data-slot="' + escapeAttr(id) + '">' + label +
+    (n === null ? "" : '<span class="slot-n">' + n + "</span>") + "</button>";
+
+  let html = "";
+  if (slots.length > 1) html += tab("all", "\ud83d\uddc2\ufe0f All", saves.length);
+  slots.forEach((s) => {
+    html += tab(s.id, "\ud83d\udcbe " + escapeHtml(s.name), savesInSlot(saves, s.id).length);
+  });
+  html += '<button class="slot-tab slot-add" data-addslot="1">\uff0b New slot</button>';
+  html += '<div class="slot-tools">' +
+    (activeSlot === "all" ? "" :
+      '<button class="btn-ghost btn-sm" data-renameslot="' + escapeAttr(activeSlot) +
+        '" title="Rename this slot">\u270f\ufe0f</button>' +
+      (slots.length > 1
+        ? '<button class="btn-ghost btn-sm danger" data-delslot="' + escapeAttr(activeSlot) +
+          '" title="Delete this slot">\ud83d\uddd1</button>'
+        : "")) +
+    "</div>";
+  bar.innerHTML = html;
+
+  bar.querySelectorAll("button[data-slot]").forEach((b) => {
+    b.onclick = () => { activeSlot = b.dataset.slot; renderSlotBar(); renderHistory(); };
+  });
+  bar.querySelector("button[data-addslot]").onclick = addSlot;
+  const ren = bar.querySelector("button[data-renameslot]");
+  if (ren) ren.onclick = () => renameSlot(ren.dataset.renameslot);
+  const del = bar.querySelector("button[data-delslot]");
+  if (del) del.onclick = () => deleteSlot(del.dataset.delslot);
+
+  if (slots.length === 1) {
+    hint.innerHTML = "Playing this game on a second save file? \uff0b <b>New slot</b> gives it a " +
+      "history of its own, so the two never mix.";
+    hint.classList.remove("hidden");
+  } else if (activeSlot === "all") {
+    hint.innerHTML = "Every slot at once, newest first. Pick a slot to upload into it.";
+    hint.classList.remove("hidden");
+  } else {
+    hint.classList.add("hidden");
+  }
+}
+
 function renderSidebar() {
   renderPinnedNav();
   renderConsoleNav();
@@ -1727,6 +2210,7 @@ function renderConsoleNav() {
 // Clicking the console you're already filtered to clears the filter — the
 // same button gets you both ways, so there's no dead end.
 function filterByConsole(id) {
+  closeDrawerIfNarrow();
   activeFilter = activeFilter === id ? "all" : id;
   navigate("games");
   renderGames();
@@ -2817,14 +3301,144 @@ async function uploadSave(folderId, filename, fileBlob, appProperties) {
   return await r.json();
 }
 
-async function downloadSave(fileId, filename) {
+/* The one path every backup takes.
+
+   The website's own upload buttons and the desktop app's commits both end up
+   here, so a backup made either way carries exactly the same metadata \u2014 same
+   slot tagging, same hash, same naming. Anything that diverges here shows up
+   later as a game whose history half-works. */
+async function uploadToSlot(opts) {
+  const device = opts.device || localStorage.getItem("ssw_device_name") || getDeviceName();
+  const slot = opts.slot || { id: DEFAULT_SLOT.id, name: DEFAULT_SLOT.name };
+  const props = {
+    game: opts.gameName,
+    device: device,
+    console: opts.consoleId || "",
+    emulator: opts.emulator || "",
+    kind: opts.isFolder ? "folder" : "file",
+    originalName: opts.filename,   // the real save filename \u2014 never changed by a label
+    uploadedAt: new Date().toISOString(),
+    slot: slot.id,
+    // Denormalised on purpose: station.json is the name's home, but a copy here
+    // means a slot can still be told apart if that file is ever lost.
+    slotName: String(slot.name || "").slice(0, MAX_SLOT_NAME),
+  };
+  const hash = await sha256Hex(opts.blob);
+  if (hash) props.hash = hash;
+  // Drive caps a property's key and value at 124 bytes between them, so a long
+  // commit message is trimmed rather than rejected outright.
+  if (opts.label) props.label = String(opts.label).slice(0, 90);
+  if (opts.source) props.source = opts.source;      // "desktop" when the app committed it
+  const ext = getExt(opts.filename);
+  const versionedName = timestamp() + "__" + sanitizeFolderName(device) + (ext ? "." + ext : "");
+  return await uploadSave(opts.folderId, versionedName, opts.blob, props);
+}
+
+// The bytes of one backup, for whoever needs them \u2014 the browser's download
+// link, or the desktop app writing a save back onto your PC.
+async function fetchSaveBlob(fileId) {
   const r = await driveFetch("https://www.googleapis.com/drive/v3/files/" + fileId + "?alt=media");
-  const blob = await r.blob();
+  return await r.blob();
+}
+
+/* ============================================================
+   GBA saves: mGBA writes one shape, Delta reads another
+
+   A .sav is just the cartridge's save chip, dumped. Two things
+   stop mGBA's dump loading in Delta, whose GBA core comes from
+   VBA-M:
+
+     1. mGBA appends a 16-byte real-time-clock block after the
+        save data \u2014 handy for Pok\u00e9mon Ruby/Sapphire/Emerald,
+        which have a clock in the cartridge, and unreadable to a
+        core that expects the file to be save data and nothing
+        else. This is the one that bites: the file is 131,088
+        bytes where 131,072 was expected.
+     2. mGBA writes exactly as many bytes as the game used;
+        VBA-M expects the whole chip.
+
+   So converting is reshaping, not translating: drop the clock
+   footer, pad out to the real chip size with 0xFF (what an
+   erased flash byte reads as). Nothing inside the save is
+   touched, which is why it's safe \u2014 and also why it can't
+   rescue a save that's broken for some other reason.
+
+   The other direction needs nothing: mGBA reads a plain
+   VBA-M-shaped save happily, so "for a PC emulator" is a
+   straight download.
+   ============================================================ */
+const GBA_SAVE_SIZES = [512, 8192, 32768, 65536, 131072];   // EEPROM, EEPROM, SRAM, flash, flash
+const MGBA_RTC_FOOTER = 16;
+
+function convertGbaSaveForDelta(u8) {
+  const notes = [];
+  let out = u8;
+
+  if (GBA_SAVE_SIZES.indexOf(out.length - MGBA_RTC_FOOTER) >= 0) {
+    out = out.subarray(0, out.length - MGBA_RTC_FOOTER);
+    notes.push("removed mGBA's 16-byte clock footer");
+  }
+
+  const target = GBA_SAVE_SIZES.find((s) => s >= out.length);
+  if (target && out.length < target) {
+    const padded = new Uint8Array(target).fill(0xff);
+    padded.set(out);
+    out = padded;
+    notes.push("padded out to " + humanSize(target));
+  }
+  // Bigger than any GBA save chip and not just a footer? Something unusual is
+  // going on, and guessing at it would be worse than leaving it alone.
+  const odd = !target && out.length > 131072;
+  return { bytes: out, changed: notes.length > 0, notes, odd };
+}
+
+// Hand a blob to the browser as a download.
+function saveBlobAs(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url; a.download = filename;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+/* Downloading a GBA save asks one question first, because the answer changes
+   the bytes. Only GBA, only single-file saves \u2014 everywhere else there's
+   nothing to decide, so nothing is asked. */
+async function downloadSaveFor(fileId, filename, save) {
+  const p = (save && save.appProperties) || {};
+  const consoleId = p.console || currentHistory.console;
+  if (consoleId !== "gba" || p.kind === "folder") {
+    await downloadSave(fileId, filename);
+    return;
+  }
+
+  const pick = await askChoice("Which emulator is this for?",
+    "GBA saves come in two shapes. Say where this one's going and it comes out in the right one." +
+    "<br><br><b>Delta</b> uses a different core from mGBA, and won't load an mGBA save until the " +
+    "16 bytes of clock data mGBA adds are taken back off.",
+    [
+      { label: "\ud83d\udda5\ufe0f mGBA, VBA-M or RetroArch", value: "pc", className: "btn-primary" },
+      { label: "\ud83d\udcf1 Delta on iPhone or iPad", value: "delta", className: "btn-ghost" },
+      { label: "Cancel", value: null },
+    ]);
+  if (!pick) return;
+
+  if (pick === "pc") { await downloadSave(fileId, filename); return; }
+
+  const blob = await fetchSaveBlob(fileId);
+  const res = convertGbaSaveForDelta(new Uint8Array(await blob.arrayBuffer()));
+  saveBlobAs(new Blob([res.bytes], { type: "application/octet-stream" }), filename);
+  if (res.odd) {
+    toast("Downloaded as-is \u2014 that save is an unusual size, so nothing was changed.", "err", 7000);
+  } else if (res.changed) {
+    toast("\ud83d\udcf1 Ready for Delta \u2014 " + res.notes.join(", ") + ".", "ok", 7000);
+  } else {
+    toast("Already the shape Delta wants \u2014 downloaded unchanged.", "ok", 5000);
+  }
+}
+
+async function downloadSave(fileId, filename) {
+  saveBlobAs(await fetchSaveBlob(fileId), filename);
 }
 
 /* ============================================================
@@ -2909,23 +3523,13 @@ async function doUpload() {
     // Make sure an existing folder learns its console too.
     try { await setFolderProps(gameFolderId, { console: consoleId, role: "game" }); } catch (e) {}
 
-    const stamp = timestamp();
-    const ext = getExt(filename);
-    const versionedName = stamp + "__" + sanitizeFolderName(device) + (ext ? "." + ext : "");
-    const label = $("backupName").value.trim();
-    const appProperties = {
-      game: gameName,
-      device: device,
-      console: consoleId,
-      emulator: emulator,
-      kind: isFolder ? "folder" : "file",
-      originalName: filename,  // the real save filename — never changed by a label
-      uploadedAt: new Date().toISOString(),
-    };
-    const hash = await sha256Hex(blob);
-    if (hash) appProperties.hash = hash;
-    if (label) appProperties.label = label;
-    await uploadSave(gameFolderId, versionedName, blob, appProperties);
+    // A game that's already in the library keeps its own first slot; a brand
+    // new one starts with the default, and can grow more from its history page.
+    await uploadToSlot({
+      folderId: gameFolderId, gameName, consoleId, emulator, device,
+      slot: firstSlotFor(gameFolderId),
+      blob, filename, isFolder, label: $("backupName").value.trim(),
+    });
     $("uploadStatus").textContent = "";
     toast(restored
       ? "📦 Welcome back — “" + gameName + "” came out of " + ARCHIVE_FOLDER_NAME + " with its old backups ✔"
@@ -2972,22 +3576,17 @@ async function uploadToGame(folderId, selection) {
     "gba";
   const prev = currentHistory.saves.find((s) => s.appProperties && s.appProperties.emulator);
   const emulator = prev ? prev.appProperties.emulator : ((consoleOf(consoleId) || {}).emus || [""])[0];
-  const label = (prompt("Name this backup (optional — leave blank to skip):", "") || "").trim();
-  toast(selection.kind === "folder" ? "Zipping & uploading…" : "Uploading save…");
+  // Which slot, before anything else \u2014 backing out here should cost nothing.
+  const slot = await pickTargetSlot();
+  if (!slot) return;
+  const label = (prompt("Name this backup (optional \u2014 leave blank to skip):", "") || "").trim();
+  toast(selection.kind === "folder" ? "Zipping & uploading\u2026" : "Uploading save\u2026");
   try {
     const { blob, filename, isFolder } = await selectionToBlob(selection);
-    const ext = getExt(filename);
-    const versionedName = timestamp() + "__" + sanitizeFolderName(device) + (ext ? "." + ext : "");
-    const props = {
-      game: gameName, device, console: consoleId, emulator,
-      kind: isFolder ? "folder" : "file",
-      originalName: filename, uploadedAt: new Date().toISOString(),
-    };
-    const hash = await sha256Hex(blob);
-    if (hash) props.hash = hash;
-    if (label) props.label = label;
-    await uploadSave(folderId, versionedName, blob, props);
-    toast("Saved backup to “" + gameName + "” ✔", "ok");
+    await uploadToSlot({ folderId, gameName, consoleId, emulator, device, slot,
+                         blob, filename, isFolder, label });
+    activeSlot = slot.id;
+    toast("Saved backup to \u201c" + gameName + "\u201d \u2192 " + slot.name + " \u2714", "ok");
     await openHistory(folderId, gameName, consoleId);
   } catch (e) {
     toast("Upload failed: " + e.message, "err", 5000);
@@ -3039,7 +3638,11 @@ async function deleteGame() {
       toast("📦 “" + name + "” archived — its saves are safe in " + ARCHIVE_FOLDER_NAME, "ok", 5500);
     } else {
       await trashFile(currentHistory.folderId);
-      toast("“" + name + "” deleted", "ok");
+      // Archiving keeps the slot names, because adding the game back restores
+      // the same folder \u2014 and its history should come back arranged as it was.
+      // A real delete has nothing left to name.
+      persistSlots(currentHistory.folderId, null);
+      toast("\u201c" + name + "\u201d deleted", "ok");
     }
     navigate("games");
     await loadGames();   // also drops the pin, via pruneStalePins
@@ -3074,18 +3677,22 @@ async function loadGames() {
       allGames = [];
       $("sbGameCount").textContent = "";
       renderSidebar();
+      announceGames();
       c.innerHTML = '<div class="empty"><div class="e-icon">🎲</div>No games yet — click <b>＋ New game</b> to upload your first save.</div>';
       return;
     }
     // Fetch counts + latest + cover per game (in parallel)
     allGames = await Promise.all(folders.map(async (f) => {
       const { cover, saves } = splitCover(await listSaves(f.id));
-      return { folder: f, saves, cover, consoleId: gameConsoleId(f, saves) };
+      return { folder: f, saves, cover, consoleId: gameConsoleId(f, saves),
+               slots: slotsFor(f.id, saves) };
     }));
-    // Only safe once the load has actually succeeded — see pruneStalePins.
+    // Only safe once the load has actually succeeded \u2014 see pruneStalePins.
     pruneStalePins();
+    pruneStaleSlots();
     renderSidebar();
     renderGames();
+    announceGames();
   } catch (e) {
     c.innerHTML = '<div class="empty">Could not load games: ' + escapeHtml(e.message) + "</div>";
   }
@@ -3112,8 +3719,10 @@ function renderGames() {
   }
   c.innerHTML = '<div class="games-grid">' + games.map((g) => {
     const latest = g.saves[0];
+    const nSlots = (g.slots || []).length;
     const meta = latest
-      ? (g.saves.length + " backup" + (g.saves.length > 1 ? "s" : "") + " · " + relTime(latest.createdTime))
+      ? ((nSlots > 1 ? nSlots + " slots \u00b7 " : "") +
+         g.saves.length + " backup" + (g.saves.length > 1 ? "s" : "") + " \u00b7 " + relTime(latest.createdTime))
       : "No backups yet";
     const con = consoleOf(g.consoleId);
     const tag = con
@@ -3149,9 +3758,10 @@ function renderGames() {
   });
 }
 
-let currentHistory = { folderId: null, name: null, saves: [], console: null };
+let currentHistory = { folderId: null, name: null, saves: [], console: null, slots: [] };
 
 async function openHistory(folderId, name, consoleId) {
+  closeDrawerIfNarrow();
   $("gamesView").classList.add("hidden");
   $("settingsView").classList.add("hidden");
   $("onboardView").classList.add("hidden");
@@ -3159,6 +3769,9 @@ async function openHistory(folderId, name, consoleId) {
   $("historyView").classList.remove("hidden");
   markNav("history");
   $("historyTitle").textContent = name;
+  // Arriving from a different game? Start on "All". Inheriting the last game's
+  // tab would mean landing on a slot this game hasn't got.
+  if (currentHistory.folderId !== folderId) activeSlot = "all";
   // Set before the backups finish loading, so the sidebar highlight and the
   // pin button are right even while the list is still spinning.
   currentHistory.folderId = folderId;
@@ -3167,14 +3780,16 @@ async function openHistory(folderId, name, consoleId) {
   updateNavHighlight();
   const coverEl = $("historyCover");
   coverEl.style.backgroundImage = "";
+  coverEl.classList.add("no-cover");
   coverEl.textContent = emojiFor(name, consoleOf(consoleId));
   const c = $("historyContainer");
-  c.innerHTML = '<div class="empty"><span class="spinner"></span> Loading backups…</div>';
+  c.innerHTML = '<div class="empty"><span class="spinner"></span> Loading backups\u2026</div>';
   window.scrollTo({ top: 0, behavior: "smooth" });
   try {
     const { cover, saves } = splitCover(await listSaves(folderId));
     const resolved = consoleId || gameConsoleId({ appProperties: {} }, saves);
-    currentHistory = { folderId, name, saves, cover, console: resolved };
+    currentHistory = { folderId, name, saves, cover, console: resolved,
+                       slots: slotsFor(folderId, saves) };
 
     const con = consoleOf(resolved);
     $("historyConsole").innerHTML = con
@@ -3186,94 +3801,138 @@ async function openHistory(folderId, name, consoleId) {
     const folderSave = saves.find((s) => (s.appProperties || {}).kind === "folder");
     $("folderNote").classList.toggle("hidden", !folderSave);
     if (folderSave) {
-      $("folderNote").innerHTML = "📦 This game's saves are <b>folders</b>, stored as <code>.zip</code>. " +
+      $("folderNote").innerHTML = "\ud83d\udce6 This game's saves are <b>folders</b>, stored as <code>.zip</code>. " +
         "Download one and extract its contents into " +
         (con ? "<code>" + escapeHtml(con.where) + "</code>" : "your emulator's save folder") + ".";
     }
 
     if (cover) {
-      $("setCoverBtn").textContent = "🖼️ Change cover";
-      try { coverEl.style.backgroundImage = "url('" + (await getCoverUrl(cover.id)) + "')"; coverEl.textContent = ""; } catch (e) {}
+      $("setCoverBtn").textContent = "\ud83d\uddbc\ufe0f Change cover";
+      try {
+        coverEl.style.backgroundImage = "url('" + (await getCoverUrl(cover.id)) + "')";
+        coverEl.textContent = "";
+        coverEl.classList.remove("no-cover");
+      } catch (e) {}
     } else {
-      $("setCoverBtn").textContent = "🖼️ Add cover";
+      $("setCoverBtn").textContent = "\ud83d\uddbc\ufe0f Add cover";
     }
-    if (!saves.length) {
-      c.innerHTML = '<div class="empty"><div class="e-icon">📭</div>No backups for this game yet.</div>';
-      $("downloadLatestBtn").disabled = true;
-      return;
-    }
-    $("downloadLatestBtn").disabled = false;
-    c.innerHTML = '<div class="history-list">' + saves.map((s, i) => {
-      const p = s.appProperties || {};
-      const device = p.device || "Unknown device";
-      const emu = p.emulator || "";
-      const orig = p.originalName || s.name;
-      const label = p.label || "";
-      const title = label || orig;
-      const sc = consoleOf(p.console) || (LEGACY_EMU_CONSOLE[emu] ? consoleOf(LEGACY_EMU_CONSOLE[emu]) : null);
-      return '<div class="save-row">' +
-        '<div class="sr-icon">' + (p.kind === "folder" ? "📦" : "💾") + '</div>' +
-        '<div class="sr-main">' +
-          '<div class="sr-title">' + escapeHtml(title) +
-            (i === 0 ? ' <span class="badge latest">● Latest</span>' : '') + '</div>' +
-          '<div class="sr-sub">' +
-            '<span>🕒 ' + fmtTime(s.createdTime) + '</span>' +
-            (sc ? consolePill(sc) : '') +
-            '<span class="badge device">🖥️ ' + escapeHtml(device) + '</span>' +
-            (emu ? '<span class="badge">' + escapeHtml(emu) + '</span>' : '') +
-            (s.size ? '<span>' + humanSize(+s.size) + '</span>' : '') +
-            (label ? '<span>📄 ' + escapeHtml(orig) + '</span>' : '') +
-          '</div>' +
-        '</div>' +
-        '<div class="sr-actions">' +
-          '<button class="btn-ghost btn-sm" data-id="' + s.id + '" data-fn="' + escapeAttr(orig) + '">⬇ Download</button>' +
-          '<button class="btn-ghost btn-sm" data-rename="' + s.id + '" data-cur="' + escapeAttr(label) + '" title="Rename this backup">✏️</button>' +
-          '<button class="btn-ghost btn-sm danger" data-del="' + s.id + '" title="Delete this backup">🗑</button>' +
-        '</div>' +
-      '</div>';
-    }).join("") + "</div>";
 
-    c.querySelectorAll("button[data-id]").forEach((b) => {
-      b.onclick = async () => {
-        b.disabled = true; b.innerHTML = '<span class="spinner"></span>';
-        try { await downloadSave(b.dataset.id, b.dataset.fn); toast("Downloaded ✔", "ok"); }
-        catch (e) { toast("Download failed: " + e.message, "err"); }
-        finally { b.disabled = false; b.innerHTML = "⬇ Download"; }
-      };
-    });
-    c.querySelectorAll("button[data-rename]").forEach((b) => {
-      b.onclick = async () => {
-        const cur = b.dataset.cur || "";
-        const name2 = prompt("Backup name (leave blank to clear the label):", cur);
-        if (name2 === null) return; // cancelled
-        b.disabled = true; b.innerHTML = '<span class="spinner"></span>';
-        try {
-          await setLabel(b.dataset.rename, name2.trim());
-          toast("Backup renamed", "ok");
-          await openHistory(currentHistory.folderId, currentHistory.name, currentHistory.console);
-        } catch (e) {
-          toast("Rename failed: " + e.message, "err");
-          b.disabled = false; b.innerHTML = "✏️";
-        }
-      };
-    });
-    c.querySelectorAll("button[data-del]").forEach((b) => {
-      b.onclick = async () => {
-        if (!confirm("Delete this backup?\n\nIt will be moved to your Google Drive trash (recoverable there for 30 days).")) return;
-        b.disabled = true; b.innerHTML = '<span class="spinner"></span>';
-        try {
-          await trashFile(b.dataset.del);
-          toast("Backup deleted", "ok");
-          await openHistory(currentHistory.folderId, currentHistory.name, currentHistory.console);
-        } catch (e) {
-          toast("Delete failed: " + e.message, "err");
-          b.disabled = false; b.innerHTML = "🗑";
-        }
-      };
-    });
+    renderSlotBar();
+    renderHistory();
   } catch (e) {
     c.innerHTML = '<div class="empty">Could not load backups: ' + escapeHtml(e.message) + "</div>";
   }
+}
+
+/* Draws the backup list for whichever slot is on screen.
+
+   Split out of openHistory so switching tabs is instant \u2014 the saves are
+   already in hand, and a tab is only ever a filter over them. */
+function renderHistory() {
+  const c = $("historyContainer");
+  const slots = currentHistory.slots || [];
+  const saves = savesInSlot(currentHistory.saves, activeSlot);
+  // Only worth labelling a row with its slot when the list is mixing them.
+  const showSlot = activeSlot === "all" && slots.length > 1;
+  const canMove = slots.length > 1;
+
+  // Announced once the list is actually on the page, so the desktop app has
+  // rows to hang its "restore onto this PC" buttons off.
+  const announce = () => window.dispatchEvent(new CustomEvent("savestation:history", {
+    detail: { folderId: currentHistory.folderId, name: currentHistory.name,
+              console: currentHistory.console, slots: slots, activeSlot: activeSlot },
+  }));
+
+  if (!saves.length) {
+    c.innerHTML = '<div class="empty"><div class="e-icon">\ud83d\udced</div>' +
+      (activeSlot === "all" || slots.length < 2
+        ? "No backups for this game yet."
+        : "Nothing in \u201c" + escapeHtml((slotById(slots, activeSlot) || {}).name || "") +
+          "\u201d yet \u2014 \u2b06 <b>Upload save</b> puts the first one here.") + "</div>";
+    $("downloadLatestBtn").disabled = true;
+    announce();
+    return;
+  }
+  $("downloadLatestBtn").disabled = false;
+
+  c.innerHTML = '<div class="history-list">' + saves.map((s, i) => {
+    const p = s.appProperties || {};
+    const device = p.device || "Unknown device";
+    const emu = p.emulator || "";
+    const orig = p.originalName || s.name;
+    const label = p.label || "";
+    const title = label || orig;
+    const sc = consoleOf(p.console) || (LEGACY_EMU_CONSOLE[emu] ? consoleOf(LEGACY_EMU_CONSOLE[emu]) : null);
+    const sl = showSlot ? (slotById(slots, slotOf(s)) || {}).name : "";
+    return '<div class="save-row">' +
+      '<div class="sr-icon">' + (p.kind === "folder" ? "\ud83d\udce6" : "\ud83d\udcbe") + '</div>' +
+      '<div class="sr-main">' +
+        '<div class="sr-title">' + escapeHtml(title) +
+          (i === 0 ? ' <span class="badge latest">\u25cf Latest</span>' : '') + '</div>' +
+        '<div class="sr-sub">' +
+          '<span>\ud83d\udd52 ' + fmtTime(s.createdTime) + '</span>' +
+          (sl ? '<span class="badge slot">\ud83d\udcbe ' + escapeHtml(sl) + '</span>' : '') +
+          (sc ? consolePill(sc) : '') +
+          '<span class="badge device">\ud83d\udda5\ufe0f ' + escapeHtml(device) + '</span>' +
+          (emu ? '<span class="badge">' + escapeHtml(emu) + '</span>' : '') +
+          (p.source === "desktop" ? '<span class="badge">\ud83d\udda5 committed</span>' : '') +
+          (s.size ? '<span>' + humanSize(+s.size) + '</span>' : '') +
+          (label ? '<span>\ud83d\udcc4 ' + escapeHtml(orig) + '</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="sr-actions">' +
+        '<button class="btn-ghost btn-sm" data-id="' + s.id + '" data-fn="' + escapeAttr(orig) + '">\u2b07 Download</button>' +
+        (canMove ? '<button class="btn-ghost btn-sm" data-moveslot="' + s.id +
+                   '" title="Move to another slot">\ud83d\uddc2\ufe0f</button>' : '') +
+        '<button class="btn-ghost btn-sm" data-rename="' + s.id + '" data-cur="' + escapeAttr(label) + '" title="Rename this backup">\u270f\ufe0f</button>' +
+        '<button class="btn-ghost btn-sm danger" data-del="' + s.id + '" title="Delete this backup">\ud83d\uddd1</button>' +
+      '</div>' +
+    '</div>';
+  }).join("") + "</div>";
+
+  c.querySelectorAll("button[data-id]").forEach((b) => {
+    b.onclick = async () => {
+      const save = currentHistory.saves.find((s) => s.id === b.dataset.id);
+      b.disabled = true; b.innerHTML = '<span class="spinner"></span>';
+      try { await downloadSaveFor(b.dataset.id, b.dataset.fn, save); toast("Downloaded \u2714", "ok"); }
+      catch (e) { toast("Download failed: " + e.message, "err"); }
+      finally { b.disabled = false; b.innerHTML = "\u2b07 Download"; }
+    };
+  });
+  c.querySelectorAll("button[data-moveslot]").forEach((b) => {
+    b.onclick = () => moveSaveToSlot(b.dataset.moveslot);
+  });
+  c.querySelectorAll("button[data-rename]").forEach((b) => {
+    b.onclick = async () => {
+      const cur = b.dataset.cur || "";
+      const name2 = prompt("Backup name (leave blank to clear the label):", cur);
+      if (name2 === null) return; // cancelled
+      b.disabled = true; b.innerHTML = '<span class="spinner"></span>';
+      try {
+        await setLabel(b.dataset.rename, name2.trim());
+        toast("Backup renamed", "ok");
+        await openHistory(currentHistory.folderId, currentHistory.name, currentHistory.console);
+      } catch (e) {
+        toast("Rename failed: " + e.message, "err");
+        b.disabled = false; b.innerHTML = "\u270f\ufe0f";
+      }
+    };
+  });
+  c.querySelectorAll("button[data-del]").forEach((b) => {
+    b.onclick = async () => {
+      if (!confirm("Delete this backup?\n\nIt will be moved to your Google Drive trash (recoverable there for 30 days).")) return;
+      b.disabled = true; b.innerHTML = '<span class="spinner"></span>';
+      try {
+        await trashFile(b.dataset.del);
+        toast("Backup deleted", "ok");
+        await openHistory(currentHistory.folderId, currentHistory.name, currentHistory.console);
+      } catch (e) {
+        toast("Delete failed: " + e.message, "err");
+        b.disabled = false; b.innerHTML = "\ud83d\uddd1";
+      }
+    };
+  });
+  announce();
 }
 
 /* ============================================================
@@ -3523,10 +4182,12 @@ function wireEvents() {
   $("refreshBtn").onclick = loadGames;
   $("backBtn").onclick = () => navigate("games");
   $("downloadLatestBtn").onclick = async () => {
-    const latest = currentHistory.saves[0];
+    // The latest in the slot you're looking at \u2014 not the game's newest overall,
+    // which could belong to a playthrough you aren't in.
+    const latest = savesInSlot(currentHistory.saves, activeSlot)[0];
     if (!latest) return;
     const orig = (latest.appProperties && latest.appProperties.originalName) || latest.name;
-    try { await downloadSave(latest.id, orig); toast("Downloaded latest ✔", "ok"); }
+    try { await downloadSaveFor(latest.id, orig, latest); toast("Downloaded latest ✔", "ok"); }
     catch (e) { toast("Download failed: " + e.message, "err"); }
   };
 
@@ -3565,6 +4226,9 @@ function wireEvents() {
 
   // Sidebar
   $("sbToggle").onclick = () => setSidebarCollapsed(!document.body.classList.contains("sb-collapsed"));
+  $("sbOpenBtn").onclick = () => setDrawer(!document.body.classList.contains("sb-open"));
+  $("sbScrim").onclick = () => setDrawer(false);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") setDrawer(false); });
   $("sbNav").querySelectorAll(".sb-item[data-view]").forEach((b) => {
     b.onclick = () => navigate(b.dataset.view);
   });
@@ -3710,6 +4374,40 @@ function askChoice(title, bodyHtml, options) {
     if (first) first.focus();
   });
 }
+
+/* ============================================================
+   Desktop bridge
+
+   The Electron app in desktop-app/ serves this very page and
+   injects a small shim alongside it. Everything that shim is
+   allowed to touch is gathered here on purpose: the app never
+   reaches into the internals, and anyone changing this file can
+   see in one place what the desktop build depends on.
+
+   In a browser this is inert \u2014 nothing on the website reads it.
+   ============================================================ */
+window.SaveStation = {
+  api: 1,
+  consoles: CONSOLES,
+  consoleOf, isFolderConsole, consoleIcon,
+  get games() { return allGames; },
+  get history() { return currentHistory; },
+  get activeSlot() { return activeSlot; },
+  get profile() { return profile; },
+  get rootFolderId() { return rootFolderId; },
+  get signedIn() { return !!(fbUser && accessToken); },
+  openGame: (folderId, name, consoleId) => openHistory(folderId, name, consoleId),
+  refreshGames: () => loadGames(),
+  slotsFor, savesInSlot, slotOf, slotById,
+  uploadToSlot,        // how the desktop app commits a save\u2026
+  fetchSaveBlob,       // \u2026and how it pulls one back down to restore it
+  firebaseIdToken,     // proves to the Drive broker who is asking
+  // Linking Drive from the app means finishing in a real browser and coming
+  // back \u2014 these two are how the app notices that it worked.
+  refreshDriveToken, onLoggedIn,
+  sanitizeFolderName, humanSize, relTime, fmtTime, escapeHtml, escapeAttr,
+  toast, askChoice,
+};
 
 let toastTimer = null;
 function toast(msg, type, ms) {

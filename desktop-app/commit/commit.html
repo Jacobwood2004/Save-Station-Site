@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:;">
+<title>Commit this save?</title>
+<!--
+  The commit prompt.
+
+  It shows up when you close the emulator, in the corner of the screen, and asks
+  the one question worth asking: this save changed — do you want it backed up,
+  and what would you call this point in the game?
+
+  The message is the same field the website shows as a backup's name, so a
+  commit made here reads as "Beat the 4th gym" in your history rather than
+  "2026-08-19_22-14-03__GAMING-PC.sav".
+-->
+<style>
+  :root {
+    --bg: #141b24;
+    --panel: #1a222d;
+    --panel-2: #1f2836;
+    --border: #2c3746;
+    --text: #e6edf3;
+    --muted: #8b98a5;
+    --accent: #7c5cff;
+    --accent-2: #4ad2c9;
+    --ok: #3fb950;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: radial-gradient(600px 300px at 100% 0%, #241a52 0%, transparent 65%), var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    display: flex; flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  header {
+    -webkit-app-region: drag;
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  header .dot {
+    width: 9px; height: 9px; border-radius: 50%; background: var(--accent-2);
+    box-shadow: 0 0 0 4px rgba(74,210,201,.15); flex-shrink: 0;
+  }
+  header h1 { font-size: 14px; margin: 0; font-weight: 700; letter-spacing: .01em; }
+  header .why { font-size: 11px; color: var(--muted); }
+  header .x {
+    -webkit-app-region: no-drag;
+    margin-left: auto; background: none; border: none; color: var(--muted);
+    font-size: 15px; cursor: pointer; padding: 2px 6px; border-radius: 6px;
+  }
+  header .x:hover { background: var(--panel-2); color: var(--text); }
+
+  main { padding: 16px; overflow-y: auto; flex: 1; }
+
+  .game { font-size: 19px; font-weight: 700; line-height: 1.25; }
+  .slot {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 8px;
+    font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+    background: rgba(124,92,255,.16); color: #b9a6ff;
+  }
+  .path {
+    margin-top: 12px; font-size: 11px; color: var(--muted); word-break: break-all;
+    line-height: 1.5;
+  }
+
+  .diff {
+    margin-top: 16px; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 14px;
+  }
+  .diff h2 {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); margin: 0 0 8px; font-weight: 700;
+  }
+  .diff ul { margin: 0; padding: 0; list-style: none; }
+  .diff li {
+    font-size: 12.5px; line-height: 1.75; padding-left: 16px; position: relative;
+    font-variant-numeric: tabular-nums;
+  }
+  .diff li::before {
+    content: ""; position: absolute; left: 0; top: 9px;
+    width: 6px; height: 6px; border-radius: 50%; background: var(--accent-2); opacity: .8;
+  }
+  .diff .last { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+                font-size: 11.5px; color: var(--muted); line-height: 1.6; }
+  .diff .last b { color: var(--text); font-weight: 600; }
+
+  label.field { display: block; margin-top: 18px; }
+  label.field span {
+    display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); font-weight: 700; margin-bottom: 7px;
+  }
+  input[type=text] {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 9px; padding: 11px 13px; color: var(--text); font: inherit; font-size: 13.5px;
+  }
+  input[type=text]:focus { outline: none; border-color: var(--accent); }
+  input[type=text]::placeholder { color: #64707e; }
+  .count { font-size: 11px; color: var(--muted); margin-top: 6px; text-align: right; }
+
+  .auto { display: flex; align-items: flex-start; gap: 9px; margin-top: 16px; font-size: 12.5px; color: var(--muted); }
+  .auto input { margin-top: 2px; accent-color: var(--accent); }
+  .auto b { color: var(--text); font-weight: 600; }
+
+  footer {
+    padding: 14px 16px; border-top: 1px solid var(--border); background: rgba(0,0,0,.18);
+    display: flex; gap: 10px; align-items: center;
+  }
+  button.act {
+    font: inherit; font-weight: 700; font-size: 13.5px; border: none; border-radius: 10px;
+    padding: 11px 16px; cursor: pointer;
+  }
+  .primary { background: linear-gradient(135deg, var(--accent), #5b8cff); color: #fff; flex: 1; }
+  .primary:hover { filter: brightness(1.08); }
+  .ghost { background: var(--panel-2); color: var(--text); border: 1px solid var(--border) !important; }
+  .ghost:hover { background: #26303e; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+  <header>
+    <span class="dot"></span>
+    <div>
+      <h1>Save changed</h1>
+      <div class="why" id="why"></div>
+    </div>
+    <button class="x" id="close" title="Not now">✕</button>
+  </header>
+
+  <main>
+    <div class="game" id="game"></div>
+    <div class="slot" id="slot"></div>
+    <div class="path" id="path"></div>
+
+    <div class="diff">
+      <h2 id="diffTitle">Changes since the last backup</h2>
+      <ul id="diff"></ul>
+      <div class="last hidden" id="last"></div>
+    </div>
+
+    <label class="field">
+      <span>Commit message (optional)</span>
+      <input type="text" id="msg" maxlength="90" placeholder="e.g. Beat the 4th gym" autocomplete="off">
+    </label>
+    <div class="count" id="count"></div>
+
+    <div class="auto">
+      <input type="checkbox" id="always">
+      <label for="always">Commit this slot <b>automatically</b> from now on — no more asking for this save file.</label>
+    </div>
+  </main>
+
+  <footer>
+    <button class="act primary" id="commit">⬆ Commit &amp; upload</button>
+    <button class="act ghost" id="skip">Not now</button>
+  </footer>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  let answered = false;
+
+  function answer(choice) {
+    if (answered) return;
+    answered = true;
+    window.commitPrompt.answer(choice, $("msg").value, $("always").checked);
+  }
+
+  window.commitPrompt.onData((d) => {
+    $("why").textContent = d.reason || "";
+    $("game").textContent = d.game;
+    $("slot").textContent = "💾 " + d.slot;
+    $("path").textContent = d.path + "  ·  " + d.size;
+
+    $("diffTitle").textContent = d.firstCommit
+      ? "Nothing backed up from this PC yet"
+      : "Changes since the last backup";
+    const list = $("diff");
+    (d.diff && d.diff.length ? d.diff : ["The save is different from the last backup"])
+      .forEach((line) => {
+        const li = document.createElement("li");
+        li.textContent = line;
+        list.appendChild(li);
+      });
+
+    if (d.last) {
+      const when = new Date(d.last.at);
+      $("last").innerHTML = "Last commit <b>" + when.toLocaleString(undefined, {
+        month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) + "</b>" +
+        (d.last.message ? " — “" + d.last.message.replace(/[<>&]/g, "") + "”" : "");
+      $("last").classList.remove("hidden");
+    }
+    $("msg").focus();
+  });
+
+  $("msg").addEventListener("input", () => {
+    const n = $("msg").value.length;
+    $("count").textContent = n > 60 ? n + "/90" : "";
+  });
+
+  $("commit").onclick = () => answer("commit");
+  $("skip").onclick = () => answer("skip");
+  $("close").onclick = () => answer("skip");
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") answer("skip");
+    if (e.key === "Enter" && document.activeElement === $("msg")) answer("commit");
+  });
+
+  window.commitPrompt.ready();
+</script>
+</body>
+</html>

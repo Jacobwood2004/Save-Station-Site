@@ -1,4 +1,6 @@
-# 🎮 Save Station Web
+<img src="assets/logo.svg" width="112" align="right" alt="">
+
+# Save Station
 
 Back up your console and emulator saves to your own **Google Drive**.
 Make an account, link your Drive, drop in a save, and it's versioned in a
@@ -8,15 +10,19 @@ device each one came from.
 - **Real accounts.** Email and password, with a sign-up page; Google Drive is
   linked to your account as the storage, not used as the login.
 - **Sign in once.** After that you're signed back in automatically, on the site
-  and in the Windows app.
+  and in the desktop app.
 - **Your Drive is the storage.** On first use it creates a folder named
   **`Save Station Web Saves`**. No save file ever touches this site's server —
   there isn't one. The page talks straight to Google from your browser.
 - **Ten consoles supported** (below), including the ones whose saves are folders.
 - **Per-game folders + full history.** Each game gets its own subfolder; every
   upload is a new timestamped file, so old backups are never overwritten.
-- **Windows app watches your saves.** Link a game to its real save file; when you
-  play and the game saves, the app asks whether to upload it.
+- **Save slots.** One game can have more than one save file on the go — a second
+  playthrough, a co-op file, a nuzlocke. Each slot keeps its own history, so the
+  two never mix.
+- **A desktop app that watches your saves.** Link a slot to the real save file on
+  your PC; close your emulator and it offers to commit it, message and all, like
+  a commit in git.
 
 ---
 
@@ -224,16 +230,111 @@ that hasn't actually changed.
 
 ---
 
-## Windows companion app
+## Save slots — one game, two playthroughs
 
-See [`windows-app/BUILD.md`](windows-app/BUILD.md) to run it or build the `.exe`.
-It reads the same `station.json` and adds the one thing a website can't do:
-**watching your save files**.
+A game's history is a row of tabs, one per save file you're playing it on:
 
-> **Note:** the desktop app still signs in with Google directly — it doesn't yet
-> show the Save Station email/password screen the website does. It reaches the
-> same Drive folder and the same profile, so everything stays in sync; it just
-> skips the account front door. Bringing it in line is a follow-up.
+```
+Pokemon Emerald
+┌──────────┬──────────────┬──────────────┐
+│ 🗂 All   │ 💾 Main run  │ 💾 Nuzlocke  │  ＋ New slot
+└──────────┴──────────────┴──────────────┘
+```
+
+Uploads land in the slot you're looking at, the history filters to it, and the
+desktop app watches a **different file on your PC** for each one. That last part
+is the point: two playthroughs of the same game are two files, and one restore
+into the wrong one costs you forty hours.
+
+- **＋ New slot** on any game's page. Name it whatever the playthrough is.
+- A backup in the wrong slot moves with the 🗂 button on its row — metadata only,
+  so it's instant and costs no upload.
+- Deleting a slot asks what happens to its backups: move them to another slot,
+  or send them to your Drive trash.
+
+Slot names live in `station.json` in your Drive, so every device and the desktop
+app agree on them, and every backup also carries its slot in Drive metadata, so
+the lanes survive even if that file is lost. **Nothing needs migrating**: a
+backup made before slots existed simply belongs to the first one.
+
+---
+
+## Moving a GBA save to Delta
+
+Delta on iPhone and iPad runs a different GBA core from mGBA, and mGBA writes
+one thing Delta's core can't read: **16 bytes of real-time-clock data appended
+to the end of the `.sav`**, which Pokémon Ruby/Sapphire/Emerald all have. The
+file comes out 131,088 bytes where 131,072 was expected, and Delta rejects it.
+
+So downloading a **GBA** save asks where it's going:
+
+> **Which emulator is this for?**
+> 🖥️ mGBA, VBA-M or RetroArch  ·  📱 Delta on iPhone or iPad
+
+Pick Delta and the save is reshaped on the way out: the clock footer comes off,
+and the file is padded to the real save-chip size with `0xFF` — the same thing
+mGBA's own *Convert save game* does. Nothing inside the save is touched, which
+is why it's safe, and also why it can't rescue a save that's broken some other
+way. The other direction needs nothing: mGBA reads a Delta save as-is.
+
+---
+
+## Desktop app
+
+The website, in a real window, plus the thing a browser can't do: **watching
+your save files and offering to commit them when you close your emulator.**
+
+It isn't a rewrite — the window loads this repo's own `index.html`, so the
+library, the slots and the uploads are the site's code. See
+[`desktop-app/BUILD.md`](desktop-app/BUILD.md) to run it or build the installer.
+
+```bash
+cd desktop-app
+npm install
+npm start
+```
+
+Link a slot to the save your emulator writes, and when you close the emulator:
+
+> 💾 **Save changed** — mGBA closed
+> **Pokemon Emerald** · 💾 Main run
+> `D:\Emulation\mGBA\Pokemon Emerald.sav · 128.0 KB`
+>
+> **Changes since the last backup**
+> · 4.2 KB of 128.0 KB differ (3.3%)
+> · Same size as the last backup (128.0 KB)
+> · Last commit Aug 18, 21:40 — "Before the 4th gym"
+>
+> Commit message: `Beat the 4th gym`
+> **[⬆ Commit & upload]  [Not now]**
+
+The message becomes the backup's name, so the history reads like a log of the
+playthrough rather than a list of timestamps — on the website too. The diff is
+real: the app keeps a copy of what it last committed for each slot, purely so it
+can tell you what changed.
+
+Tick **commit automatically** and that one slot backs itself up silently from
+then on. Any backup in a linked slot also gets a **⤓ Restore** button, which
+writes it back over the save on your PC and keeps the old one as a `.bak`.
+
+Closing the window leaves it watching in the tray, because that's exactly when
+it's needed.
+
+---
+
+## Windows companion app (the older one)
+
+The original Python/Tk app, kept because it still works — see
+[`windows-app/BUILD.md`](windows-app/BUILD.md). The Electron app above supersedes
+it: same Drive folder, same `station.json`, but with the website's own interface,
+save slots, and commit messages. It reads and writes the same profile, so having
+both installed is harmless; it just doesn't know about slots, so everything it
+uploads lands in a game's first one.
+
+> **Note:** this one signs in with Google directly — it never showed the Save
+> Station email/password screen the website does. It reaches the same Drive
+> folder and the same profile, so everything stays in sync; it just skips the
+> account front door. The Electron app doesn't have that gap.
 
 Link a game to its save file on your PC and the app checks it every few seconds.
 When you play and the game writes its save, it waits for the writing to finish
