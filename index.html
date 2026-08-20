@@ -599,6 +599,11 @@
     .save-row .sr-actions { width: 100%; justify-content: flex-end; }
   }
 
+  /* There is nothing to open while a gate is up: no sidebar behind it, and no
+     app to navigate. Pinning this to the app's own visibility catches every
+     screen in front of it, rather than each one having to remember. */
+  body:has(#app.hidden) .sb-open-btn { display: none; }
+
   /* The button that opens the drawer, and the tap-anywhere-else that closes it. */
   .sb-open-btn {
     display: none; position: fixed; top: 12px; left: 12px; z-index: 40;
@@ -1456,6 +1461,8 @@ function showLinkGate() {
   $("gate").classList.add("hidden");
   $("app").classList.add("hidden");
   $("appHeader").classList.add("hidden");
+  $("sbOpenBtn").classList.add("hidden");
+  setDrawer(false);
   $("linkGate").classList.remove("hidden");
   const who = fbUser ? (fbUser.displayName || fbUser.email) : "";
   $("linkWho").innerHTML = who ? "Signed in as <b>" + escapeHtml(who) + "</b>" : "";
