@@ -1332,6 +1332,10 @@ window.addEventListener("load", () => {
     $("authForm").classList.add("hidden");
     $("authTabs").classList.add("hidden");
     adoptHandoff(handoff);
+    // Bring the account layer up regardless. The borrowed Drive session is
+    // temporary; signing in on this device is what makes it permanent, and
+    // that form needs Firebase behind it.
+    startFirebase();
     return;
   }
 
@@ -1686,8 +1690,27 @@ function handleSilentFailure() {
 // A silent Drive reconnect couldn't finish without the user — ask explicitly.
 function showGateAgain() {
   $("gateRestoring").classList.add("hidden");
+  // Unless there's nothing wrong. A background attempt failing is not a reason
+  // to interrupt a session that already has a working token — which is exactly
+  // the state a scanned device is in the moment it arrives.
+  if (accessToken && !$("app").classList.contains("hidden")) return;
   if (fbUser || linkedViaQr) showLinkGate();
   else showGate();
+}
+
+/* A scanned session borrows the computer's Drive token, and that token has at
+   most an hour in it. When it runs out there is nothing here to renew it with,
+   because this device has no Save Station account of its own yet. Say that
+   plainly and point at the fix, rather than showing a Google button that can't
+   help. */
+function qrSessionEnded() {
+  if (!linkedViaQr || fbUser) return;
+  linkedViaQr = false;
+  accessToken = null;
+  clearDriveToken();
+  showGate();
+  toast("The session you scanned has run out. Sign in here once and this device " +
+        "stays connected for good.", "err", 9000);
 }
 
 // Keep the session alive: silently get a fresh token shortly before the current
@@ -1697,7 +1720,10 @@ function scheduleTokenRefresh(expiresInSec) {
   const ms = Math.max((expiresInSec - 120) * 1000, 30000);
   refreshTimer = setTimeout(() => {
     if (!accessToken) return;
-    if (workerEnabled()) { refreshDriveToken(); return; }
+    if (workerEnabled()) {
+      refreshDriveToken().then((ok) => { if (!ok) qrSessionEnded(); });
+      return;
+    }
     if (tokenClient) {
       const opts = { prompt: "" };
       const hint = localStorage.getItem("ssw_email");
@@ -2209,6 +2235,18 @@ function renderConsoleNav() {
 
 // Clicking the console you're already filtered to clears the filter — the
 // same button gets you both ways, so there's no dead end.
+/* The way back out of a console filter.
+
+   navigate() only swaps which view is on screen; it has no opinion about what
+   the library is filtered to. That's right for every other caller — cancelling
+   an upload shouldn't throw away your filter — but "All games" is the one place
+   that has to clear it, and redraw to prove it. */
+function showAllGames() {
+  activeFilter = "all";
+  navigate("games");
+  renderGames();
+}
+
 function filterByConsole(id) {
   closeDrawerIfNarrow();
   activeFilter = activeFilter === id ? "all" : id;
@@ -4005,14 +4043,20 @@ async function adoptHandoff(h) {
     signOut();
     return;
   }
-  // Try to give this browser a session of its own, so it outlives the handoff.
-  setTimeout(() => {
-    if (!gisReady || !tokenClient) return;
-    const opts = { prompt: "" };
-    const hint = localStorage.getItem("ssw_email");
-    if (hint) opts.hint = hint;
-    try { tokenClient.requestAccessToken(opts); } catch (e) {}
-  }, 2000);
+  // Without the broker, the handoff is all this device has, so it's worth
+  // quietly asking Google for a token of its own. With the broker there is
+  // nothing to promote — Drive access hangs off the Save Station account, and
+  // signing in below is what makes this device permanent. Asking anyway is how
+  // a scanned sign-in ended up staring at a Google button.
+  if (!workerEnabled()) {
+    setTimeout(() => {
+      if (!gisReady || !tokenClient) return;
+      const opts = { prompt: "" };
+      const hint = localStorage.getItem("ssw_email");
+      if (hint) opts.hint = hint;
+      try { tokenClient.requestAccessToken(opts); } catch (e) {}
+    }, 2000);
+  }
 }
 
 async function showQrCode() {
@@ -4180,7 +4224,7 @@ function wireEvents() {
   $("disconnectDriveBtn").onclick = disconnectDrive;
   $("signOutBtn").onclick = signOut;
   $("refreshBtn").onclick = loadGames;
-  $("backBtn").onclick = () => navigate("games");
+  $("backBtn").onclick = showAllGames;      // it says "All games", so mean it
   $("downloadLatestBtn").onclick = async () => {
     // The latest in the slot you're looking at \u2014 not the game's newest overall,
     // which could belong to a playthrough you aren't in.
@@ -4230,7 +4274,7 @@ function wireEvents() {
   $("sbScrim").onclick = () => setDrawer(false);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") setDrawer(false); });
   $("sbNav").querySelectorAll(".sb-item[data-view]").forEach((b) => {
-    b.onclick = () => navigate(b.dataset.view);
+    b.onclick = () => (b.dataset.view === "games" ? showAllGames() : navigate(b.dataset.view));
   });
   setSidebarCollapsed(localStorage.getItem("ssw_sb_collapsed") === "1");
   $("acctBackBtn").onclick = () => navigate("games");
@@ -4255,7 +4299,7 @@ function wireEvents() {
 
   // Pins and filtering
   $("pinGameBtn").onclick = () => togglePin(currentHistory.folderId, currentHistory.name);
-  $("clearFilterBtn").onclick = () => { activeFilter = "all"; renderGames(); };
+  $("clearFilterBtn").onclick = showAllGames;
   $("settingsSelectAllBtn").onclick = () => {
     const all = ((profile && profile.consoles) || []).length === CONSOLES.length;
     saveConsolePrefs(all ? [] : CONSOLES.map((c) => c.id));
