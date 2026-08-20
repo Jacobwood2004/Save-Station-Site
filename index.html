@@ -217,6 +217,10 @@
     display: grid; place-items: center;
   }
   .gate-card .biglogo svg { display: block; }
+  .build-tag {
+    margin-top: 18px; font-size: 11px; color: var(--muted); opacity: .65;
+    letter-spacing: .04em;
+  }
   .gate-card h2 { margin: 0 0 8px; font-size: 24px; }
   .gate-card p { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 0 0 28px; }
   .gbtn {
@@ -729,6 +733,7 @@
       <button class="btn-scan" id="scanQrBtn">📷 Scan a QR code from a signed-in device</button>
     </div>
     <div class="gate-restoring hidden" id="gateRestoring"><span class="spinner"></span> Signing you back in…</div>
+    <div class="build-tag" data-build></div>
   </div>
 </div>
 
@@ -751,6 +756,7 @@
     </button>
     <div id="linkStatus" style="font-size:13px;color:var(--muted);margin-top:16px;min-height:18px;"></div>
     <button class="linklike" id="linkSignOutBtn" type="button">Sign out</button>
+    <div class="build-tag" data-build></div>
   </div>
 </div>
 
@@ -807,6 +813,7 @@
       <div class="acct-row">Google Drive linked <b id="acctGoogle">—</b></div>
       <div class="acct-row">Drive session <b id="acctDriveState">—</b></div>
       <div class="acct-row">Saves live in your Drive under <b id="acctFolder">—</b></div>
+      <div class="acct-row">This page's build <b data-build></b></div>
       <div class="acct-row">Nothing is stored on this site's server — only in your Google Drive.</div>
       <div class="acct-row hidden" id="acctQrNote">
         📱 This device was signed in by scanning a QR code.
@@ -1023,6 +1030,14 @@ const FIREBASE_CONFIG = {
    Set back to "" to fall straight back to the browser flow.
    ============================================================ */
 const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
+
+/* Which version of this page you're actually looking at.
+
+   Worth having on screen: GitHub Pages tells browsers to keep index.html for
+   ten minutes, phones keep it longer given the chance, and "have you got the
+   fix yet" is otherwise unanswerable from either end. Bump it when you change
+   something you'll want to confirm arrived. */
+const BUILD = "2026-08-20b";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -1299,6 +1314,8 @@ const $ = (id) => document.getElementById(id);
    session from a computer that already did steps 1 and 2.
    ============================================================ */
 window.addEventListener("load", () => {
+  console.log("Save Station build " + BUILD);
+  document.querySelectorAll("[data-build]").forEach((el) => { el.textContent = "build " + BUILD; });
   $("deviceName").value = getDeviceName();
 
   // The scan-to-sign-in option is for phones and iPads only.
@@ -4011,7 +4028,13 @@ function handoffUrl() {
   const qrExp = Math.min(now + QR_TTL, tokExp);
   if (tokExp - now < QR_MIN_TOKEN_LIFE) return null;  // caller refreshes first
   return {
-    url: location.origin + location.pathname + "#ss=1~" + qrExp + "~" + tokExp + "~" + accessToken,
+    // The build goes in the query string, not the fragment, and that's the
+    // point: a phone opening the same URL with a different #hash reuses
+    // whatever it already had cached, and a scanned code would hand a fix to a
+    // device still running the version that needed it. A changed query is a
+    // different document, so the scan always fetches the current page.
+    url: location.origin + location.pathname + "?v=" + encodeURIComponent(BUILD) +
+         "#ss=1~" + qrExp + "~" + tokExp + "~" + accessToken,
     expiresAt: qrExp,
   };
 }
@@ -4020,7 +4043,9 @@ function handoffUrl() {
 function readHandoff() {
   const h = location.hash || "";
   if (h.indexOf("#ss=") !== 0) return null;
-  try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+  // Both the token and the cache-busting version come straight back out of the
+  // address bar; neither is anyone's business after arrival.
+  try { history.replaceState(null, "", location.pathname); } catch (e) {}
   const parts = h.slice(4).split("~");
   if (parts[0] !== "1" || parts.length < 4) return null;
   const qrExp = Number(parts[1]), tokExp = Number(parts[2]);
