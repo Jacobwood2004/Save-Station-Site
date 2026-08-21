@@ -566,6 +566,11 @@
     .sb-toggle { display: none; }
     main { padding: 16px; }
     .history-hero .hh-cover { width: 116px; }
+    /* Line the cover up with the title rather than with the bottom of the row
+       of buttons. Once those wrap to two lines — which they do as soon as the
+       window isn't maximised — bottom-alignment leaves the cover stranded at
+       the foot of a tall column with the name it belongs to floating above it. */
+    .history-hero { align-items: flex-start; }
   }
 
   /* Phone, or an app window squeezed right down: the drawer. */
