@@ -1042,7 +1042,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-08-20c";
+const BUILD = "2026-08-26a";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -3468,12 +3468,41 @@ function saveBlobAs(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
+/* A 3DS save only restores from a folder holding a file called `main`, and a
+   browser cannot hand you a folder. Uploaded from a PC as a lone file it comes
+   back down as a lone file that Checkpoint and JKSM both ignore — you would
+   have to make the folder and rename the file by hand, on the console.
+
+   So it comes down as a zip that already has that shape: extract it into the
+   game's folder and restore. Folder saves are already a zip of the right
+   contents and are left exactly as they are. */
+async function downloadSave3dsWrapped(fileId, filename) {
+  const blob = await fetchSaveBlob(fileId);
+  const ext = getExt(filename);
+  const stem = ext ? filename.slice(0, -(ext.length + 1)) : filename;
+  const folder = sanitizeFolderName(stem) || "3DS save";
+  const zip = buildZip([{
+    path: folder + "/main",
+    data: new Uint8Array(await blob.arrayBuffer()),
+    date: new Date(),
+  }]);
+  saveBlobAs(zip, folder + ".zip");
+  toast("📁 Zipped as " + folder + "/main — extract that folder into your saves folder and restore.", "ok", 7000);
+}
+
 /* Downloading a GBA save asks one question first, because the answer changes
    the bytes. Only GBA, only single-file saves \u2014 everywhere else there's
    nothing to decide, so nothing is asked. */
 async function downloadSaveFor(fileId, filename, save) {
   const p = (save && save.appProperties) || {};
   const consoleId = p.console || currentHistory.console;
+
+  // A lone 3DS save is unusable until it sits in a folder as `main`.
+  if (consoleId === "3ds" && p.kind !== "folder" && getExt(filename).toLowerCase() !== "zip") {
+    await downloadSave3dsWrapped(fileId, filename);
+    return;
+  }
+
   if (consoleId !== "gba" || p.kind === "folder") {
     await downloadSave(fileId, filename);
     return;
