@@ -1042,7 +1042,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-08-26b";
+const BUILD = "2026-08-26c";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -3444,7 +3444,10 @@ async function uploadToSlot(opts) {
     console: opts.consoleId || "",
     emulator: opts.emulator || "",
     kind: opts.tree ? "tree" : (opts.isFolder ? "folder" : "file"),
-    originalName: opts.filename,   // the real save filename \u2014 never changed by a label
+    // The save's real name. Usually the same as what the backup is called, but
+    // not when a lone save has been put into a folder as `main` \u2014 then this is
+    // still the name it had, and the folder carries the other one.
+    originalName: opts.originalName || opts.filename,
     uploadedAt: new Date().toISOString(),
     slot: slot.id,
     // Denormalised on purpose: station.json is the name's home, but a copy here
@@ -3584,9 +3587,13 @@ async function downloadTreeAsZip(save) {
   const files = [];
   for (const e of entries) {
     const blob = await fetchSaveBlob(e.id);
-    files.push({ path: e.rel, data: new Uint8Array(await blob.arrayBuffer()) });
+    // The backup's own folder is kept as the top level, so extracting gives you
+    // the folder a 3DS restores from rather than its contents loose.
+    files.push({ path: save.name + "/" + e.rel, data: new Uint8Array(await blob.arrayBuffer()) });
   }
-  saveBlobAs(buildZip(files), (p.originalName || save.name) + ".zip");
+  saveBlobAs(buildZip(files), save.name + ".zip");
+  toast("\ud83d\udcc1 Zipped as " + save.name + "/ \u2014 extract that folder into your saves folder and restore.",
+        "ok", 7000);
 }
 
 async function downloadSaveFor(fileId, filename, save) {
@@ -3683,10 +3690,31 @@ function clearFile() {
 async function selectionToPayload(sel, consoleId) {
   if (sel.kind === "folder") {
     if (storesAsTree(consoleId)) {
-      return { tree: fileListToTree(sel.files), filename: sanitizeFolderName(sel.name), isFolder: true };
+      const name = sanitizeFolderName(sel.name);
+      return { tree: fileListToTree(sel.files), filename: name, originalName: name, isFolder: true };
     }
     const zip = await zipFileList(sel.files);
     return { blob: zip, filename: sanitizeFolderName(sel.name) + ".zip", isFolder: true };
+  }
+
+  /* A lone save for a console kept as folders becomes one: a folder named after
+     the save, holding it as `main`.
+
+     `main` is not a rename for its own sake \u2014 it is the only filename Checkpoint
+     and JKSM recognise inside a 3DS backup folder. Storing it that way means the
+     folder can be copied out of Drive and restored on the console as it stands,
+     with nothing to rename by hand. The save's real name isn't lost: it stays in
+     the backup's metadata, which is what the history shows and what a download
+     is named. */
+  if (storesAsTree(consoleId)) {
+    const ext = getExt(sel.file.name);
+    const stem = ext ? sel.file.name.slice(0, -(ext.length + 1)) : sel.file.name;
+    return {
+      tree: [{ rel: "main", blob: sel.file }],
+      filename: sanitizeFolderName(stem) || "3DS save",
+      originalName: sel.file.name,
+      isFolder: true,
+    };
   }
   return { blob: sel.file, filename: sel.file.name, isFolder: false };
 }
@@ -3716,7 +3744,7 @@ async function doUpload() {
     (selectedUpload.kind === "folder" ? "Zipping &amp; uploading…" : "Uploading…");
 
   try {
-    const { blob, tree, filename, isFolder } = await selectionToPayload(selectedUpload, consoleId);
+    const { blob, tree, filename, originalName, isFolder } = await selectionToPayload(selectedUpload, consoleId);
     const folderName = sanitizeFolderName(gameName);
     // Already in the library? Use it. Only a genuinely new game pays for the
     // archive lookup — and if it's in there, it comes back with its history.
@@ -3737,7 +3765,7 @@ async function doUpload() {
     await uploadToSlot({
       folderId: gameFolderId, gameName, consoleId, emulator, device,
       slot: firstSlotFor(gameFolderId),
-      blob, tree, filename, isFolder, label: $("backupName").value.trim(),
+      blob, tree, filename, originalName, isFolder, label: $("backupName").value.trim(),
     });
     $("uploadStatus").textContent = "";
     toast(restored
@@ -3791,9 +3819,9 @@ async function uploadToGame(folderId, selection) {
   const label = (prompt("Name this backup (optional \u2014 leave blank to skip):", "") || "").trim();
   toast(selection.kind === "folder" ? "Zipping & uploading\u2026" : "Uploading save\u2026");
   try {
-    const { blob, tree, filename, isFolder } = await selectionToPayload(selection, consoleId);
+    const { blob, tree, filename, originalName, isFolder } = await selectionToPayload(selection, consoleId);
     await uploadToSlot({ folderId, gameName, consoleId, emulator, device, slot,
-                         blob, tree, filename, isFolder, label });
+                         blob, tree, filename, originalName, isFolder, label });
     activeSlot = slot.id;
     toast("Saved backup to \u201c" + gameName + "\u201d \u2192 " + slot.name + " \u2714", "ok");
     await openHistory(folderId, gameName, consoleId);
