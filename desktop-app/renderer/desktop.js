@@ -256,9 +256,22 @@
     const label = button.innerHTML;
     button.innerHTML = "Restoring…";
     try {
-      const blob = await SS().fetchSaveBlob(save.id);
-      const bytes = new Uint8Array(await blob.arrayBuffer());
-      const res = await desktop.restore({ key, bytes, isZip: p.kind === "folder" });
+      let res;
+      if (SS().isTreeSave(save)) {
+        // Kept as a folder in Drive, so it comes down file by file and goes
+        // back onto the disk as a folder \u2014 nothing to unpack.
+        const entries = await SS().listTree(save.id, "");
+        const tree = [];
+        for (const e of entries) {
+          const b = await SS().fetchSaveBlob(e.id);
+          tree.push({ rel: e.rel, bytes: new Uint8Array(await b.arrayBuffer()) });
+        }
+        res = await desktop.restore({ key, tree });
+      } else {
+        const blob = await SS().fetchSaveBlob(save.id);
+        const bytes = new Uint8Array(await blob.arrayBuffer());
+        res = await desktop.restore({ key, bytes, isZip: p.kind === "folder" });
+      }
       if (!res.ok) throw new Error(res.error || "couldn't write the file");
       SS().toast("✓ Restored to " + res.path + (res.backup ? " (old one kept as .bak)" : ""), "ok", 7000);
       refreshStatus();
@@ -277,14 +290,20 @@
   desktop.onUploadRequest(async (job) => {
     try {
       if (!SS() || !SS().signedIn) throw new Error("sign in to Save Station first");
-      const blob = new Blob([job.bytes],
-        { type: job.isFolder ? "application/zip" : "application/octet-stream" });
+      // A folder save for a console kept as a folder arrives as its files.
+      const tree = job.tree
+        ? job.tree.map((f) => ({ rel: f.rel, blob: new Blob([f.bytes]) }))
+        : null;
+      const blob = job.bytes
+        ? new Blob([job.bytes], { type: job.isFolder ? "application/zip" : "application/octet-stream" })
+        : null;
       const file = await SS().uploadToSlot({
         folderId: job.folderId,
         gameName: job.gameName,
         consoleId: job.consoleId,
         slot: { id: job.slotId, name: job.slotName },
         blob,
+        tree,
         filename: job.filename,
         isFolder: job.isFolder,
         label: job.label,

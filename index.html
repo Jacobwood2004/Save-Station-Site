@@ -1042,7 +1042,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-08-26a";
+const BUILD = "2026-08-26b";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -1081,7 +1081,11 @@ const CONSOLES = [
     emus: ["melonDS", "DeSmuME", "Delta", "DraStic"],
     where: "melonDS .sav or DeSmuME .dsv, usually next to the ROM" },
 
+  // store: "tree" — this console's saves go into Drive as a real folder rather
+  // than a .zip, because a 3DS save is a folder of files and it's far easier to
+  // put back if it arrives looking like one.
   { id: "3ds", label: "Nintendo 3DS", short: "3DS", icon: "🔶", color: "#d1495b", kind: "folder",
+    store: "tree",
     exts: [".sav", ".zip"],
     emus: ["Citra", "Azahar", "Lime3DS", "Panda3DS"],
     where: "Citra/Azahar sdmc/Nintendo 3DS/…/title/<id>/data folder" },
@@ -1281,6 +1285,9 @@ const LEGACY_EMU_CONSOLE = { Delta: "gba", mGBA: "gba" };
 
 function consoleOf(id) { return CONSOLE_BY_ID[id] || null; }
 function isFolderConsole(id) { const c = consoleOf(id); return !!c && (c.kind === "folder" || c.kind === "both"); }
+// Does this console's save live in Drive as a folder of files, rather than as
+// one zipped blob? One line per console, in the table above.
+function storesAsTree(id) { const c = consoleOf(id); return !!c && c.store === "tree"; }
 
 /* ============================================================
    State
@@ -2600,12 +2607,66 @@ async function listSubfolders(parentId) {
   return (await r.json()).files || [];
 }
 
+/* Everything in a game folder that counts as a backup.
+
+   Folders are included now, because a 3DS backup *is* a folder \u2014 but only the
+   ones this app made and tagged, so a folder someone dropped in by hand from
+   Drive never gets mistaken for a save. */
 async function listSaves(folderId) {
-  const q = "trashed=false and mimeType!='application/vnd.google-apps.folder' and '" + folderId + "' in parents";
+  const q = "trashed=false and '" + folderId + "' in parents";
   const url = "https://www.googleapis.com/drive/v3/files?q=" + encodeURIComponent(q) +
-              "&fields=files(id,name,createdTime,size,appProperties)&orderBy=createdTime desc&pageSize=500";
+              "&fields=files(id,name,createdTime,size,mimeType,appProperties)&orderBy=createdTime desc&pageSize=500";
   const r = await driveFetch(url);
-  return (await r.json()).files || [];
+  const files = (await r.json()).files || [];
+  return files.filter((f) => f.mimeType !== FOLDER_MIME || (f.appProperties || {}).kind === "tree");
+}
+
+const FOLDER_MIME = "application/vnd.google-apps.folder";
+function isTreeSave(f) { return (f.appProperties || {}).kind === "tree"; }
+
+/* Walk a backup folder and list the files in it, with their paths relative to
+   the backup's own root \u2014 which is what an emulator wants back. */
+async function listTree(folderId, prefix) {
+  const q = "trashed=false and '" + folderId + "' in parents";
+  const url = "https://www.googleapis.com/drive/v3/files?q=" + encodeURIComponent(q) +
+              "&fields=files(id,name,size,mimeType)&orderBy=name&pageSize=500";
+  const r = await driveFetch(url);
+  const out = [];
+  for (const f of (await r.json()).files || []) {
+    const rel = (prefix || "") + f.name;
+    if (f.mimeType === FOLDER_MIME) out.push(...(await listTree(f.id, rel + "/")));
+    else out.push({ id: f.id, rel, size: +f.size || 0 });
+  }
+  return out;
+}
+
+/* Put a folder save into Drive as a folder, rebuilding any nesting inside it. */
+async function uploadTree(gameFolderId, rootName, files, props) {
+  const rootId = await createFolder(rootName, gameFolderId, props);
+  const dirs = { "": rootId };
+  const ensureDir = async (rel) => {
+    if (dirs[rel] !== undefined) return dirs[rel];
+    const cut = rel.lastIndexOf("/");
+    const parent = await ensureDir(cut < 0 ? "" : rel.slice(0, cut));
+    dirs[rel] = await createFolder(cut < 0 ? rel : rel.slice(cut + 1), parent, { role: "savedir" });
+    return dirs[rel];
+  };
+  for (const f of files) {
+    const cut = f.rel.lastIndexOf("/");
+    const into = cut < 0 ? rootId : await ensureDir(f.rel.slice(0, cut));
+    await uploadSave(into, cut < 0 ? f.rel : f.rel.slice(cut + 1), f.blob, null);
+  }
+  return { id: rootId, name: rootName };
+}
+
+/* The same digest the desktop app computes for a folder, so both halves agree
+   on whether a save has actually changed: each path, a NUL, then its bytes. */
+async function treeHash(files) {
+  const enc = new TextEncoder();
+  const parts = [];
+  const sorted = files.slice().sort((a, b) => (a.rel < b.rel ? -1 : a.rel > b.rel ? 1 : 0));
+  for (const f of sorted) { parts.push(enc.encode(f.rel + "\u0000")); parts.push(f.blob); }
+  return await sha256Hex(new Blob(parts));
 }
 
 // Tag a game folder with the console it belongs to, so later uploads inherit it.
@@ -3382,7 +3443,7 @@ async function uploadToSlot(opts) {
     device: device,
     console: opts.consoleId || "",
     emulator: opts.emulator || "",
-    kind: opts.isFolder ? "folder" : "file",
+    kind: opts.tree ? "tree" : (opts.isFolder ? "folder" : "file"),
     originalName: opts.filename,   // the real save filename \u2014 never changed by a label
     uploadedAt: new Date().toISOString(),
     slot: slot.id,
@@ -3390,15 +3451,35 @@ async function uploadToSlot(opts) {
     // means a slot can still be told apart if that file is ever lost.
     slotName: String(slot.name || "").slice(0, MAX_SLOT_NAME),
   };
-  const hash = await sha256Hex(opts.blob);
-  if (hash) props.hash = hash;
   // Drive caps a property's key and value at 124 bytes between them, so a long
   // commit message is trimmed rather than rejected outright.
   if (opts.label) props.label = String(opts.label).slice(0, 90);
   if (opts.source) props.source = opts.source;      // "desktop" when the app committed it
-  const ext = getExt(opts.filename);
-  const versionedName = timestamp() + "__" + sanitizeFolderName(device) + (ext ? "." + ext : "");
-  return await uploadSave(opts.folderId, versionedName, opts.blob, props);
+
+  // A console whose saves go in as folders (3DS): the backup is a folder in
+  // Drive holding the save's own files, so it can be opened and copied without
+  // unpacking anything first.
+  if (opts.tree) {
+    props.kind = "tree";
+    props.files = String(opts.tree.length);
+    props.size = String(opts.tree.reduce((n, f) => n + (f.blob.size || 0), 0));
+    const treeDigest = await treeHash(opts.tree);
+    if (treeDigest) props.hash = treeDigest;
+    return await uploadTree(opts.folderId, saveFileName(opts.filename), opts.tree, props);
+  }
+
+  const hash = await sha256Hex(opts.blob);
+  if (hash) props.hash = hash;
+  // The backup goes in under the save's own name. Drive identifies files by id
+  // rather than by name, so several backups can share one and none of them
+  // overwrites another \u2014 the history is built from the timestamps Drive keeps
+  // anyway, which is why the name never had to carry them.
+  return await uploadSave(opts.folderId, saveFileName(opts.filename), opts.blob, props);
+}
+
+// Drive is relaxed about names, but a slash in one still isn't a good idea.
+function saveFileName(n) {
+  return String(n || "save").replace(/[\/\\]+/g, "-").trim().slice(0, 150) || "save";
 }
 
 // The bytes of one backup, for whoever needs them \u2014 the browser's download
@@ -3493,7 +3574,23 @@ async function downloadSave3dsWrapped(fileId, filename) {
 /* Downloading a GBA save asks one question first, because the answer changes
    the bytes. Only GBA, only single-file saves \u2014 everywhere else there's
    nothing to decide, so nothing is asked. */
+/* A backup that's a folder can't come down as one file, so the website zips it
+   on the way out. That's a browser limitation, not how it's stored \u2014 in Drive
+   it stays a folder, and the desktop app restores it as one. */
+async function downloadTreeAsZip(save) {
+  const p = save.appProperties || {};
+  const entries = await listTree(save.id, "");
+  if (!entries.length) throw new Error("that backup folder is empty");
+  const files = [];
+  for (const e of entries) {
+    const blob = await fetchSaveBlob(e.id);
+    files.push({ path: e.rel, data: new Uint8Array(await blob.arrayBuffer()) });
+  }
+  saveBlobAs(buildZip(files), (p.originalName || save.name) + ".zip");
+}
+
 async function downloadSaveFor(fileId, filename, save) {
+  if (save && isTreeSave(save)) { await downloadTreeAsZip(save); return; }
   const p = (save && save.appProperties) || {};
   const consoleId = p.console || currentHistory.console;
 
@@ -3579,13 +3676,29 @@ function clearFile() {
   $("uploadBtn").disabled = true;
 }
 
-// Turn the current selection into one blob ready for Drive.
-async function selectionToBlob(sel) {
+/* Turn the current selection into something Drive can take.
+
+   A picked folder goes one of two ways, decided by the console: as a folder of
+   files for anything marked store:"tree", and as a single .zip for the rest. */
+async function selectionToPayload(sel, consoleId) {
   if (sel.kind === "folder") {
+    if (storesAsTree(consoleId)) {
+      return { tree: fileListToTree(sel.files), filename: sanitizeFolderName(sel.name), isFolder: true };
+    }
     const zip = await zipFileList(sel.files);
     return { blob: zip, filename: sanitizeFolderName(sel.name) + ".zip", isFolder: true };
   }
   return { blob: sel.file, filename: sel.file.name, isFolder: false };
+}
+
+// webkitRelativePath is "<folder>/sub/file"; drop the top folder so what lands
+// in Drive is the save folder's *contents*, which is what an emulator wants.
+function fileListToTree(fileList) {
+  return Array.from(fileList).map((f) => {
+    const p = f.webkitRelativePath || f.name;
+    const i = p.indexOf("/");
+    return { rel: i >= 0 ? p.slice(i + 1) : p, blob: f };
+  });
 }
 
 async function doUpload() {
@@ -3603,7 +3716,7 @@ async function doUpload() {
     (selectedUpload.kind === "folder" ? "Zipping &amp; uploading…" : "Uploading…");
 
   try {
-    const { blob, filename, isFolder } = await selectionToBlob(selectedUpload);
+    const { blob, tree, filename, isFolder } = await selectionToPayload(selectedUpload, consoleId);
     const folderName = sanitizeFolderName(gameName);
     // Already in the library? Use it. Only a genuinely new game pays for the
     // archive lookup — and if it's in there, it comes back with its history.
@@ -3624,7 +3737,7 @@ async function doUpload() {
     await uploadToSlot({
       folderId: gameFolderId, gameName, consoleId, emulator, device,
       slot: firstSlotFor(gameFolderId),
-      blob, filename, isFolder, label: $("backupName").value.trim(),
+      blob, tree, filename, isFolder, label: $("backupName").value.trim(),
     });
     $("uploadStatus").textContent = "";
     toast(restored
@@ -3678,9 +3791,9 @@ async function uploadToGame(folderId, selection) {
   const label = (prompt("Name this backup (optional \u2014 leave blank to skip):", "") || "").trim();
   toast(selection.kind === "folder" ? "Zipping & uploading\u2026" : "Uploading save\u2026");
   try {
-    const { blob, filename, isFolder } = await selectionToBlob(selection);
+    const { blob, tree, filename, isFolder } = await selectionToPayload(selection, consoleId);
     await uploadToSlot({ folderId, gameName, consoleId, emulator, device, slot,
-                         blob, filename, isFolder, label });
+                         blob, tree, filename, isFolder, label });
     activeSlot = slot.id;
     toast("Saved backup to \u201c" + gameName + "\u201d \u2192 " + slot.name + " \u2714", "ok");
     await openHistory(folderId, gameName, consoleId);
@@ -3894,9 +4007,17 @@ async function openHistory(folderId, name, consoleId) {
     $("uploadFolderToGameBtn").classList.toggle("hidden", !isFolderConsole(resolved));
     $("gameSaveInput").accept = con ? con.exts.join(",") : "";
 
-    const folderSave = saves.find((s) => (s.appProperties || {}).kind === "folder");
-    $("folderNote").classList.toggle("hidden", !folderSave);
-    if (folderSave) {
+    const zipSave = saves.find((s) => (s.appProperties || {}).kind === "folder");
+    const treeConsole = storesAsTree(resolved);
+    $("folderNote").classList.toggle("hidden", !zipSave && !treeConsole);
+    if (treeConsole) {
+      $("folderNote").innerHTML = "\ud83d\udcc1 This console's saves are <b>folders</b>, and they're kept as " +
+        "folders in your Drive \u2014 open one and the save's files are right there, nothing to unpack. " +
+        "Put one back in " + (con ? "<code>" + escapeHtml(con.where) + "</code>" : "your emulator's save folder") +
+        ". <br>Downloading from this page gives you a <code>.zip</code> of it, because a browser can't " +
+        "hand you a folder; the desktop app writes it back as one." +
+        (zipSave ? " Older backups here are <code>.zip</code> files and still download that way." : "");
+    } else if (zipSave) {
       $("folderNote").innerHTML = "\ud83d\udce6 This game's saves are <b>folders</b>, stored as <code>.zip</code>. " +
         "Download one and extract its contents into " +
         (con ? "<code>" + escapeHtml(con.where) + "</code>" : "your emulator's save folder") + ".";
@@ -3961,7 +4082,8 @@ function renderHistory() {
     const sc = consoleOf(p.console) || (LEGACY_EMU_CONSOLE[emu] ? consoleOf(LEGACY_EMU_CONSOLE[emu]) : null);
     const sl = showSlot ? (slotById(slots, slotOf(s)) || {}).name : "";
     return '<div class="save-row">' +
-      '<div class="sr-icon">' + (p.kind === "folder" ? "\ud83d\udce6" : "\ud83d\udcbe") + '</div>' +
+      '<div class="sr-icon">' +
+        (p.kind === "tree" ? "\ud83d\udcc1" : p.kind === "folder" ? "\ud83d\udce6" : "\ud83d\udcbe") + '</div>' +
       '<div class="sr-main">' +
         '<div class="sr-title">' + escapeHtml(title) +
           (i === 0 ? ' <span class="badge latest">\u25cf Latest</span>' : '') + '</div>' +
@@ -3972,7 +4094,9 @@ function renderHistory() {
           '<span class="badge device">\ud83d\udda5\ufe0f ' + escapeHtml(device) + '</span>' +
           (emu ? '<span class="badge">' + escapeHtml(emu) + '</span>' : '') +
           (p.source === "desktop" ? '<span class="badge">\ud83d\udda5 committed</span>' : '') +
-          (s.size ? '<span>' + humanSize(+s.size) + '</span>' : '') +
+          (p.kind === "tree" && p.files
+            ? '<span>' + escapeHtml(p.files) + ' file' + (+p.files === 1 ? "" : "s") + '</span>' : '') +
+          ((s.size || p.size) ? '<span>' + humanSize(+(s.size || p.size)) + '</span>' : '') +
           (label ? '<span>\ud83d\udcc4 ' + escapeHtml(orig) + '</span>' : '') +
         '</div>' +
       '</div>' +
@@ -4511,6 +4635,7 @@ window.SaveStation = {
   slotsFor, savesInSlot, slotOf, slotById,
   uploadToSlot,        // how the desktop app commits a save\u2026
   fetchSaveBlob,       // \u2026and how it pulls one back down to restore it
+  listTree, isTreeSave, storesAsTree,   // folder backups, for the consoles kept that way
   firebaseIdToken,     // proves to the Drive broker who is asking
   // Linking Drive from the app means finishing in a real browser and coming
   // back \u2014 these two are how the app notices that it worked.

@@ -68,7 +68,9 @@ land in the wrong playthrough. The same file can't be linked to two slots —
 the app refuses, because that's exactly the mix-up slots exist to prevent.
 
 For 3DS, Wii U, Switch, PSP and Vita the button says **📂 Link save folder**
-instead; the folder gets zipped on commit, same as on the website.
+instead. A 3DS folder is committed as a folder — it lands in your Drive as one,
+and **⤓ Restore** writes it back out as one, with nothing to unpack at either
+end. The other four are zipped on commit, same as on the website.
 
 ---
 

@@ -34,7 +34,7 @@ const os = require("os");
 const { Store } = require("./lib/store");
 const { startSiteServer } = require("./lib/siteserver");
 const { SaveWatcher, Snapshots, hashPath, totalSize, human } = require("./lib/savewatch");
-const { zipFolder, unzipTo } = require("./lib/zipfile");
+const { zipFolder, unzipTo, walkFiles } = require("./lib/zipfile");
 const { runningEmulators, emulatorCovers } = require("./lib/emulators");
 
 /* --------------------------------------------------------------- where things are */
@@ -249,6 +249,26 @@ function patchBrokerCors(session, workerOrigin, appOrigin) {
   });
 }
 
+/* Which consoles keep their saves as a folder rather than a .zip.
+
+   Read out of the site's own console table instead of being listed again here,
+   because two copies of a rule is one copy too many — add store:"tree" to a
+   console in index.html and this picks it up on the next launch. */
+let treeConsoles = new Set();
+
+function readTreeConsoles() {
+  try {
+    const html = fs.readFileSync(path.join(SITE_DIR, "index.html"), "utf8");
+    const found = new Set();
+    const re = /\{\s*id:\s*"([a-z0-9]+)"[^}]*store:\s*"tree"/g;
+    let m;
+    while ((m = re.exec(html))) found.add(m[1]);
+    return found;
+  } catch (e) {
+    return new Set();
+  }
+}
+
 function workerOriginFromSite() {
   try {
     const html = fs.readFileSync(path.join(SITE_DIR, "index.html"), "utf8");
@@ -295,21 +315,33 @@ async function commit(key, message, emulatorName) {
   if (!link) return { ok: false, error: "that slot isn't linked any more" };
   if (!fs.existsSync(link.path)) return { ok: false, error: "the save file isn't there any more" };
 
-  let bytes, filename;
+  let bytes = null, tree = null, filename, total = 0;
   const isFolder = link.kind === "folder";
   try {
-    if (isFolder) {
+    if (isFolder && treeConsoles.has(link.consoleId)) {
+      // Goes to Drive as a folder, so it travels as one: the files themselves,
+      // with their paths, rather than a zip nobody asked for.
+      tree = walkFiles(link.path).map((f) => {
+        const data = fs.readFileSync(f.full);
+        total += data.length;
+        return { rel: f.rel, bytes: new Uint8Array(data) };
+      });
+      filename = sanitize(path.basename(link.path));
+      if (!tree.length) return { ok: false, error: "that save folder is empty" };
+    } else if (isFolder) {
       bytes = zipFolder(link.path);
+      total = bytes.length;
       filename = sanitize(path.basename(link.path)) + ".zip";
     } else {
       bytes = fs.readFileSync(link.path);
+      total = bytes.length;
       filename = path.basename(link.path);
     }
   } catch (e) {
     return { ok: false, error: "couldn't read the save: " + e.message };
   }
-  if (bytes.length > MAX_COMMIT_BYTES) {
-    return { ok: false, error: "that save is " + human(bytes.length) + " — too big to upload from here" };
+  if (total > MAX_COMMIT_BYTES) {
+    return { ok: false, error: "that save is " + human(total) + " — too big to upload from here" };
   }
 
   const hash = hashPath(link.path, link.kind);
@@ -324,7 +356,8 @@ async function commit(key, message, emulatorName) {
     filename,
     isFolder,
     label: message || "",
-    bytes: new Uint8Array(bytes),
+    bytes: bytes ? new Uint8Array(bytes) : null,
+    tree,
   });
 
   if (res && res.ok) {
@@ -617,21 +650,23 @@ ipcMain.handle("ss:commit-now", async (_e, { key, message }) => {
 });
 
 /** Write a backup from Drive back over the linked save, keeping the old one. */
-ipcMain.handle("ss:restore", async (_e, { key, bytes, isZip }) => {
+ipcMain.handle("ss:restore", async (_e, { key, bytes, isZip, tree }) => {
   const link = getLink(key);
   if (!link) return { ok: false, error: "that slot isn't linked on this PC" };
-  const buf = Buffer.from(bytes);
+  const buf = bytes ? Buffer.from(bytes) : null;
   const suffix = ".savestation-" + stamp() + ".bak";
   try {
     if (link.kind === "folder") {
-      if (!isZip) return { ok: false, error: "that backup isn't a folder save" };
+      if (!tree && !isZip) return { ok: false, error: "that backup isn't a folder save" };
       let backup = null;
       if (fs.existsSync(link.path)) {
         backup = link.path + suffix;
         fs.cpSync(link.path, backup, { recursive: true });
       }
       fs.mkdirSync(link.path, { recursive: true });
-      const written = unzipTo(buf, link.path);
+      // A backup kept as a folder is written straight back out as one; only the
+      // older zipped kind needs unpacking.
+      const written = tree ? writeTree(tree, link.path) : unzipTo(buf, link.path);
       const hash = hashPath(link.path, link.kind);
       watcher.markCommitted(key, link.path, link.kind, hash);
       snaps.take(key, link.path, link.kind);
@@ -652,6 +687,22 @@ ipcMain.handle("ss:restore", async (_e, { key, bytes, isZip }) => {
     return { ok: false, error: e.message };
   }
 });
+
+/* Write a folder backup's files under `dest`, refusing any path that tries to
+   climb out of it \u2014 the same rule the zip reader follows. */
+function writeTree(tree, dest) {
+  const written = [];
+  for (const f of tree) {
+    const parts = String(f.rel).replace(/\\/g, "/").split("/")
+      .filter((x) => x && x !== "." && x !== "..");
+    if (!parts.length) continue;
+    const target = path.join(dest, ...parts);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, Buffer.from(f.bytes));
+    written.push(parts.join("/"));
+  }
+  return written;
+}
 
 ipcMain.handle("ss:open-external", (_e, url) => {
   if (/^https?:\/\//i.test(String(url || ""))) shell.openExternal(url);
@@ -693,6 +744,7 @@ if (!app.requestSingleInstanceLock()) {
     app.setAppUserModelId("com.savestation.desktop");
     migrateLegacyData();
 
+    treeConsoles = readTreeConsoles();
     store = new Store(path.join(app.getPath("userData"), "links.json"), { links: {} });
     snaps = new Snapshots(path.join(app.getPath("userData"), "snapshots"));
 

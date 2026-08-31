@@ -43,10 +43,18 @@ Picked once when you make your account, changeable any time under **⚙ Account*
 | PSP | **folder** | `PSP/SAVEDATA/<game id>` (PPSSPP) |
 | PS Vita | **folder** | Vita3K `ux0/user/00/savedata/<title-id>` |
 
-**Folder saves** (3DS, Wii U, Switch, PSP, Vita) are packed into a single `.zip`
-on upload — on the website by picking the folder, in the Windows app
-automatically. Downloading gives you that `.zip` back; the Windows app can
-extract it straight into the linked folder for you.
+**Folder saves** (3DS, Wii U, Switch, PSP, Vita) are uploaded by picking the
+folder — on the website, or automatically by the desktop app.
+
+**3DS saves stay folders.** They go into your Drive as a real folder holding the
+save's own files, nesting and all, so you can open one in Drive and copy what's
+inside straight back to a console or an emulator with nothing to unpack. The
+desktop app restores one as a folder too. Downloading from the website hands you
+a `.zip` of it, because a browser can't give you a folder.
+
+The other four consoles are still packed into a single `.zip` on upload, and
+download that way. Switching any of them over is one line — `store: "tree"` on
+that console in the table inside `index.html`.
 
 > Save Station stores and versions save files. It doesn't run games, and it
 > isn't an emulator — bring your own emulator and your own ROMs.
@@ -215,17 +223,27 @@ way — just add the resulting URL as an authorized origin.
 
 ```
 Save Station Web Saves/
-├── station.json                                    ← your account profile
+├── station.json                        ← your account profile
 ├── Pokemon - Emerald/
-│   ├── 2026-08-16_14-30-00__Windows PC (Chrome).sav
-│   └── 2026-08-16_16-05-12__iPhone.sav             ← newer backup, kept separately
+│   ├── Pokemon Emerald.sav             ← each backup keeps the save's own name
+│   └── Pokemon Emerald.sav             ← an older one, kept separately
+├── Pokemon Ultra Sun/
+│   └── data/                           ← a 3DS save, kept as a folder
+│       ├── 00000001.sav
+│       └── sub/extdata.bin
 └── Crisis Core/
-    └── 2026-08-16_09-12-44__Gaming PC.zip          ← a PSP folder save
+    └── Crisis Core.zip                 ← a PSP folder save, still zipped
 ```
 
-Each file also carries hidden metadata — game, console, device, emulator,
+Backups keep the name the save had. Two of them can share a name because Drive
+identifies a file by its id, not its name — nothing overwrites anything, and the
+history is built from the timestamps Drive keeps anyway. Worth knowing if you
+browse the folder in Drive itself: several backups of one game look alike there,
+and the **Modified** column is what tells them apart.
+
+Each backup also carries hidden metadata — game, console, device, emulator, slot,
 original file name, timestamp, and a SHA-256 of the contents — that the website
-and the Windows app read to build the history and to avoid re-uploading a save
+and the desktop app read to build the history and to avoid re-uploading a save
 that hasn't actually changed.
 
 ---
