@@ -86,6 +86,9 @@
     background: var(--panel); border: 1px solid var(--border); border-radius: 18px;
     padding: 24px; width: 100%; max-width: 460px; box-shadow: 0 24px 60px rgba(0,0,0,.5);
   }
+  /* The cover picker is the one dialog whose content is pictures, and two
+     columns of box art is not enough to choose between them. */
+  .modal-card.wide { max-width: 780px; }
   .modal-card h3 { margin: 0 0 10px; font-size: 18px; word-break: break-word; }
   .modal-body { font-size: 13.5px; color: var(--muted); line-height: 1.65; }
   .modal-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
@@ -406,7 +409,11 @@
      except once pinned, when it has to stay visible to explain the state. */
   .game-card .gc-pin {
     position: absolute; top: 8px; left: 8px; z-index: 2;
-    width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+    /* padding:0 matters more than it looks: buttons carry 10px/16px by default,
+       which is wider than this button is, so the content box collapsed and the
+       pin was pushed nine pixels right of the circle it sits in. */
+    width: 30px; height: 30px; padding: 0; border-radius: 50%;
+    display: grid; place-items: center;
     font-size: 13px; line-height: 1; color: #fff; background: rgba(8,11,16,.6);
     opacity: 0; transition: opacity .12s, transform .12s, background .12s;
     backdrop-filter: blur(4px); box-shadow: 0 2px 8px rgba(0,0,0,.35);
@@ -432,6 +439,28 @@
   .history-hero .hh-console { margin-bottom: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .history-hero .hh-actions { display: flex; gap: 10px; flex-wrap: wrap; }
   .cover-input-hidden { display: none; }
+
+  /* The cover picker. The pictures are the answer to the question, so they get
+     the room, and the filename underneath is what tells two regions apart. */
+  .cover-note { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 14px; }
+  .cover-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(min(132px, 100%), 1fr));
+    gap: 12px; max-height: 52vh; overflow-y: auto; padding-right: 4px;
+  }
+  .cover-pick {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 8px; display: flex; flex-direction: column; gap: 7px; align-items: center;
+    color: var(--text); text-align: center;
+  }
+  .cover-pick:hover { border-color: var(--accent); background: #232c38; }
+  .cover-pick img {
+    width: 100%; aspect-ratio: 3 / 4; object-fit: contain; border-radius: 6px;
+    background: rgba(0,0,0,.25);
+  }
+  .cover-pick span {
+    font-size: 10.5px; font-weight: 500; color: var(--muted); line-height: 1.35;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  }
   .folder-note {
     background: rgba(74,210,201,.08); border: 1px solid rgba(74,210,201,.28); color: var(--accent-2);
     border-radius: 10px; padding: 10px 13px; font-size: 12px; line-height: 1.5; margin-bottom: 16px;
@@ -965,6 +994,7 @@
           <button class="btn-primary btn-sm" id="uploadToGameBtn">⬆ Upload save</button>
           <button class="btn-ghost btn-sm hidden" id="uploadFolderToGameBtn">📂 Upload save folder</button>
           <button class="btn-ghost btn-sm" id="pinGameBtn">📌 Pin</button>
+          <button class="btn-ghost btn-sm" id="findCoverBtn">🔎 Find cover</button>
           <button class="btn-ghost btn-sm" id="setCoverBtn">🖼️ Add cover</button>
           <button class="btn-ghost btn-sm" id="downloadLatestBtn">⬇ Download latest</button>
           <button class="btn-ghost btn-sm danger" id="deleteGameBtn">🗑 Delete game</button>
@@ -1042,7 +1072,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-08-26c";
+const BUILD = "2026-09-08a";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -3397,6 +3427,219 @@ async function setLabel(fileId, label) {
   });
 }
 
+/* ============================================================
+   Cover art, without hunting for a picture yourself
+
+   The libretro project keeps a box-art collection for most of
+   the consoles here, named after the games. Given a game's
+   name, this finds the likely matches and copies the one you
+   pick into your Drive as that game's cover \u2014 so it lives with
+   the game afterwards, works offline, and shows up on every
+   device, exactly like a cover you'd uploaded by hand.
+
+   Two hosts are in play and the difference matters. The listing
+   lives on the collection's own server, which sends no CORS
+   header, so a browser can't read it. GitHub serves the same
+   repository, with CORS, so both the file list and the images
+   come from there. No API key, nothing to deploy.
+
+   Anything not in the collection \u2014 a ROM hack, a homebrew, a
+   translation \u2014 still takes a cover the old way. This is a
+   shortcut for the common case, not a replacement.
+   ============================================================ */
+const COVER_SYSTEMS = {
+  gb: "Nintendo - Game Boy",
+  gbc: "Nintendo - Game Boy Color",
+  gba: "Nintendo - Game Boy Advance",
+  nds: "Nintendo - Nintendo DS",
+  "3ds": "Nintendo - Nintendo 3DS",
+  wii: "Nintendo - Wii",
+  wiiu: "Nintendo - Wii U",
+  psp: "Sony - PlayStation Portable",
+  vita: "Sony - PlayStation Vita",
+  // No Switch collection exists; that console falls back to picking a file.
+};
+const COVER_TTL = 30 * 24 * 3600 * 1000;      // how long a cached name list stands
+const COVER_MAX = 12;                          // candidates shown at once
+
+function coverSystem(consoleId) { return COVER_SYSTEMS[consoleId] || null; }
+function coverRepo(system) { return "libretro-thumbnails/" + system.replace(/ /g, "_"); }
+
+function coverImageUrl(consoleId, fileName) {
+  const system = coverSystem(consoleId);
+  if (!system) return "";
+  return "https://raw.githubusercontent.com/" + coverRepo(system) +
+         "/master/Named_Boxarts/" + encodeURIComponent(fileName);
+}
+
+/* The list of every box art for a console, cached for a month.
+
+   Two requests rather than one: the folder listing endpoint stops at a
+   thousand files and several systems hold twice that, so the folder is looked
+   up first and then read as a tree, which doesn't truncate. */
+async function coverNameList(consoleId) {
+  const system = coverSystem(consoleId);
+  if (!system) return null;
+  const key = "ssw_covers_" + consoleId;
+  try {
+    const cached = JSON.parse(localStorage.getItem(key) || "null");
+    if (cached && Array.isArray(cached.names) && Date.now() - cached.at < COVER_TTL) return cached.names;
+  } catch (e) {}
+
+  const api = "https://api.github.com/repos/" + coverRepo(system);
+  const top = await fetch(api + "/contents/");
+  if (!top.ok) {
+    throw new Error(top.status === 403
+      ? "GitHub is rate-limiting this connection \u2014 try again in a little while"
+      : "couldn't reach the cover collection (" + top.status + ")");
+  }
+  const dir = (await top.json()).find((e) => e.name === "Named_Boxarts");
+  if (!dir) throw new Error("that console's collection has no box art");
+  const r = await fetch(api + "/git/trees/" + dir.sha);
+  if (!r.ok) throw new Error("couldn't read the cover list (" + r.status + ")");
+  const names = ((await r.json()).tree || [])
+    .filter((t) => t.type === "blob" && /\.png$/i.test(t.path))
+    .map((t) => t.path);
+  try { localStorage.setItem(key, JSON.stringify({ at: Date.now(), names })); } catch (e) {}
+  return names;
+}
+
+/* Names in the collection carry things a library name doesn't \u2014 regions,
+   language lists, accents, punctuation. Both sides get flattened to the same
+   shape before they're compared. */
+function coverKey(s) {
+  return String(s)
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")      // Pok\u00e9mon -> Pokemon
+    .replace(/\.png$/i, "")
+    .replace(/\([^)]*\)|\[[^\]]*\]/g, " ")                  // (USA) (En,Ja,...) [!]
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+// Where two candidates are equally good, prefer the one you probably own.
+const COVER_REGIONS = ["(usa", "(world", "(europe", "(japan"];
+function coverRegionRank(name) {
+  const low = name.toLowerCase();
+  for (let i = 0; i < COVER_REGIONS.length; i++) if (low.indexOf(COVER_REGIONS[i]) >= 0) return i;
+  return COVER_REGIONS.length;
+}
+
+// Words that match everything and mean nothing. Without dropping these, a name
+// with no real match still finds one through "a" and "game".
+const COVER_STOPWORDS = { the: 1, a: 1, an: 1, of: 1, and: 1, game: 1, version: 1, edition: 1 };
+
+function findCoverMatches(gameName, names) {
+  const want = coverKey(gameName);
+  if (!want) return [];
+  const wantWords = want.split(" ").filter((w) => w.length > 2 && !COVER_STOPWORDS[w]);
+  const out = [];
+  for (const n of names) {
+    const k = coverKey(n);
+    let score;
+    if (k === want) score = 100;
+    // The whole name you're looking for, at the front or anywhere in the entry.
+    else if (k.indexOf(want) === 0) score = 88;
+    else if (k.indexOf(want) >= 0) score = 74;
+    // The other direction is weaker and needs saying so: "Pokemon" is a prefix
+    // of "Pokemon Quetzal", but it is not what you asked for, and left level
+    // with the rest it would outrank the entry that actually named your game.
+    else if (want.indexOf(k) === 0) score = 30 + 20 * (k.length / want.length);
+    else {
+      const words = k.split(" ").filter(Boolean);
+      const hits = wantWords.filter((w) => words.indexOf(w) >= 0).length;
+      if (!hits) continue;
+      score = 30 * (hits / Math.max(wantWords.length, 1)) + 15 * (hits / Math.max(words.length, 1));
+      if (score < 18) continue;                       // too loose to be worth showing
+    }
+    out.push({ name: n, score: score - coverRegionRank(n) * 0.6 });
+  }
+  out.sort((a, b) => b.score - a.score || a.name.length - b.name.length);
+  return out.slice(0, COVER_MAX);
+}
+
+/* The picker. Same modal the rest of the app asks questions in, with a grid of
+   candidates in it \u2014 the pictures are the answer, so they have to be the thing
+   you click. */
+function pickCover(gameName, consoleId, candidates) {
+  return new Promise((resolve) => {
+    const back = $("modalBack");
+    const card = back.querySelector(".modal-card");
+    card.classList.add("wide");
+    $("modalTitle").textContent = "Cover for \u201c" + gameName + "\u201d";
+    $("modalBody").innerHTML =
+      '<div class="cover-note">From the libretro box-art collection. Pick the one that matches your copy \u2014 ' +
+      'it gets copied into your Drive, so it stays with the game.</div>' +
+      '<div class="cover-grid">' + candidates.map((c, i) =>
+        '<button class="cover-pick" data-cover="' + i + '" title="' + escapeAttr(c.name) + '">' +
+          '<img loading="lazy" src="' + escapeAttr(coverImageUrl(consoleId, c.name)) + '" alt="">' +
+          '<span>' + escapeHtml(c.name.replace(/\.png$/i, "")) + '</span>' +
+        '</button>').join("") + '</div>';
+
+    const acts = $("modalActions");
+    acts.innerHTML = "";
+    let settled = false;
+    const finish = (v) => {
+      if (settled) return;
+      settled = true;
+      back.classList.add("hidden");
+      card.classList.remove("wide");        // every other dialog wants it narrow
+      document.removeEventListener("keydown", onKey);
+      resolve(v || null);
+    };
+    const onKey = (e) => { if (e.key === "Escape") finish(null); };
+    const cancel = document.createElement("button");
+    cancel.className = "btn-ghost";
+    cancel.textContent = "Cancel";
+    cancel.onclick = () => finish(null);
+    acts.appendChild(cancel);
+    $("modalBody").querySelectorAll("button[data-cover]").forEach((b) => {
+      b.onclick = () => finish(candidates[+b.dataset.cover]);
+    });
+    back.onclick = (e) => { if (e.target === back) finish(null); };
+    document.addEventListener("keydown", onKey);
+    back.classList.remove("hidden");
+  });
+}
+
+async function findCoverForGame() {
+  const folderId = currentHistory.folderId;
+  if (!folderId) return;
+  const consoleId = currentHistory.console;
+  const con = consoleOf(consoleId);
+  if (!coverSystem(consoleId)) {
+    toast("There's no box-art collection for " + ((con || {}).label || "this console") +
+          " \u2014 use \ud83d\uddbc\ufe0f Add cover to pick a picture instead.", "err", 7000);
+    return;
+  }
+
+  const btn = $("findCoverBtn");
+  const label = btn ? btn.innerHTML : "";
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Searching\u2026'; }
+  try {
+    const names = await coverNameList(consoleId);
+    const matches = findCoverMatches(currentHistory.name, names || []);
+    if (!matches.length) {
+      toast("Nothing in the collection matches \u201c" + currentHistory.name + "\u201d. Hacks and homebrew " +
+            "usually aren't in it \u2014 \ud83d\uddbc\ufe0f Add cover still works.", "err", 8000);
+      return;
+    }
+    const pick = await pickCover(currentHistory.name, consoleId, matches);
+    if (!pick) return;
+    toast("Fetching that cover\u2026");
+    const r = await fetch(coverImageUrl(consoleId, pick.name));
+    if (!r.ok) throw new Error("the image wouldn't download (" + r.status + ")");
+    const blob = await r.blob();
+    // Straight into the same path a hand-picked cover takes.
+    await setCover(new File([blob], "cover.png", { type: blob.type || "image/png" }));
+  } catch (e) {
+    toast("Cover search failed: " + ((e && e.message) || e), "err", 7000);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = label; }
+  }
+}
+
 async function setCover(file) {
   if (!currentHistory.folderId || !file) return;
   if (!file.type.startsWith("image/")) { toast("Pick an image file for the cover.", "err"); return; }
@@ -4465,6 +4708,7 @@ function wireEvents() {
   $("uploadBtn").onclick = doUpload;
   $("consoleSel").onchange = onConsoleChanged;
 
+  $("findCoverBtn").onclick = findCoverForGame;
   $("setCoverBtn").onclick = () => $("coverInput").click();
   $("coverInput").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; setCover(f); };
 

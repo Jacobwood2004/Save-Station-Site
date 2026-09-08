@@ -248,6 +248,23 @@ that hasn't actually changed.
 
 ---
 
+## Cover art, without hunting for a picture
+
+**🔎 Find cover** on any game searches the libretro box-art collection by
+name and shows you what matches. Pick one and it's copied into your Drive as
+that game's cover — so it lives with the game, works offline afterwards, and
+shows up on every device, exactly like one you'd uploaded yourself.
+
+It covers nine of the ten consoles here (there's no Switch collection), and it
+finds more than you'd expect: ROM hacks like *Pokemon Quetzal* are in there too.
+Where a game genuinely isn't — homebrew, a personal translation — **🖼️ Add
+cover** still takes a picture from your computer.
+
+No account or API key: the file list and the images both come from GitHub, which
+allows it. The list of names for a console is fetched once and kept for a month.
+
+---
+
 ## Save slots — one game, two playthroughs
 
 A game's history is a row of tabs, one per save file you're playing it on:
