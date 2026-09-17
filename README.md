@@ -263,6 +263,27 @@ cover** still takes a picture from your computer.
 No account or API key: the file list and the images both come from GitHub, which
 allows it. The list of names for a console is fetched once and kept for a month.
 
+**Adding a new game asks for its cover** straight away — the matches, a picture
+of your own, or no cover at all — so the library doesn't fill up with blanks you
+mean to come back to.
+
+Every cover sits in the same case-shaped frame and is shown **whole**: a square
+3DS box and a tall Wii case end up exactly the same size, with nothing cropped,
+over a soft blur of their own art. A game with no cover is plain gray and says
+so.
+
+## The shelf
+
+**Shelf**, next to Grid above your library, lays your games out the way USB
+Loader GX does: the game you're on stands at the front and the rest angle away
+on either side. Each one is a small 3D case — the cover on the front, a spine
+in the console's colour with its name up it, and a plastic edge — so a case
+turned side-on still looks like a case.
+
+Click a case to bring it forward, click the front one to open it. Arrow keys,
+Home/End, the mouse wheel, dragging and swiping all move along it. The choice
+of Grid or Shelf is remembered.
+
 ---
 
 ## Save slots — one game, two playthroughs

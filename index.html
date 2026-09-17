@@ -392,13 +392,45 @@
     cursor: pointer; transition: transform .12s, border .15s, box-shadow .15s; overflow: hidden;
   }
   .game-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 12px 30px rgba(124,92,255,.20); }
-  .game-card .gc-cover {
-    aspect-ratio: 16 / 10; background: linear-gradient(135deg, #232c38, #12161c);
-    background-size: cover; background-position: center; display: grid; place-items: center;
-    font-size: 46px; position: relative;
+  /* One frame for every cover in the app: the proportions of a game case.
+
+     Box art comes in every shape — a 3DS box is nearly square, a Wii case is
+     tall, a hand-picked picture can be anything — and cropping them all to
+     one shape cut the titles off. So the art is fitted inside the frame whole,
+     never cropped, over a blurred wash of itself that fills whatever space is
+     left. Every cover ends up exactly the same size, and none of it is lost.
+
+     The art arrives as --cover on the element, and .has-art turns it on. */
+  .cover-frame {
+    position: relative; aspect-ratio: 5 / 7; overflow: hidden;
+    background: linear-gradient(160deg, #2c333d, #1b2029);
   }
+  .cover-frame::before, .cover-frame::after {
+    content: ""; position: absolute; pointer-events: none;
+    opacity: 0; transition: opacity .25s ease;
+  }
+  .cover-frame::before {                       /* the wash */
+    inset: -14%;
+    background: var(--cover) center / cover no-repeat;
+    filter: blur(20px) brightness(.5) saturate(1.25);
+  }
+  .cover-frame::after {                        /* the art, whole */
+    inset: 0;
+    background: var(--cover) center / contain no-repeat;
+  }
+  .cover-frame.has-art::before, .cover-frame.has-art::after { opacity: 1; }
+  .cover-frame.has-art .no-cover-label { display: none; }
+  /* A game without a cover says so, plainly, on gray — not a guessed emoji. */
+  .no-cover-label {
+    position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
+    font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: #737e8c;
+  }
+
+  .game-card .gc-cover { position: relative; }
   .game-card .gc-cover .gc-emu-tag {
-    position: absolute; top: 8px; right: 8px; font-size: 10px; font-weight: 700; letter-spacing: .3px;
+    position: absolute; top: 8px; right: 8px; z-index: 2;
+    font-size: 10px; font-weight: 700; letter-spacing: .3px;
     color: #fff; padding: 3px 9px; border-radius: 20px; backdrop-filter: blur(4px);
     box-shadow: 0 2px 8px rgba(0,0,0,.35);
   }
@@ -427,10 +459,122 @@
     .sb-item .sb-pin { opacity: .75; }
   }
 
+  /* Grid / Shelf switch */
+  .view-toggle {
+    display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px;
+    background: var(--panel-2); border: 1px solid var(--border);
+  }
+  .view-toggle button {
+    display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px;
+    font-size: 12.5px; font-weight: 600; border-radius: 7px;
+    background: transparent; color: var(--muted);
+  }
+  .view-toggle button:hover { color: var(--text); }
+  .view-toggle button.on { background: #2a3442; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+
+  /* The shelf. */
+  .shelf {
+    --cw: 200px; --ch: 280px; --depth: 22px;
+    position: relative; outline: none; user-select: none;
+    padding: 6px 0 4px;
+  }
+  .shelf:focus-visible .case.front .case-front { box-shadow: 0 0 0 3px var(--accent); }
+  .shelf-stage {
+    position: relative; height: calc(var(--ch) + 120px);
+    perspective: 1500px; perspective-origin: 50% 38%;
+    overflow: hidden; touch-action: pan-y;
+  }
+  /* A soft pool of light for the cases to stand in. */
+  .shelf-floor {
+    position: absolute; left: 50%; bottom: 18px; width: 760px; height: 150px; transform: translateX(-50%);
+    background: radial-gradient(ellipse at center, rgba(124,92,255,.22), rgba(74,210,201,.06) 45%, transparent 70%);
+    pointer-events: none;
+  }
+  .shelf-track {
+    position: absolute; left: 50%; top: 44px; width: 0; height: 0;
+    transform-style: preserve-3d;
+  }
+  .case {
+    position: absolute; left: calc(var(--cw) / -2); top: 0;
+    width: var(--cw); height: var(--ch);
+    transform-style: preserve-3d; cursor: pointer;
+    transition: transform .5s cubic-bezier(.2,.75,.25,1);
+  }
+  .case > div { position: absolute; backface-visibility: hidden; }
+  /* front: the cover, set into the case a hair so the plastic edge shows */
+  .case-front {
+    inset: 0; border-radius: 3px 5px 5px 3px;
+    transform: translateZ(calc(var(--depth) / 2));
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.14), 0 18px 34px rgba(0,0,0,.45);
+  }
+  /* the clear plastic sleeve over the front: a light edge and a sheen */
+  .case-gloss {
+    inset: 0; border-radius: 3px 5px 5px 3px; pointer-events: none;
+    transform: translateZ(calc(var(--depth) / 2 + .6px));
+    background:
+      linear-gradient(115deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 24%, transparent 40%),
+      linear-gradient(to right, rgba(255,255,255,.10), transparent 4%);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.10);
+  }
+  /* spine, on the left: the console's colour, and its name reading up it */
+  .case-spine {
+    top: 0; left: calc(var(--depth) / -2); width: var(--depth); height: 100%;
+    transform: rotateY(-90deg);
+    background: linear-gradient(90deg, rgba(0,0,0,.28), rgba(255,255,255,.10) 45%, rgba(0,0,0,.22)), var(--spine);
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .case-spine span {
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+    color: rgba(255,255,255,.92); white-space: nowrap; text-shadow: 0 1px 1px rgba(0,0,0,.35);
+  }
+  /* the opening edge, on the right, and the top: plain case plastic */
+  .case-edge {
+    top: 0; right: calc(var(--depth) / -2); width: var(--depth); height: 100%;
+    transform: rotateY(90deg);
+    background: linear-gradient(90deg, #cfd6df, #9aa4b1 40%, #c4ccd6);
+  }
+  .case-top {
+    left: 0; top: calc(var(--depth) / -2); width: 100%; height: var(--depth);
+    transform: rotateX(90deg);
+    background: linear-gradient(#dfe5ec, #a9b2bd);
+  }
+  .case-back {
+    inset: 0; background: #151a21; border-radius: 3px 5px 5px 3px;
+    transform: translateZ(calc(var(--depth) / -2)) rotateY(180deg);
+  }
+  /* Dimmed per face, not per case — see layoutShelf. filter on the case would
+     flatten it just as opacity does. */
+  .case > .case-front, .case > .case-spine, .case > .case-edge, .case > .case-top {
+    filter: brightness(var(--dim, 1));
+  }
+  .case:not(.front):hover > .case-front { filter: brightness(calc(var(--dim, 1) + .15)); }
+
+  .shelf-arrow {
+    position: absolute; top: calc(44px + var(--ch) / 2); transform: translateY(-50%);
+    width: 44px; height: 44px; padding: 0; border-radius: 50%;
+    display: grid; place-items: center;
+    background: rgba(22,27,34,.72); color: var(--text); border: 1px solid var(--border);
+    backdrop-filter: blur(6px); box-shadow: var(--shadow); z-index: 5;
+  }
+  .shelf-arrow:hover:not(:disabled) { border-color: var(--accent); color: #fff; }
+  .shelf-arrow:disabled { opacity: .25; }
+  .shelf-arrow.prev { left: 8px; }
+  .shelf-arrow.next { right: 8px; }
+
+  .shelf-caption { text-align: center; margin-top: -54px; position: relative; z-index: 4; padding: 0 60px; }
+  .shelf-title { font-size: 21px; font-weight: 700; line-height: 1.25; word-break: break-word; }
+  .shelf-meta {
+    margin-top: 8px; display: flex; justify-content: center; align-items: center;
+    gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--muted);
+  }
+  .shelf-pos { font-variant-numeric: tabular-nums; opacity: .8; }
+  .shelf-hint { margin-top: 6px; font-size: 11.5px; color: var(--muted); opacity: .6; }
+
   /* history hero with cover */
   .history-hero { display: flex; gap: 18px; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; }
   .history-hero .hh-cover {
-    width: 160px; aspect-ratio: 16 / 10; border-radius: 14px; border: 1px solid var(--border);
+    width: 150px; aspect-ratio: 5 / 7; border-radius: 12px; border: 1px solid var(--border);
     background: linear-gradient(135deg, #232c38, #12161c); background-size: cover; background-position: center;
     display: grid; place-items: center; font-size: 48px; flex-shrink: 0;
   }
@@ -453,11 +597,13 @@
     color: var(--text); text-align: center;
   }
   .cover-pick:hover { border-color: var(--accent); background: #232c38; }
-  .cover-pick img {
-    width: 100%; aspect-ratio: 3 / 4; object-fit: contain; border-radius: 6px;
-    background: rgba(0,0,0,.25);
-  }
-  .cover-pick span {
+  .cover-pick .cover-frame { width: 100%; border-radius: 6px; }
+  .cover-pick.cover-choice .cover-frame { border: 1px dashed #3b4654; }
+  .cover-pick.cover-choice:hover .cover-frame { border-color: var(--accent); }
+  .no-cover-label.cover-plus { font-size: 34px; font-weight: 400; letter-spacing: 0; }
+  /* Direct children only: the frame's own "No cover" label is a span too, and
+     this rule's display would knock it out of its centring. */
+  .cover-pick > span {
     font-size: 10.5px; font-weight: 500; color: var(--muted); line-height: 1.35;
     overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
   }
@@ -625,10 +771,12 @@
     /* Stacked, not side by side: at this width a cover and a title sharing a
        row leaves neither with enough room, and the buttons end up two-up. */
     .history-hero { gap: 12px; flex-direction: column; align-items: stretch; }
-    .history-hero .hh-cover { width: 100%; }
-    .history-hero .hh-cover.no-cover {
-      width: 92px; aspect-ratio: 1; font-size: 38px;
-    }
+    .history-hero .hh-cover { width: 118px; }
+    .shelf { --cw: 150px; --ch: 210px; --depth: 16px; }
+    .shelf-caption { padding: 0 10px; }
+    .shelf-title { font-size: 18px; }
+    .shelf-arrow { width: 38px; height: 38px; }
+    .view-toggle button span { display: none; }
     .panel { padding: 16px; }
     .gate-card { padding: 32px 22px; }
     /* Actions drop under what they act on, rather than squeezing it to nothing. */
@@ -973,7 +1121,20 @@
   <div id="gamesView">
     <div class="section-title">
       <h3 id="gamesTitle">🕹️ Your games</h3>
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <!-- Grid or shelf. Remembered per browser. -->
+        <div class="view-toggle" id="viewToggle" role="group" aria-label="Library view">
+          <button type="button" data-mode="grid" title="Grid">
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor"
+              d="M1.5 1.5h5v5h-5zM9.5 1.5h5v5h-5zM1.5 9.5h5v5h-5zM9.5 9.5h5v5h-5z"/></svg>
+            <span>Grid</span>
+          </button>
+          <button type="button" data-mode="shelf" title="Shelf">
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor"
+              d="M6 2.2h4.2v11.6H6zM1.2 3.6l3.6 1.1v6.6l-3.6 1.1zM14.8 3.6l-3.6 1.1v6.6l3.6 1.1z"/></svg>
+            <span>Shelf</span>
+          </button>
+        </div>
         <button class="btn-ghost btn-sm hidden" id="clearFilterBtn">✕ All consoles</button>
         <button class="btn-primary btn-sm" id="newGameBtn">＋ New game</button>
         <button class="btn-ghost btn-sm" id="refreshBtn">↻ Refresh</button>
@@ -986,7 +1147,7 @@
   <div id="historyView" class="hidden">
     <button class="back-link" id="backBtn">← All games</button>
     <div class="history-hero">
-      <div class="hh-cover" id="historyCover"></div>
+      <div class="hh-cover cover-frame" id="historyCover"><span class="no-cover-label">No cover</span></div>
       <div class="hh-info">
         <h3 id="historyTitle"></h3>
         <div class="hh-console" id="historyConsole"></div>
@@ -1072,7 +1233,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-09-08a";
+const BUILD = "2026-09-17a";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -3406,6 +3567,26 @@ async function getCoverUrl(fileId) {
   return u;
 }
 
+/* Put a stored cover into a .cover-frame, or take it back out. The frame does
+   the fitting; all this does is hand it the picture and say it's there. */
+async function showCoverIn(el, fileId) {
+  try {
+    const url = await getCoverUrl(fileId);
+    el.style.setProperty("--cover", "url('" + url + "')");
+    el.classList.add("has-art");
+  } catch (e) {
+    clearCoverIn(el);
+  }
+}
+
+function clearCoverIn(el) {
+  el.style.removeProperty("--cover");
+  el.classList.remove("has-art");
+  if (!el.querySelector(".no-cover-label")) {
+    el.insertAdjacentHTML("beforeend", '<span class="no-cover-label">No cover</span>');
+  }
+}
+
 async function deleteFile(id) {
   try { await driveFetch("https://www.googleapis.com/drive/v3/files/" + id, { method: "DELETE" }); } catch (e) {}
 }
@@ -3562,20 +3743,56 @@ function findCoverMatches(gameName, names) {
 /* The picker. Same modal the rest of the app asks questions in, with a grid of
    candidates in it \u2014 the pictures are the answer, so they have to be the thing
    you click. */
-function pickCover(gameName, consoleId, candidates) {
+/* The picker. Same modal the rest of the app asks questions in, with a grid of
+   answers in it \u2014 the pictures are the answer, so they're what you click.
+
+   Each candidate is shown in the same .cover-frame a game card uses, so what
+   you pick is exactly what you'll see. And whatever the collection turned up,
+   two more answers are always there: no cover at all, or a picture of your own.
+
+   Resolves { kind: "art", name } | { kind: "none" } | { kind: "upload" } | null. */
+function pickCover(gameName, consoleId, candidates, opts) {
+  opts = opts || {};
   return new Promise((resolve) => {
     const back = $("modalBack");
     const card = back.querySelector(".modal-card");
     card.classList.add("wide");
-    $("modalTitle").textContent = "Cover for \u201c" + gameName + "\u201d";
+    $("modalTitle").textContent = (opts.firstTime ? "Pick a cover for \u201c" : "Cover for \u201c") +
+                                  gameName + "\u201d";
+
+    let note;
+    if (candidates.length) {
+      note = "From the libretro box-art collection. Pick the one that matches your copy \u2014 it gets " +
+             "copied into your Drive, so it stays with the game.";
+    } else if (opts.lookupError) {
+      note = "The box-art collection couldn't be searched just now (" + escapeHtml(opts.lookupError.message) +
+             "). You can still use a picture of your own, or leave it without one.";
+    } else if (opts.hasCollection === false) {
+      note = "There's no box-art collection for this console, so there's nothing to suggest \u2014 use a " +
+             "picture of your own, or leave it without one.";
+    } else {
+      note = "Nothing in the box-art collection matches this name. Hacks and homebrew often aren't in it \u2014 " +
+             "use a picture of your own, or leave it without one.";
+    }
+
     $("modalBody").innerHTML =
-      '<div class="cover-note">From the libretro box-art collection. Pick the one that matches your copy \u2014 ' +
-      'it gets copied into your Drive, so it stays with the game.</div>' +
-      '<div class="cover-grid">' + candidates.map((c, i) =>
-        '<button class="cover-pick" data-cover="' + i + '" title="' + escapeAttr(c.name) + '">' +
-          '<img loading="lazy" src="' + escapeAttr(coverImageUrl(consoleId, c.name)) + '" alt="">' +
-          '<span>' + escapeHtml(c.name.replace(/\.png$/i, "")) + '</span>' +
-        '</button>').join("") + '</div>';
+      '<div class="cover-note">' + note + '</div>' +
+      '<div class="cover-grid">' +
+        candidates.map((c, i) =>
+          '<button class="cover-pick" data-cover="' + i + '" title="' + escapeAttr(c.name) + '">' +
+            '<div class="cover-frame has-art" style="--cover:url(\'' +
+              escapeAttr(coverImageUrl(consoleId, c.name)) + '\')"></div>' +
+            '<span>' + escapeHtml(c.name.replace(/\.png$/i, "")) + '</span>' +
+          '</button>').join("") +
+        '<button class="cover-pick cover-choice" data-choice="upload">' +
+          '<div class="cover-frame"><span class="no-cover-label cover-plus">\uff0b</span></div>' +
+          '<span>Choose an image\u2026</span>' +
+        '</button>' +
+        '<button class="cover-pick cover-choice" data-choice="none">' +
+          '<div class="cover-frame"><span class="no-cover-label">No cover</span></div>' +
+          '<span>' + (opts.hasCover ? "Remove the cover" : "No cover") + '</span>' +
+        '</button>' +
+      '</div>';
 
     const acts = $("modalActions");
     acts.innerHTML = "";
@@ -3591,11 +3808,14 @@ function pickCover(gameName, consoleId, candidates) {
     const onKey = (e) => { if (e.key === "Escape") finish(null); };
     const cancel = document.createElement("button");
     cancel.className = "btn-ghost";
-    cancel.textContent = "Cancel";
+    cancel.textContent = opts.firstTime ? "Skip for now" : "Cancel";
     cancel.onclick = () => finish(null);
     acts.appendChild(cancel);
     $("modalBody").querySelectorAll("button[data-cover]").forEach((b) => {
-      b.onclick = () => finish(candidates[+b.dataset.cover]);
+      b.onclick = () => finish({ kind: "art", name: candidates[+b.dataset.cover].name });
+    });
+    $("modalBody").querySelectorAll("button[data-choice]").forEach((b) => {
+      b.onclick = () => finish({ kind: b.dataset.choice });
     });
     back.onclick = (e) => { if (e.target === back) finish(null); };
     document.addEventListener("keydown", onKey);
@@ -3603,57 +3823,100 @@ function pickCover(gameName, consoleId, candidates) {
   });
 }
 
+// A file dialog for one image. Resolves null if it's dismissed \u2014 via the
+// input's cancel event where the browser has one, and focus returning where not.
+function pickImageFile() {
+  return new Promise((resolve) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    let done = false;
+    const settle = (f) => { if (done) return; done = true; resolve(f); };
+    input.onchange = () => settle(input.files[0] || null);
+    input.addEventListener("cancel", () => settle(null));
+    window.addEventListener("focus", () => setTimeout(() => settle(null), 800), { once: true });
+    input.click();
+  });
+}
+
+/* Everything a cover decision can lead to, for any game. Used by \ud83d\udd0e Find cover
+   on a game's page, and by the question asked when a new game is added.
+   Returns "set", "none" or "cancelled". */
+async function chooseCoverFor(folderId, gameName, consoleId, opts) {
+  opts = opts || {};
+  let matches = [];
+  let lookupError = null;
+  const hasCollection = !!coverSystem(consoleId);
+  if (hasCollection) {
+    try { matches = findCoverMatches(gameName, (await coverNameList(consoleId)) || []); }
+    catch (e) { lookupError = e; }
+  }
+  const pick = await pickCover(gameName, consoleId, matches,
+    Object.assign({}, opts, { lookupError, hasCollection }));
+  if (!pick) return "cancelled";
+
+  if (pick.kind === "none") {
+    await removeCoverFrom(folderId);
+    return "none";
+  }
+  if (pick.kind === "upload") {
+    const file = await pickImageFile();
+    if (!file) return "cancelled";
+    toast("Uploading cover\u2026");
+    await uploadCoverTo(folderId, file);
+    return "set";
+  }
+  toast("Fetching that cover\u2026");
+  const r = await fetch(coverImageUrl(consoleId, pick.name));
+  if (!r.ok) throw new Error("the image wouldn't download (" + r.status + ")");
+  const blob = await r.blob();
+  // Straight into the same path a hand-picked cover takes.
+  await uploadCoverTo(folderId, new File([blob], "cover.png", { type: blob.type || "image/png" }));
+  return "set";
+}
+
 async function findCoverForGame() {
   const folderId = currentHistory.folderId;
   if (!folderId) return;
-  const consoleId = currentHistory.console;
-  const con = consoleOf(consoleId);
-  if (!coverSystem(consoleId)) {
-    toast("There's no box-art collection for " + ((con || {}).label || "this console") +
-          " \u2014 use \ud83d\uddbc\ufe0f Add cover to pick a picture instead.", "err", 7000);
-    return;
-  }
-
   const btn = $("findCoverBtn");
   const label = btn ? btn.innerHTML : "";
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Searching\u2026'; }
   try {
-    const names = await coverNameList(consoleId);
-    const matches = findCoverMatches(currentHistory.name, names || []);
-    if (!matches.length) {
-      toast("Nothing in the collection matches \u201c" + currentHistory.name + "\u201d. Hacks and homebrew " +
-            "usually aren't in it \u2014 \ud83d\uddbc\ufe0f Add cover still works.", "err", 8000);
-      return;
-    }
-    const pick = await pickCover(currentHistory.name, consoleId, matches);
-    if (!pick) return;
-    toast("Fetching that cover\u2026");
-    const r = await fetch(coverImageUrl(consoleId, pick.name));
-    if (!r.ok) throw new Error("the image wouldn't download (" + r.status + ")");
-    const blob = await r.blob();
-    // Straight into the same path a hand-picked cover takes.
-    await setCover(new File([blob], "cover.png", { type: blob.type || "image/png" }));
+    const result = await chooseCoverFor(folderId, currentHistory.name, currentHistory.console,
+                                        { hasCover: !!currentHistory.cover });
+    if (result === "cancelled") return;
+    toast(result === "none" ? "Cover removed" : "Cover updated \u2714", "ok");
+    await openHistory(folderId, currentHistory.name, currentHistory.console);
   } catch (e) {
-    toast("Cover search failed: " + ((e && e.message) || e), "err", 7000);
+    toast("Couldn't set the cover: " + ((e && e.message) || e), "err", 7000);
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = label; }
   }
 }
 
+// Give any game a cover, replacing whatever it had. Old covers are removed
+// first so they don't pile up in the game's folder.
+async function uploadCoverTo(folderId, file) {
+  if (!file || !String(file.type || "").startsWith("image/")) throw new Error("that isn't an image file");
+  await removeCoverFrom(folderId);
+  const ext = getExt(file.name);
+  await uploadSave(folderId, "cover" + (ext ? "." + ext : ""), file, { role: "cover", originalName: file.name });
+}
+
+async function removeCoverFrom(folderId) {
+  for (const f of await listSaves(folderId)) {
+    if (f.appProperties && f.appProperties.role === "cover") { delete coverUrlCache[f.id]; await deleteFile(f.id); }
+  }
+}
+
+// The \ud83d\uddbc\ufe0f Add cover button on a game's page.
 async function setCover(file) {
   if (!currentHistory.folderId || !file) return;
   if (!file.type.startsWith("image/")) { toast("Pick an image file for the cover.", "err"); return; }
-  toast("Uploading cover…");
+  toast("Uploading cover\u2026");
   try {
-    // remove old covers so they don't pile up
-    const existing = await listSaves(currentHistory.folderId);
-    for (const f of existing) {
-      if (f.appProperties && f.appProperties.role === "cover") { delete coverUrlCache[f.id]; await deleteFile(f.id); }
-    }
-    const ext = getExt(file.name);
-    await uploadSave(currentHistory.folderId, "cover" + (ext ? "." + ext : ""), file,
-      { role: "cover", originalName: file.name });
-    toast("Cover updated ✔", "ok");
+    await uploadCoverTo(currentHistory.folderId, file);
+    toast("Cover updated \u2714", "ok");
     await openHistory(currentHistory.folderId, currentHistory.name, currentHistory.console);
   } catch (e) {
     toast("Cover upload failed: " + e.message, "err", 5000);
@@ -3992,6 +4255,7 @@ async function doUpload() {
     // Already in the library? Use it. Only a genuinely new game pays for the
     // archive lookup — and if it's in there, it comes back with its history.
     let gameFolderId = await findFolder(folderName, rootFolderId);
+    const alreadyThere = !!gameFolderId;
     let restored = false;
     if (!gameFolderId) {
       gameFolderId = await restoreArchivedGame(gameName);
@@ -4016,6 +4280,18 @@ async function doUpload() {
       : "Saved “" + gameName + "” backup to Drive ✔", "ok", restored ? 6000 : 3000);
     clearFile();
     $("uploadPanel").classList.add("hidden");
+
+    // A game that's genuinely new is asked what it should look like, now,
+    // while you're thinking about it. One coming back from the archive already
+    // has its cover, and one already in the library was asked the first time.
+    if (!alreadyThere && !restored) {
+      try {
+        const result = await chooseCoverFor(gameFolderId, gameName, consoleId, { firstTime: true });
+        if (result === "set") toast("Cover set \u2714", "ok");
+      } catch (e) {
+        toast("The game's in, but its cover didn't save: " + ((e && e.message) || e), "err", 7000);
+      }
+    }
     await loadGames();
   } catch (e) {
     console.error(e);
@@ -4197,6 +4473,9 @@ function renderGames() {
     c.innerHTML = '<div class="empty"><div class="e-icon">🎲</div>No games' + escapeHtml(label) + " yet.</div>";
     return;
   }
+  syncViewToggle();
+  if (libraryView() === "shelf") { renderShelf(c, games); return; }
+
   c.innerHTML = '<div class="games-grid">' + games.map((g) => {
     const latest = g.saves[0];
     const nSlots = (g.slots || []).length;
@@ -4215,7 +4494,8 @@ function renderGames() {
       '" title="' + (pinned ? "Unpin from sidebar" : "Pin to sidebar") + '">📌</button>';
     return '<div class="game-card" data-fid="' + g.folder.id + '" data-name="' +
       escapeAttr(g.folder.name) + '" data-console="' + escapeAttr(g.consoleId || "") + '">' +
-      '<div class="gc-cover"' + coverAttr + '>' + pin + (g.cover ? '' : emojiFor(g.folder.name, con)) + tag + '</div>' +
+      '<div class="gc-cover cover-frame"' + coverAttr + '>' + pin +
+        '<span class="no-cover-label">No cover</span>' + tag + '</div>' +
       '<div class="gc-body"><div class="gc-name">' + escapeHtml(g.folder.name) + '</div>' +
       '<div class="gc-meta">' + meta + '</div></div></div>';
   }).join("") + "</div>";
@@ -4233,8 +4513,230 @@ function renderGames() {
     };
   });
   // lazy-load cover images
-  c.querySelectorAll(".gc-cover[data-cover]").forEach(async (el) => {
-    try { el.style.backgroundImage = "url('" + (await getCoverUrl(el.dataset.cover)) + "')"; } catch (e) {}
+  c.querySelectorAll(".gc-cover[data-cover]").forEach((el) => showCoverIn(el, el.dataset.cover));
+}
+
+/* ============================================================
+   The shelf \u2014 the library as a row of real game cases
+
+   The grid is for finding a game; this is for looking at them.
+   It borrows the carousel from USB Loader GX: the game you're on
+   stands at the front, and the rest angle away on either side
+   the way cases do when you run a finger along a shelf.
+
+   Each case is a small 3D box, not a flat picture: the cover on
+   the front, a spine in the console's colour with its name up it
+   the way real spines read, and an edge along the top, so a case
+   turned side-on looks like a case rather than a card on its
+   edge. The cover itself is the same .cover-frame every other
+   cover uses, so art fits here exactly as it does in the grid.
+
+   Moving along it: click a case to bring it to the front, click
+   the front one to open it. Arrow keys, the mouse wheel, dragging
+   and swiping all work too.
+   ============================================================ */
+let shelfActiveFid = null;       // which game is at the front, kept across redraws
+let shelfGames = [];
+let shelfIndex = 0;
+
+function libraryView() {
+  try { return localStorage.getItem("ssw_view_mode") === "shelf" ? "shelf" : "grid"; }
+  catch (e) { return "grid"; }
+}
+
+function setLibraryView(mode) {
+  try { localStorage.setItem("ssw_view_mode", mode === "shelf" ? "shelf" : "grid"); } catch (e) {}
+  renderGames();
+}
+
+function syncViewToggle() {
+  const mode = libraryView();
+  $("viewToggle").querySelectorAll("button[data-mode]").forEach((b) => {
+    b.classList.toggle("on", b.dataset.mode === mode);
+    b.setAttribute("aria-pressed", b.dataset.mode === mode ? "true" : "false");
+  });
+}
+
+function renderShelf(c, games) {
+  shelfGames = games;
+  const found = games.findIndex((g) => g.folder.id === shelfActiveFid);
+  shelfIndex = found >= 0 ? found : 0;
+
+  c.innerHTML =
+    '<div class="shelf" tabindex="0" aria-label="Game shelf \u2014 use the arrow keys to move along it">' +
+      '<div class="shelf-stage">' +
+        '<div class="shelf-floor"></div>' +
+        '<div class="shelf-track">' +
+          games.map((g, i) => {
+            const con = consoleOf(g.consoleId);
+            const spine = con ? con.color : "#3a4453";
+            return '<div class="case" data-i="' + i + '" style="--spine:' + spine + '">' +
+              '<div class="case-front cover-frame"' + (g.cover ? ' data-cover="' + g.cover.id + '"' : '') + '>' +
+                '<span class="no-cover-label">No cover</span>' +
+              '</div>' +
+              '<div class="case-gloss"></div>' +
+              '<div class="case-spine"><span>' + escapeHtml(con ? con.label : "Game") + '</span></div>' +
+              '<div class="case-edge"></div>' +
+              '<div class="case-top"></div>' +
+              '<div class="case-back"></div>' +
+            '</div>';
+          }).join("") +
+        '</div>' +
+      '</div>' +
+      '<button class="shelf-arrow prev" type="button" aria-label="Previous game">' +
+        '<svg viewBox="0 0 24 24" width="22" height="22"><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" ' +
+        'stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+      '<button class="shelf-arrow next" type="button" aria-label="Next game">' +
+        '<svg viewBox="0 0 24 24" width="22" height="22"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" ' +
+        'stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+      '<div class="shelf-caption">' +
+        '<div class="shelf-title"></div>' +
+        '<div class="shelf-meta"></div>' +
+        '<div class="shelf-hint">Click the front case to open it</div>' +
+      '</div>' +
+    '</div>';
+
+  const shelf = c.querySelector(".shelf");
+  shelf.querySelectorAll(".case-front[data-cover]").forEach((el) => showCoverIn(el, el.dataset.cover));
+  layoutShelf(shelf);
+  wireShelf(shelf);
+  try { shelf.focus({ preventScroll: true }); } catch (e) {}
+}
+
+/* Where every case sits, given which one is at the front. Distance from the
+   front decides everything: how far along, how far back, and how far turned. */
+function layoutShelf(shelf) {
+  const narrow = window.matchMedia("(max-width: 620px)").matches;
+  const reach = narrow ? 3 : 5;                     // how many either side stay visible
+  // Spaced so each case clears the next one's spine. Packed any tighter and
+  // every case hides the edge of its neighbour, and the row reads as flat
+  // pictures in a stack rather than cases on a shelf.
+  const first = narrow ? 128 : 218;                 // gap from the front case to its neighbours
+  const step = narrow ? 70 : 118;                   // gap between the ones further out
+  shelf.querySelectorAll(".case").forEach((el) => {
+    const d = +el.dataset.i - shelfIndex;
+    const ad = Math.abs(d);
+    const side = Math.sign(d);
+    let t;
+    if (d === 0) {
+      t = "translate3d(0, 0, 90px)";
+    } else {
+      const x = side * (first + (ad - 1) * step);
+      const z = -50 - ad * 60;
+      const turn = -side * Math.min(40 + ad * 3, 52);
+      t = "translate3d(" + x + "px, 0, " + z + "px) rotateY(" + turn + "deg)";
+    }
+    el.style.transform = t;
+    // Distance is shown by dimming the case's own faces, never with opacity on
+    // the case: opacity below 1 makes the browser flatten a 3D element into a
+    // picture, which silently took the spine and edges off every case but the
+    // front one. visibility does the hiding for the same reason.
+    el.style.setProperty("--dim", String(Math.max(1 - ad * 0.1, 0.45)));
+    el.style.visibility = ad > reach ? "hidden" : "visible";
+    el.style.pointerEvents = ad > reach ? "none" : "auto";
+    el.classList.toggle("front", d === 0);
+  });
+
+  const g = shelfGames[shelfIndex];
+  if (!g) return;
+  shelfActiveFid = g.folder.id;
+  const con = consoleOf(g.consoleId);
+  const latest = g.saves[0];
+  const nSlots = (g.slots || []).length;
+  shelf.querySelector(".shelf-title").textContent = g.folder.name;
+  shelf.querySelector(".shelf-meta").innerHTML =
+    (con ? consolePill(con) : "") +
+    '<span>' + (latest
+      ? (nSlots > 1 ? nSlots + " slots \u00b7 " : "") + g.saves.length + " backup" +
+        (g.saves.length === 1 ? "" : "s") + " \u00b7 " + relTime(latest.createdTime)
+      : "No backups yet") + '</span>' +
+    '<span class="shelf-pos">' + (shelfIndex + 1) + " of " + shelfGames.length + '</span>';
+  shelf.querySelector(".prev").disabled = shelfIndex === 0;
+  shelf.querySelector(".next").disabled = shelfIndex === shelfGames.length - 1;
+}
+
+function moveShelf(shelf, to) {
+  const next = Math.max(0, Math.min(shelfGames.length - 1, to));
+  if (next === shelfIndex) return;
+  shelfIndex = next;
+  layoutShelf(shelf);
+}
+
+function openShelfGame() {
+  const g = shelfGames[shelfIndex];
+  if (g) openHistory(g.folder.id, g.folder.name, g.consoleId || null);
+}
+
+function wireShelf(shelf) {
+  const stage = shelf.querySelector(".shelf-stage");
+
+  shelf.querySelectorAll(".case").forEach((el) => {
+    el.onclick = () => {
+      if (dragMoved) return;                         // the end of a drag isn't a click
+      const i = +el.dataset.i;
+      if (i === shelfIndex) openShelfGame();
+      else moveShelf(shelf, i);
+    };
+  });
+  shelf.querySelector(".prev").onclick = () => moveShelf(shelf, shelfIndex - 1);
+  shelf.querySelector(".next").onclick = () => moveShelf(shelf, shelfIndex + 1);
+
+  shelf.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") { moveShelf(shelf, shelfIndex - 1); e.preventDefault(); }
+    else if (e.key === "ArrowRight") { moveShelf(shelf, shelfIndex + 1); e.preventDefault(); }
+    else if (e.key === "Home") { moveShelf(shelf, 0); e.preventDefault(); }
+    else if (e.key === "End") { moveShelf(shelf, shelfGames.length - 1); e.preventDefault(); }
+    else if (e.key === "Enter" || e.key === " ") { openShelfGame(); e.preventDefault(); }
+  });
+
+  // The wheel moves one case per notch, rather than scrolling the page past the
+  // shelf \u2014 but only while the pointer is actually over the cases.
+  let wheel = 0;
+  stage.addEventListener("wheel", (e) => {
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    wheel += delta;
+    if (Math.abs(wheel) >= 60) {
+      moveShelf(shelf, shelfIndex + Math.sign(wheel));
+      wheel = 0;
+    }
+    e.preventDefault();
+  }, { passive: false });
+
+  // Drag or swipe. The press is per shelf; the movement is tracked on the
+  // window so a drag that leaves the stage still counts.
+  stage.addEventListener("pointerdown", (e) => {
+    dragFrom = e.clientX;
+    dragMoved = false;
+  });
+  listenForShelfDrags();
+}
+
+/* Registered once for the life of the page. The shelf is redrawn every time the
+   library is, and adding these per redraw stacked them up \u2014 until a single
+   drag was being counted by every shelf that had ever been drawn. */
+let dragFrom = null;
+let dragMoved = false;
+let shelfDragsWired = false;
+
+function listenForShelfDrags() {
+  if (shelfDragsWired) return;
+  shelfDragsWired = true;
+  window.addEventListener("pointermove", (e) => {
+    if (dragFrom === null) return;
+    const shelf = document.querySelector("#gamesContainer .shelf");
+    if (!shelf) { dragFrom = null; return; }
+    const span = window.matchMedia("(max-width: 620px)").matches ? 50 : 80;
+    const dx = e.clientX - dragFrom;
+    if (Math.abs(dx) >= span) {
+      moveShelf(shelf, shelfIndex - Math.sign(dx));
+      dragFrom = e.clientX;
+      dragMoved = true;
+    }
+  });
+  window.addEventListener("pointerup", () => {
+    dragFrom = null;
+    // The click that ends a drag must still see dragMoved, so it clears a tick later.
+    setTimeout(() => { dragMoved = false; }, 0);
   });
 }
 
@@ -4259,9 +4761,7 @@ async function openHistory(folderId, name, consoleId) {
   syncHistoryPinButton();
   updateNavHighlight();
   const coverEl = $("historyCover");
-  coverEl.style.backgroundImage = "";
-  coverEl.classList.add("no-cover");
-  coverEl.textContent = emojiFor(name, consoleOf(consoleId));
+  clearCoverIn(coverEl);
   const c = $("historyContainer");
   c.innerHTML = '<div class="empty"><span class="spinner"></span> Loading backups\u2026</div>';
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -4296,11 +4796,7 @@ async function openHistory(folderId, name, consoleId) {
 
     if (cover) {
       $("setCoverBtn").textContent = "\ud83d\uddbc\ufe0f Change cover";
-      try {
-        coverEl.style.backgroundImage = "url('" + (await getCoverUrl(cover.id)) + "')";
-        coverEl.textContent = "";
-        coverEl.classList.remove("no-cover");
-      } catch (e) {}
+      await showCoverIn(coverEl, cover.id);
     } else {
       $("setCoverBtn").textContent = "\ud83d\uddbc\ufe0f Add cover";
     }
@@ -4685,6 +5181,14 @@ function wireEvents() {
   $("disconnectDriveBtn").onclick = disconnectDrive;
   $("signOutBtn").onclick = signOut;
   $("refreshBtn").onclick = loadGames;
+  $("viewToggle").querySelectorAll("button[data-mode]").forEach((b) => {
+    b.onclick = () => setLibraryView(b.dataset.mode);
+  });
+  // Cases are placed in pixels, so a resize across the phone breakpoint re-places them.
+  window.addEventListener("resize", () => {
+    const shelf = document.querySelector("#gamesContainer .shelf");
+    if (shelf) layoutShelf(shelf);
+  });
   $("backBtn").onclick = showAllGames;      // it says "All games", so mean it
   $("downloadLatestBtn").onclick = async () => {
     // The latest in the slot you're looking at \u2014 not the game's newest overall,
