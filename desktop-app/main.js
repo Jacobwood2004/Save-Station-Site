@@ -628,11 +628,17 @@ ipcMain.handle("ss:set-auto", (_e, { key, on }) => {
 
 /* Names live in your Drive, not here, so they can change on another device.
    The page tells us when what it's showing has drifted from what we stored. */
-ipcMain.handle("ss:rename", (_e, { key, gameName, slotName }) => {
+ipcMain.handle("ss:rename", (_e, { key, gameName, slotName, consoleId, emulator }) => {
   const link = getLink(key);
   if (!link) return { ok: false };
   if (gameName) link.gameName = gameName;
   if (slotName) link.slotName = slotName;
+  // A game filed under a different console on the site: the emulator we wait
+  // for moves with it, and so does the shape a commit is stored in.
+  if (consoleId && /^[a-z0-9]{1,12}$/.test(consoleId) && consoleId !== link.consoleId) {
+    link.consoleId = consoleId;
+    if (typeof emulator === "string") link.emulator = emulator.slice(0, 40);
+  }
   putLink(key, link);
   return { ok: true, link };
 });

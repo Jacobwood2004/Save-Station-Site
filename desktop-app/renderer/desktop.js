@@ -40,6 +40,7 @@
       links = st.links || {};
       pending = {};
       (st.pending || []).forEach((p) => { pending[p.key] = true; });
+      syncConsoles(SS() && SS().games);      // links arriving after the library did
       paintSidebar(st);
       renderPanel();
     } catch (e) { /* the app process will tell us again soon enough */ }
@@ -101,6 +102,7 @@
       link.slotName = slot.name;
       desktop.syncNames(key, { gameName: name, slotName: slot.name });
     }
+    syncConsole(key, consoleId);
     const changed = !!pending[key];
     const last = link.lastCommit;
     host.innerHTML = card(
@@ -362,6 +364,31 @@
     if (msg.type === "committed" || msg.type === "links" || msg.type === "emulators") {
       refreshStatus();
     }
+  });
+
+  /* A game's console lives in Drive too, and can be changed from any device.
+     A link made under the old one would sit waiting for the wrong emulator to
+     close, so it follows the game. */
+  function syncConsole(key, consoleId) {
+    const link = links[key];
+    if (!link || !consoleId || link.consoleId === consoleId) return;
+    const con = SS().consoleOf(consoleId);
+    link.consoleId = consoleId;
+    desktop.syncNames(key, { consoleId, emulator: con && con.emus ? con.emus[0] : "" });
+  }
+
+  // Every game at once, so links to games you haven't opened here follow too.
+  function syncConsoles(games) {
+    (games || []).forEach((g) => {
+      if (!g.consoleId || !g.folder) return;
+      Object.keys(links).forEach((key) => {
+        if (links[key].gameFolderId === g.folder.id) syncConsole(key, g.consoleId);
+      });
+    });
+  }
+
+  window.addEventListener("savestation:games", (e) => {
+    syncConsoles(e.detail && e.detail.games);
   });
 
   window.addEventListener("savestation:history", (e) => {

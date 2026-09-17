@@ -292,11 +292,26 @@ like a book.
 - **The right page** has the game sitting in its tray, with its cover art as
   the label and your backups underneath. It's a disc for Wii and Wii U, a UMD
   for PSP, a cartridge for Game Boy and GBA, and a game card for DS, 3DS,
-  Switch and Vita.
+  Switch and Vita. Put the pointer on a disc and it spins up, and coasts to a
+  stop when you take it away again. On a touch screen, a tap spins it.
 
 The ✕, Escape or a click outside closes it again, back onto the shelf. On a
-phone the pages stack instead of sitting side by side. If your system asks for
-reduced motion, the case fades in rather than swinging open.
+phone the pages stack into one scroll instead of sitting side by side, and the
+case opens as a small book in the middle of the screen before they take over.
+Turn the phone on its side and it changes over, there and then. If your system
+asks for reduced motion, the case fades in rather than swinging open.
+
+## The console a game is filed under
+
+Next to a game's console is **Change console**. Pick another and the game moves:
+its folder and every one of its backups is re-tagged, so it moves in the
+sidebar, its case changes colour, and what's inside the case changes with it —
+a Switch game gets a game card rather than a Wii disc. The desktop app follows
+too, and starts waiting for the new console's emulator to close instead of the
+old one's.
+
+It's only a label. No save is downloaded, converted or uploaded again, and
+nothing in your Drive moves.
 
 ---
 

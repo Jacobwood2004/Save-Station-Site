@@ -208,6 +208,21 @@
   main { max-width: 1000px; margin: 0 auto; padding: 24px; }
   main#app { margin: 0 0 0 236px; max-width: 1180px; transition: margin-left .16s ease; }
   body.sb-collapsed main#app { margin-left: 68px; }
+  /* A wide window: the page sits in the middle of the room beside the sidebar,
+     not pressed up against it with the rest of the screen left empty. 1132px is
+     the width its content has always had (1180 less the padding). */
+  @media (min-width: 961px) {
+    main#app {
+      max-width: none;
+      padding-left: max(24px, calc((100% - 236px - 1132px) / 2));
+      padding-right: max(24px, calc((100% - 236px - 1132px) / 2));
+      transition: margin-left .16s ease, padding-left .16s ease, padding-right .16s ease;
+    }
+    body.sb-collapsed main#app {
+      padding-left: max(24px, calc((100% - 68px - 1132px) / 2));
+      padding-right: max(24px, calc((100% - 68px - 1132px) / 2));
+    }
+  }
   /* Login gate */
   .gate {
     min-height: 70vh; display: grid; place-items: center; text-align: center;
@@ -502,7 +517,7 @@
     transform-style: preserve-3d; cursor: pointer;
     transition: transform .5s cubic-bezier(.2,.75,.25,1);
   }
-  .case > div { position: absolute; backface-visibility: hidden; }
+  .case > div { position: absolute; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
   /* front: the cover, set into the case a hair so the plastic edge shows */
   .case-front {
     inset: 0; border-radius: 3px 5px 5px 3px;
@@ -577,7 +592,7 @@
 
      Above the sidebar and the drawer button, below dialogs and toasts \u2014 so a
      choice or a cover picker opened from inside the case still shows. */
-  .case-layer { position: fixed; inset: 0; z-index: 50; perspective: 2400px; }
+  .case-layer { position: fixed; inset: 0; z-index: 50; }
   .case-backdrop {
     position: absolute; inset: 0; opacity: 0;
     background: radial-gradient(ellipse at 50% 45%, rgba(20,16,44,.72), rgba(4,6,10,.9));
@@ -586,13 +601,19 @@
   .shelf.case-is-open .case.front { visibility: hidden; }
 
   .case-spread {
-    position: absolute; inset: 0; margin: auto;
+    position: absolute; inset: 0; margin: auto; z-index: 1;
     width: min(1180px, 94vw); height: min(780px, 90vh);
     display: grid; grid-template-columns: 1fr 1fr;
-    opacity: 0; pointer-events: none;
-    filter: drop-shadow(0 34px 60px rgba(0,0,0,.65));
+    opacity: 0; visibility: hidden;
   }
-  .case-spread.show { opacity: 1; pointer-events: auto; }
+  .case-spread.show { opacity: 1; visibility: visible; }
+  /* The shadow is a layer of its own underneath. A filter on the spread would be
+     one line, but then every frame of scrolling a page repaints the whole spread,
+     which a phone feels. */
+  .case-spread::after {
+    content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 16px;
+    box-shadow: 0 34px 60px rgba(0,0,0,.65); pointer-events: none;
+  }
   /* the spine, running between the pages, in the console's colour */
   .case-spread::before {
     content: ""; position: absolute; left: 50%; top: -5px; bottom: -5px; width: 16px; z-index: 2;
@@ -613,6 +634,7 @@
   }
   .page-scroll {
     position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     padding: 30px 30px 32px 30px;
     /* a default light scrollbar is a white bar down a dark page */
     scrollbar-width: thin; scrollbar-color: #3a4554 transparent;
@@ -644,14 +666,16 @@
   }
   .case-close:hover { border-color: var(--accent); }
 
-  /* the stand-in that plays the opening */
+  /* the stand-in that plays the opening, on a stage of its own so that nothing
+     you scroll or click is ever inside something 3D */
+  .case-stage { position: absolute; inset: 0; pointer-events: none; }
   .case-anim { position: absolute; transform-origin: 0 0; transform-style: preserve-3d; }
   .anim-base {
     position: absolute; inset: 0; border-radius: 3px 16px 16px 3px;
     background: linear-gradient(90deg, #0d1116, #1b222c 14%, #1a212b 86%, #121821);
   }
   .anim-flap { position: absolute; inset: 0; transform-origin: left center; transform-style: preserve-3d; }
-  .flap-out, .flap-in { position: absolute; inset: 0; backface-visibility: hidden; }
+  .flap-out, .flap-in { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
   .flap-out { border-radius: 3px 14px 14px 3px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); }
   .flap-in {
     transform: rotateY(180deg); border-radius: 14px 3px 3px 14px;
@@ -711,18 +735,45 @@
     .case-media { animation: none; }
   }
 
-  /* Phones: no room for a spread, so the pages stack and the case simply grows in. */
+  /* Phones: no room for a spread, so the pages stack into one long scroll.
+
+     Block, not grid. A page clips its overflow (the cover ghost is drawn larger
+     than it), and a grid row shrinks an item like that to whatever fits on
+     screen, which left the pages exactly screen-high with nothing to scroll. */
   .case-layer.narrow .case-spread {
-    width: 100vw; height: 100dvh; grid-template-columns: 1fr; grid-template-rows: auto auto;
-    overflow-x: hidden; overflow-y: auto; filter: none;
+    display: block; width: 100vw; height: 100vh; height: 100dvh;
+    overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
-  .case-layer.narrow .case-spread::before { display: none; }
-  /* Still clips: the cover ghost is drawn a little larger than its page. */
+  .case-layer.narrow .case-spread::before, .case-layer.narrow .case-spread::after { display: none; }
   .case-layer.narrow .case-page { overflow: hidden; border-radius: 0; box-shadow: none; }
   .case-layer.narrow .page-scroll { position: static; overflow: visible; padding: 22px 16px; }
   .case-layer.narrow .page-left .page-scroll { padding-top: 60px; }
   .case-layer.narrow .case-close { top: 12px; right: 12px; position: fixed; }
   .case-layer.narrow .case-tray { height: 200px; }
+
+  /* Changing a game's console: the button beside its pill, and the picker. */
+  .cpill-edit {
+    padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    background: transparent; color: var(--muted); border: 1px dashed #3b4654;
+  }
+  .cpill-edit:hover { color: var(--text); border: 1px solid var(--accent); }
+  .console-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+    gap: 8px; margin-top: 14px;
+  }
+  .console-pick {
+    display: flex; flex-direction: column; align-items: center; gap: 7px;
+    padding: 12px 8px 10px; border-radius: 12px; line-height: 1.25; text-align: center;
+    font-size: 12.5px; font-weight: 600;
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+  }
+  .console-pick:hover { border-color: var(--accent); background: #232c38; }
+  .console-pick.on { border-color: var(--accent-2); box-shadow: inset 0 0 0 1px var(--accent-2); }
+  .console-pick small {
+    margin-top: -3px; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--accent-2);
+  }
 
   /* history hero with cover */
   .history-hero { display: flex; gap: 18px; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; }
@@ -1390,7 +1441,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-09-17b";
+const BUILD = "2026-09-17c";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -4750,7 +4801,9 @@ function renderShelf(c, games) {
       '<div class="shelf-caption">' +
         '<div class="shelf-title"></div>' +
         '<div class="shelf-meta"></div>' +
-        '<div class="shelf-hint">Click the front case to open it</div>' +
+        '<div class="shelf-hint">' +
+          (window.matchMedia("(hover: none)").matches ? "Tap" : "Click") +
+          " the front case to open it</div>" +
       '</div>' +
     '</div>';
 
@@ -4893,6 +4946,9 @@ function listenForShelfDrags() {
       dragMoved = true;
     }
   });
+  // A swipe the browser takes over to scroll the page with ends in a cancel,
+  // never an up: without this the shelf would still think a finger was down.
+  window.addEventListener("pointercancel", () => { dragFrom = null; });
   window.addEventListener("pointerup", () => {
     dragFrom = null;
     // The click that ends a drag must still see dragMoved, so it clears a tick later.
@@ -4920,6 +4976,10 @@ function listenForShelfDrags() {
    the spread, which is swapped for the real, flat, clickable pages
    the moment it lands. Nothing you can click is ever inside
    something mid-turn.
+
+   A phone has no room for a spread, so there the case opens as a
+   small book in the middle of the screen, and the full-size pages,
+   stacked into one scroll, take over from it once it's open.
    ============================================================ */
 
 // What each console's game physically is.
@@ -4934,6 +4994,8 @@ let caseLayer = null;
 let caseMoved = [];            // the page's own elements, while they're in the case
 let caseBusy = false;          // mid-animation
 let caseSource = null;         // the shelf case it came out of
+let caseCoverUrl = null;       // the cover on its label, kept for when the tray is redrawn
+let caseUnwatch = null;        // stops following the window's size
 
 /* The disc, UMD or cart, drawn to scale-ish. Its label is the game's cover art,
    filled in once the picture arrives; until then (or with no cover) the label
@@ -4970,8 +5032,11 @@ function mediaSvg(kind, name) {
           '<rect x="16" y="14" width="148" height="18" rx="5" fill="#9aa3ae"/>' +
           '<text x="90" y="27" text-anchor="middle" font-size="11" font-weight="800" fill="#eef1f5">UMD</text>'
         : '') +
-      '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="url(#' + u + 'r)"/>' +
-      '<g clip-path="url(#' + u + 'c)">' + art(cx - r, cy - r, r * 2, r * 2) + '</g>' +
+      // What's printed on the disc turns when it spins; the light on it doesn't.
+      '<g class="disc-spin" data-cx="' + cx + '" data-cy="' + cy + '">' +
+        '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="url(#' + u + 'r)"/>' +
+        '<g clip-path="url(#' + u + 'c)">' + art(cx - r, cy - r, r * 2, r * 2) + '</g>' +
+      '</g>' +
       '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r - 2) + '" fill="url(#' + u + 's)"/>' +
       // the unprinted plastic ring round the hub, and the hole
       '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r * 0.34) + '" fill="#e3e8ee" opacity=".95"/>' +
@@ -5037,6 +5102,7 @@ function mediaSvg(kind, name) {
 
 function setCaseLabel(url) {
   if (!caseLayer) return;
+  caseCoverUrl = url || null;
   const left = caseLayer.querySelector(".page-left");
   if (left) {
     if (url) { left.style.setProperty("--cover", "url('" + url + "')"); left.classList.add("has-art"); }
@@ -5066,9 +5132,88 @@ function moveHistoryBack() {
   caseMoved = [];
 }
 
-function caseMotionIsSimple() {
-  return window.matchMedia("(max-width: 620px)").matches ||
-         window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function caseIsNarrow() { return window.matchMedia("(max-width: 620px)").matches; }
+function caseMotionIsReduced() { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
+
+// The tray's contents for a console: disc, card or cart, labelled with the
+// cover, and the spine in the console's colour. Redrawn if the game is moved
+// to another console while its case is open.
+function setCaseMedia(consoleId, name) {
+  if (!caseLayer) return;
+  const kind = MEDIA_KIND[consoleId] || "disc";
+  const tray = caseLayer.querySelector(".case-tray");
+  tray.className = "case-tray tray-" + kind;
+  tray.innerHTML = '<div class="case-media media-' + kind + '">' + mediaSvg(kind, name) + '</div>';
+  const con = consoleOf(consoleId);
+  caseLayer.querySelector(".case-spread").style.setProperty("--spine-c", con ? con.color : "#3a4453");
+  wireDiscSpin(tray.querySelector(".case-media"));
+  setCaseLabel(caseCoverUrl);
+}
+
+/* A disc spins while the pointer is on it: up to speed when you arrive, and
+   coasting to a stop from wherever it had got to when you leave. With no
+   pointer to hover, a tap gives it a spin. */
+function wireDiscSpin(media) {
+  const spin = media && media.querySelector(".disc-spin");
+  if (!spin || caseMotionIsReduced()) return;
+  const cx = spin.dataset.cx, cy = spin.dataset.cy;
+  const FULL = 520;                        // degrees a second, flat out
+  let angle = 0, speed = 0, target = 0, last = 0, raf = 0, coast = 0;
+  const frame = (t) => {
+    const dt = last ? Math.min((t - last) / 1000, 0.05) : 0;
+    last = t;
+    // Quick to spin up, slow to run down: about two and a half seconds to rest.
+    const tau = target > speed ? 0.3 : 0.6;
+    speed += (target - speed) * (1 - Math.exp(-dt / tau));
+    angle = (angle + speed * dt) % 360;
+    spin.setAttribute("transform", "rotate(" + angle.toFixed(2) + " " + cx + " " + cy + ")");
+    if (!media.isConnected || (target === 0 && speed < 8)) { raf = 0; last = 0; return; }
+    raf = requestAnimationFrame(frame);
+  };
+  const run = (to) => {
+    target = to;
+    if (!raf) { last = 0; raf = requestAnimationFrame(frame); }
+  };
+  media.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") run(FULL); });
+  media.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") run(0); });
+  media.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse") return;
+    run(FULL);
+    clearTimeout(coast);
+    coast = setTimeout(() => run(0), 900);
+  });
+}
+
+/* Where the closed case sits just before it opens: exactly where the right-hand
+   page of the open book will be, so its spine ends up down the middle.
+
+   On a phone the full-size pages are stacked, so there's no spread to land on.
+   The case opens as a small book in the middle of the screen instead. */
+function caseOpenRect(layer) {
+  if (!layer.classList.contains("narrow")) {
+    const S = layer.querySelector(".case-spread").getBoundingClientRect();
+    return { left: S.left + S.width / 2, top: S.top, width: S.width / 2, height: S.height };
+  }
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const w = Math.min((vw - 32) / 2, (vh * 0.56) / 1.4);      // the shelf's cases are 5 : 7
+  const h = w * 1.4;
+  return { left: vw / 2, top: Math.max(16, vh * 0.46 - h / 2), width: w, height: h };
+}
+
+function placeCaseAnim(layer, R) {
+  const stage = layer.querySelector(".case-stage");
+  // Depth in proportion to the case, so a small book on a phone turns as
+  // convincingly as a big one on a monitor, and seen from its spine.
+  stage.style.perspective = Math.round(R.height * 3) + "px";
+  stage.style.perspectiveOrigin = Math.round(R.left) + "px " + Math.round(R.top + R.height / 2) + "px";
+  Object.assign(layer.querySelector(".case-anim").style, {
+    left: R.left + "px", top: R.top + "px", width: R.width + "px", height: R.height + "px" });
+}
+
+// The transform that takes a case sitting at R and lays it over F instead.
+function caseFlip(F, R) {
+  return "translate(" + (F.left - R.left) + "px," + (F.top - R.top) + "px) scale(" +
+         (F.width / R.width) + "," + (F.height / R.height) + ")";
 }
 
 async function openCaseFor(g, fromEl) {
@@ -5076,34 +5221,32 @@ async function openCaseFor(g, fromEl) {
   caseBusy = true;
   caseOpenFor = g.folder.id;
   caseSource = fromEl || null;
-  const con = consoleOf(g.consoleId);
-  const kind = MEDIA_KIND[g.consoleId] || "disc";
-  const simple = caseMotionIsSimple();
+  caseCoverUrl = null;
 
   const layer = document.createElement("div");
-  layer.className = "case-layer" + (window.matchMedia("(max-width: 620px)").matches ? " narrow" : "");
+  layer.className = "case-layer" + (caseIsNarrow() ? " narrow" : "");
   layer.innerHTML =
     '<div class="case-backdrop"></div>' +
-    '<div class="case-spread" role="dialog" aria-modal="true" aria-label="' + escapeAttr(g.folder.name) +
-      '" style="--spine-c:' + (con ? con.color : "#3a4453") + '">' +
+    '<div class="case-spread" role="dialog" aria-modal="true" aria-label="' + escapeAttr(g.folder.name) + '">' +
       '<button class="case-close" type="button" aria-label="Close the case">\u2715</button>' +
       '<div class="case-page page-left"><div class="page-scroll"></div></div>' +
       '<div class="case-page page-right"><div class="page-scroll">' +
-        '<div class="case-tray tray-' + kind + '">' +
-          '<div class="case-media media-' + kind + '">' + mediaSvg(kind, g.folder.name) + '</div>' +
-        '</div>' +
+        '<div class="case-tray"></div>' +
         '<div class="case-list-head">Backups</div>' +
       '</div></div>' +
     '</div>' +
-    '<div class="case-anim">' +
-      '<div class="anim-base"></div>' +
-      '<div class="anim-flap">' +
-        '<div class="flap-out cover-frame"><span class="no-cover-label">No cover</span></div>' +
-        '<div class="flap-in"></div>' +
+    '<div class="case-stage">' +
+      '<div class="case-anim">' +
+        '<div class="anim-base"></div>' +
+        '<div class="anim-flap">' +
+          '<div class="flap-out cover-frame"><span class="no-cover-label">No cover</span></div>' +
+          '<div class="flap-in"></div>' +
+        '</div>' +
       '</div>' +
     '</div>';
   document.body.appendChild(layer);
   caseLayer = layer;
+  setCaseMedia(g.consoleId, g.folder.name);
   const shelf = document.querySelector("#gamesContainer .shelf");
   if (shelf) shelf.classList.add("case-is-open");
 
@@ -5126,43 +5269,55 @@ async function openCaseFor(g, fromEl) {
   layer.querySelector(".case-backdrop").onclick = () => closeCase(true);
   document.addEventListener("keydown", onCaseKey);
 
+  // Turn a phone round and the pages follow: stacked in portrait, a spread on its side.
+  const mq = window.matchMedia("(max-width: 620px)");
+  const follow = () => { if (caseLayer === layer) layer.classList.toggle("narrow", mq.matches); };
+  if (mq.addEventListener) mq.addEventListener("change", follow); else mq.addListener(follow);
+  caseUnwatch = () => {
+    if (mq.removeEventListener) mq.removeEventListener("change", follow); else mq.removeListener(follow);
+  };
+
   const spread = layer.querySelector(".case-spread");
+  const stage = layer.querySelector(".case-stage");
   const anim = layer.querySelector(".case-anim");
-  const backdrop = layer.querySelector(".case-backdrop");
-  backdrop.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 380, fill: "forwards" });
+  layer.querySelector(".case-backdrop").animate([{ opacity: 0 }, { opacity: 1 }], { duration: 380, fill: "forwards" });
 
   try {
-    if (simple || !fromEl) {
-      anim.style.display = "none";
+    if (caseMotionIsReduced() || !fromEl || !fromEl.isConnected) {
+      stage.style.display = "none";
       spread.classList.add("show");
       await spread.animate([{ opacity: 0, transform: "scale(.96)" }, { opacity: 1, transform: "none" }],
                            { duration: 240, easing: "ease-out" }).finished;
     } else {
-      // The closed case lands exactly where the right page will be, so the spine
-      // it opens on ends up in the middle of the spread.
-      const S = spread.getBoundingClientRect();
-      const R = { left: S.left + S.width / 2, top: S.top, width: S.width / 2, height: S.height };
-      Object.assign(anim.style, { left: R.left + "px", top: R.top + "px", width: R.width + "px", height: R.height + "px" });
+      const narrow = layer.classList.contains("narrow");
+      const R = caseOpenRect(layer);
+      placeCaseAnim(layer, R);
       const F = fromEl.getBoundingClientRect();
       fromEl.style.visibility = "hidden";
 
-      await anim.animate([
-        { transform: "translate(" + (F.left - R.left) + "px," + (F.top - R.top) + "px) scale(" +
-                     (F.width / R.width) + "," + (F.height / R.height) + ")" },
-        { transform: "none" },
-      ], { duration: 460, easing: "cubic-bezier(.2,.7,.2,1)", fill: "forwards" }).finished;
-
+      await anim.animate([{ transform: caseFlip(F, R) }, { transform: "none" }],
+        { duration: 460, easing: "cubic-bezier(.2,.7,.2,1)", fill: "forwards" }).finished;
       await layer.querySelector(".anim-flap").animate(
         [{ transform: "rotateY(0deg)" }, { transform: "rotateY(-180deg)" }],
         { duration: 640, easing: "cubic-bezier(.45,.05,.25,1)", fill: "forwards" }).finished;
 
       spread.classList.add("show");
-      anim.style.visibility = "hidden";
+      if (narrow) {
+        // The little book hands over to the full-size pages.
+        await Promise.all([
+          spread.animate([{ opacity: 0, transform: "scale(.94)" }, { opacity: 1, transform: "none" }],
+                         { duration: 320, easing: "ease-out" }).finished,
+          stage.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 240, fill: "forwards" }).finished,
+        ]);
+      }
+      stage.style.visibility = "hidden";
     }
   } catch (e) { /* an animation cut short by closing: nothing to do */ }
 
   caseBusy = false;
-  if (caseLayer === layer) layer.querySelector(".case-close").focus({ preventScroll: true });
+  if (caseLayer === layer) {
+    try { layer.querySelector(".case-close").focus({ preventScroll: true }); } catch (e) {}
+  }
 }
 
 function onCaseKey(e) {
@@ -5177,6 +5332,7 @@ async function closeCase(animate) {
   const layer = caseLayer;
   caseBusy = true;
   const spread = layer.querySelector(".case-spread");
+  const stage = layer.querySelector(".case-stage");
   const anim = layer.querySelector(".case-anim");
   const backdrop = layer.querySelector(".case-backdrop");
   // The shelf may have been redrawn while the case was open; aim for whatever
@@ -5184,20 +5340,30 @@ async function closeCase(animate) {
   const target = document.querySelector("#gamesContainer .shelf .case.front");
 
   try {
-    if (animate && !caseMotionIsSimple() && target && anim.style.display !== "none") {
-      spread.classList.remove("show");
-      anim.style.visibility = "visible";
+    if (animate && !caseMotionIsReduced() && target && stage.style.display !== "none") {
+      const narrow = layer.classList.contains("narrow");
+      // Measured again, since the window needn't be the size it was when this
+      // opened, and whatever the opening left the stage at is let go of.
+      stage.getAnimations().forEach((a) => a.cancel());
+      placeCaseAnim(layer, caseOpenRect(layer));
+      stage.style.visibility = "visible";
+      if (narrow) {
+        await Promise.all([
+          spread.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "scale(.94)" }],
+                         { duration: 240, easing: "ease-in", fill: "forwards" }).finished,
+          stage.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240, fill: "forwards" }).finished,
+        ]);
+      } else {
+        spread.classList.remove("show");
+      }
       await layer.querySelector(".anim-flap").animate(
         [{ transform: "rotateY(-180deg)" }, { transform: "rotateY(0deg)" }],
         { duration: 520, easing: "cubic-bezier(.45,.05,.25,1)", fill: "forwards" }).finished;
       const R = anim.getBoundingClientRect();
       const F = target.getBoundingClientRect();
       backdrop.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, fill: "forwards" });
-      await anim.animate([
-        { transform: "none" },
-        { transform: "translate(" + (F.left - R.left) + "px," + (F.top - R.top) + "px) scale(" +
-                     (F.width / R.width) + "," + (F.height / R.height) + ")" },
-      ], { duration: 420, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" }).finished;
+      await anim.animate([{ transform: "none" }, { transform: caseFlip(F, R) }],
+        { duration: 420, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" }).finished;
     } else if (animate) {
       await Promise.all([
         spread.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 180, fill: "forwards" }).finished,
@@ -5210,7 +5376,7 @@ async function closeCase(animate) {
 }
 
 // Put everything back immediately. Used on its own when something navigates away
-// \u2014 deleting the game from inside its case, say \u2014 where waiting on an animation
+// (deleting the game from inside its case, say) where waiting on an animation
 // would leave the page's elements stranded in a case that's about to vanish.
 function finishClosingCase() {
   if (!caseLayer) return;
@@ -5219,6 +5385,9 @@ function finishClosingCase() {
   caseLayer = null;
   caseOpenFor = null;
   caseBusy = false;
+  caseCoverUrl = null;
+  if (caseUnwatch) caseUnwatch();
+  caseUnwatch = null;
   if (caseSource) caseSource.style.visibility = "";
   caseSource = null;
   document.removeEventListener("keydown", onCaseKey);
@@ -5249,7 +5418,12 @@ async function openHistory(folderId, name, consoleId) {
   $("historyTitle").textContent = name;
   // Arriving from a different game? Start on "All". Inheriting the last game's
   // tab would mean landing on a slot this game hasn't got.
-  if (currentHistory.folderId !== folderId) activeSlot = "all";
+  if (currentHistory.folderId !== folderId) {
+    activeSlot = "all";
+    // Nor keep its console line up while this one loads: its Change button
+    // would be acting on the wrong game.
+    $("historyConsole").innerHTML = "";
+  }
   // Set before the backups finish loading, so the sidebar highlight and the
   // pin button are right even while the list is still spinning.
   currentHistory.folderId = folderId;
@@ -5268,9 +5442,11 @@ async function openHistory(folderId, name, consoleId) {
                        slots: slotsFor(folderId, saves) };
 
     const con = consoleOf(resolved);
-    $("historyConsole").innerHTML = con
-      ? consolePill(con) + '<span style="font-size:12px;color:var(--muted);">' + escapeHtml(con.where) + "</span>"
-      : "";
+    $("historyConsole").innerHTML = (con ? consolePill(con) : "") +
+      '<button class="cpill-edit" type="button" data-change-console="1" ' +
+        'title="File this game under a different console">' + (con ? "Change console" : "Set console") + "</button>" +
+      (con ? '<span style="font-size:12px;color:var(--muted);">' + escapeHtml(con.where) + "</span>" : "");
+    $("historyConsole").querySelector("[data-change-console]").onclick = changeGameConsole;
     $("uploadFolderToGameBtn").classList.toggle("hidden", !isFolderConsole(resolved));
     $("gameSaveInput").accept = con ? con.exts.join(",") : "";
 
@@ -5305,6 +5481,109 @@ async function openHistory(folderId, name, consoleId) {
     renderHistory();
   } catch (e) {
     c.innerHTML = '<div class="empty">Could not load backups: ' + escapeHtml(e.message) + "</div>";
+  }
+}
+
+/* Which console a game is on, picked from all of them. Resolves the console's
+   id, or null if they backed out. */
+function pickConsole(gameName, currentId) {
+  return new Promise((resolve) => {
+    const back = $("modalBack");
+    $("modalTitle").textContent = "Which console is \u201c" + gameName + "\u201d on?";
+    $("modalBody").innerHTML =
+      '<div>Only the label changes: every backup stays exactly as it is. It decides where the ' +
+      'game is listed, the colour of its case and what\u2019s inside it, and which emulator ' +
+      'the desktop app waits for.</div>' +
+      '<div class="console-grid">' +
+        CONSOLES.map((c) =>
+          '<button class="console-pick' + (c.id === currentId ? " on" : "") + '" type="button" data-cid="' + c.id + '"' +
+            (c.id === currentId ? ' aria-current="true"' : '') + '>' +
+            consoleIcon(c.id, 26, 7) +
+            '<span>' + escapeHtml(c.label) + '</span>' +
+            (c.id === currentId ? '<small>Now</small>' : '') +
+          '</button>').join("") +
+      '</div>';
+
+    const acts = $("modalActions");
+    acts.innerHTML = "";
+    let settled = false;
+    const finish = (v) => {
+      if (settled) return;
+      settled = true;
+      back.classList.add("hidden");
+      document.removeEventListener("keydown", onKey);
+      resolve(v || null);
+    };
+    const onKey = (e) => { if (e.key === "Escape") finish(null); };
+    const cancel = document.createElement("button");
+    cancel.className = "btn-ghost";
+    cancel.textContent = "Cancel";
+    cancel.onclick = () => finish(null);
+    acts.appendChild(cancel);
+    $("modalBody").querySelectorAll("button[data-cid]").forEach((b) => {
+      b.onclick = () => finish(b.dataset.cid);
+    });
+    back.onclick = (e) => { if (e.target === back) finish(null); };
+    document.addEventListener("keydown", onKey);
+    back.classList.remove("hidden");
+    const first = $("modalBody").querySelector(".console-pick.on") || $("modalBody").querySelector(".console-pick");
+    if (first) first.focus();
+  });
+}
+
+/* Filing a game under a different console, for when it went in under the wrong one.
+
+   A game's console is its folder's tag (see gameConsoleId), and every backup
+   carries a copy too, which is what its row shows. Both are only labels:
+   nothing is downloaded, converted or uploaded again. */
+async function changeGameConsole() {
+  const { folderId, name } = currentHistory;
+  if (!folderId) return;
+  const current = currentHistory.console || null;
+  const pick = await pickConsole(name, current);
+  if (!pick) return;
+  // Picking the console it's already on still finishes off any backups that a
+  // failed attempt left saying the old one.
+  const stale = (currentHistory.saves || []).filter((s) => (s.appProperties || {}).console !== pick);
+  if (pick === current && !stale.length) return;
+  const con = consoleOf(pick);
+
+  try {
+    await setFolderProps(folderId, { console: pick });
+  } catch (e) {
+    toast("Couldn't change the console: " + e.message, "err", 6000);
+    return;
+  }
+  // A few at a time: a long history is a lot of small requests.
+  let failed = 0;
+  for (let i = 0; i < stale.length; i += 4) {
+    const results = await Promise.allSettled(
+      stale.slice(i, i + 4).map((s) => setFolderProps(s.id, { console: pick })));
+    failed += results.filter((r) => r.status === "rejected").length;
+  }
+
+  const g = gameById(folderId);
+  if (g) {
+    g.consoleId = pick;
+    g.folder.appProperties = Object.assign({}, g.folder.appProperties, { console: pick });
+    g.saves.forEach((s) => { s.appProperties = Object.assign({}, s.appProperties, { console: pick }); });
+  }
+  // The consoles they've said they play lead the sidebar, and one they've just
+  // filed a game under is plainly one of them.
+  if (profile && Array.isArray(profile.consoles) && profile.consoles.indexOf(pick) < 0) {
+    profile.consoles.push(pick);
+    saveProfile(profile).catch(() => {});
+  }
+  if (caseOpenFor === folderId) setCaseMedia(pick, name);
+  renderSidebar();
+  renderGames();
+  announceGames();
+  await openHistory(folderId, name, pick);
+  if (failed) {
+    toast("Moved to " + con.label + ", but " + failed + " backup" + (failed === 1 ? "" : "s") +
+          " still say the old console. Change it again to finish them.", "err", 7000);
+  } else {
+    toast("\u2713 " + name + " moved to " + con.label, "ok");
   }
 }
 
