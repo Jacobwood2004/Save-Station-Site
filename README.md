@@ -280,6 +280,11 @@ on either side. Each one is a small 3D case — the cover on the front, a spine
 in the console's colour with its name up it, and a plastic edge — so a case
 turned side-on still looks like a case.
 
+The cases are their real sizes, to scale: a DS or 3DS case is the small nearly
+square one, a Switch case is tall and narrow, a Wii case is a DVD case, and a
+GBA game is its little cardboard box. Tall and short alike stand on the same
+shelf line.
+
 Click a case to bring it forward. Arrow keys, Home/End, the mouse wheel,
 dragging and swiping all move along it. The choice of Grid or Shelf is
 remembered.
@@ -289,11 +294,31 @@ like a book.
 
 - **The left page** holds the game's page: its buttons, its save slots and, in
   the desktop app, the save it's watching on this PC.
-- **The right page** has the game sitting in its tray, with its cover art as
-  the label and your backups underneath. It's a disc for Wii and Wii U, a UMD
-  for PSP, a cartridge for Game Boy and GBA, and a game card for DS, 3DS,
-  Switch and Vita. Put the pointer on a disc and it spins up, and coasts to a
-  stop when you take it away again. On a touch screen, a tap spins it.
+- **The right page** has the game sitting in its tray, with your backups
+  underneath. It's a disc for Wii and Wii U, a UMD for PSP, a cartridge for
+  Game Boy and GBA, and a game card for DS, 3DS, Switch and Vita. Put the
+  pointer on a disc and it spins up, and coasts to a stop when you take it
+  away again. On a touch screen, a tap spins it.
+
+### The real cartridge or disc
+
+Where it can, the tray holds a picture of the actual thing: the DS, 3DS or
+Switch card with its printed label, or the Wii or Wii U disc — labels, ESRB
+seal, serial and all. They come from [GameTDB](https://www.gametdb.com), who
+name them by each game's product code (`ASME`, `SX4E01` …), so the game has to
+be found by name first. GameTDB's title databases are mirrored in
+`assets/gametdb/`, because gametdb.com sends no CORS headers: a browser may
+show their pictures but not read their database from another origin. Refresh
+the mirror with:
+
+```bash
+node tools/update-gametdb.js
+```
+
+A console GameTDB doesn't cover (Game Boy, GBA, PSP, Vita), or a game whose
+name isn't in their database — romhacks, mostly — keeps the drawn cart with the
+game's own cover as its label, which is what a real cart label usually is
+anyway. Each lookup is remembered for a month, misses included.
 
 The ✕, Escape or a click outside closes it again, back onto the shelf. On a
 phone the pages stack into one scroll instead of sitting side by side, and the

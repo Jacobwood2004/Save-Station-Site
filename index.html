@@ -491,14 +491,18 @@
 
   /* The shelf. */
   .shelf {
-    --cw: 200px; --ch: 280px; --depth: 22px;
+    /* Each case carries its own size (see CASE_SIZE); these are the fallback,
+       for a game with no console. --sc shrinks the whole shelf on a phone, and
+       --chmax is the line they all stand on, tall and short alike. */
+    --cw: 196px; --ch: 277px; --depth: 20px;
+    --sc: 1; --chmax: calc(280px * var(--sc));
     position: relative; outline: none; user-select: none;
     padding: 6px 0 4px;
   }
   .shelf:focus-visible .case.front .case-front { box-shadow: 0 0 0 3px var(--accent); }
   .shelf-stage {
-    position: relative; height: calc(var(--ch) + 120px);
-    perspective: 1500px; perspective-origin: 50% 38%;
+    position: relative; height: calc(var(--chmax) + 120px);
+    perspective: 1500px; perspective-origin: 50% calc(44px + var(--chmax));
     overflow: hidden; touch-action: pan-y;
   }
   /* A soft pool of light for the cases to stand in. */
@@ -512,8 +516,12 @@
     transform-style: preserve-3d;
   }
   .case {
-    position: absolute; left: calc(var(--cw) / -2); top: 0;
-    width: var(--cw); height: var(--ch);
+    --w: calc(var(--cw) * var(--sc));
+    --h: calc(var(--ch) * var(--sc));
+    --dp: calc(var(--depth) * var(--sc));
+    position: absolute; left: calc(var(--w) / -2);
+    top: calc(var(--chmax) - var(--h));       /* short cases stand on the shelf, not hang from it */
+    width: var(--w); height: var(--h);
     transform-style: preserve-3d; cursor: pointer;
     transition: transform .5s cubic-bezier(.2,.75,.25,1);
   }
@@ -521,13 +529,13 @@
   /* front: the cover, set into the case a hair so the plastic edge shows */
   .case-front {
     inset: 0; border-radius: 3px 5px 5px 3px;
-    transform: translateZ(calc(var(--depth) / 2));
+    transform: translateZ(calc(var(--dp) / 2));
     box-shadow: inset 0 0 0 1px rgba(255,255,255,.14), 0 18px 34px rgba(0,0,0,.45);
   }
   /* the clear plastic sleeve over the front: a light edge and a sheen */
   .case-gloss {
     inset: 0; border-radius: 3px 5px 5px 3px; pointer-events: none;
-    transform: translateZ(calc(var(--depth) / 2 + .6px));
+    transform: translateZ(calc(var(--dp) / 2 + .6px));
     background:
       linear-gradient(115deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 24%, transparent 40%),
       linear-gradient(to right, rgba(255,255,255,.10), transparent 4%);
@@ -535,7 +543,7 @@
   }
   /* spine, on the left: the console's colour, and its name reading up it */
   .case-spine {
-    top: 0; left: calc(var(--depth) / -2); width: var(--depth); height: 100%;
+    top: 0; left: calc(var(--dp) / -2); width: var(--dp); height: 100%;
     transform: rotateY(-90deg);
     background: linear-gradient(90deg, rgba(0,0,0,.28), rgba(255,255,255,.10) 45%, rgba(0,0,0,.22)), var(--spine);
     display: flex; align-items: center; justify-content: center; overflow: hidden;
@@ -547,18 +555,18 @@
   }
   /* the opening edge, on the right, and the top: plain case plastic */
   .case-edge {
-    top: 0; right: calc(var(--depth) / -2); width: var(--depth); height: 100%;
+    top: 0; right: calc(var(--dp) / -2); width: var(--dp); height: 100%;
     transform: rotateY(90deg);
     background: linear-gradient(90deg, #cfd6df, #9aa4b1 40%, #c4ccd6);
   }
   .case-top {
-    left: 0; top: calc(var(--depth) / -2); width: 100%; height: var(--depth);
+    left: 0; top: calc(var(--dp) / -2); width: 100%; height: var(--dp);
     transform: rotateX(90deg);
     background: linear-gradient(#dfe5ec, #a9b2bd);
   }
   .case-back {
     inset: 0; background: #151a21; border-radius: 3px 5px 5px 3px;
-    transform: translateZ(calc(var(--depth) / -2)) rotateY(180deg);
+    transform: translateZ(calc(var(--dp) / -2)) rotateY(180deg);
   }
   /* Dimmed per face, not per case — see layoutShelf. filter on the case would
      flatten it just as opacity does. */
@@ -568,7 +576,7 @@
   .case:not(.front):hover > .case-front { filter: brightness(calc(var(--dim, 1) + .15)); }
 
   .shelf-arrow {
-    position: absolute; top: calc(44px + var(--ch) / 2); transform: translateY(-50%);
+    position: absolute; top: calc(44px + var(--chmax) / 2); transform: translateY(-50%);
     width: 44px; height: 44px; padding: 0; border-radius: 50%;
     display: grid; place-items: center;
     background: rgba(22,27,34,.72); color: var(--text); border: 1px solid var(--border);
@@ -699,7 +707,15 @@
     position: relative; filter: drop-shadow(0 12px 18px rgba(0,0,0,.6));
     animation: mediaIn .7s cubic-bezier(.2,.8,.2,1) both .08s;
   }
-  .case-media svg { display: block; width: 100%; height: auto; }
+  .case-media svg, .case-media img { display: block; width: 100%; height: auto; }
+  /* The real thing, when GameTDB has a picture of it. Sized like the drawn
+     stand-in it replaces, so nothing jumps when it arrives. */
+  .media-real.media-disc { width: 198px; }
+  .media-real.media-umd { width: 150px; }
+  .media-real.media-card-ds, .media-real.media-card-3ds { width: 156px; }
+  .media-real.media-card-switch { width: 134px; }
+  .media-real.media-card-vita { width: 130px; }
+  .media-real.media-cart-gba, .media-real.media-cart-gb { width: 168px; }
   .case-media svg text { font-family: 'Segoe UI', system-ui, sans-serif; }
   .media-hole { fill: #0b0f14; }
   .media-disc { width: 214px; animation-name: discIn; }
@@ -980,7 +996,7 @@
        row leaves neither with enough room, and the buttons end up two-up. */
     .history-hero { gap: 12px; flex-direction: column; align-items: stretch; }
     .history-hero .hh-cover { width: 118px; }
-    .shelf { --cw: 150px; --ch: 210px; --depth: 16px; }
+    .shelf { --sc: .75; }
     .shelf-caption { padding: 0 10px; }
     .shelf-title { font-size: 18px; }
     .shelf-arrow { width: 38px; height: 38px; }
@@ -1441,7 +1457,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-09-17c";
+const BUILD = "2026-09-17d";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -4744,6 +4760,25 @@ function renderGames() {
    the front one to open it. Arrow keys, the mouse wheel, dragging
    and swiping all work too.
    ============================================================ */
+/* Cases, to scale. A DS case really is much smaller than a Wii case and a
+   Switch case much narrower, so each console gets its own: the real thing's
+   millimetres at about 1.45px to the millimetre. Covers sit better for it too,
+   box art being the shape of the box. */
+const CASE_SIZE = {
+  gb:      { w: 145, h: 186, d: 30 },     // cardboard boxes, deeper than a case
+  gbc:     { w: 145, h: 186, d: 30 },
+  gba:     { w: 134, h: 190, d: 30 },
+  nds:     { w: 177, h: 197, d: 22 },     // the small, nearly square DS case
+  "3ds":   { w: 177, h: 197, d: 20 },
+  wii:     { w: 196, h: 277, d: 20 },     // a DVD case
+  wiiu:    { w: 196, h: 277, d: 22 },
+  "switch": { w: 151, h: 247, d: 16 },    // tall and narrow
+  psp:     { w: 152, h: 251, d: 22 },     // the UMD case
+  vita:    { w: 152, h: 199, d: 19 },
+};
+const CASE_SIZE_DEFAULT = { w: 196, h: 277, d: 20 };
+function caseSize(consoleId) { return CASE_SIZE[consoleId] || CASE_SIZE_DEFAULT; }
+
 let shelfActiveFid = null;       // which game is at the front, kept across redraws
 let shelfGames = [];
 let shelfIndex = 0;
@@ -4779,7 +4814,9 @@ function renderShelf(c, games) {
           games.map((g, i) => {
             const con = consoleOf(g.consoleId);
             const spine = con ? con.color : "#3a4453";
-            return '<div class="case" data-i="' + i + '" style="--spine:' + spine + '">' +
+            const size = caseSize(g.consoleId);
+            return '<div class="case" data-i="' + i + '" style="--spine:' + spine +
+              ";--cw:" + size.w + "px;--ch:" + size.h + "px;--depth:" + size.d + 'px">' +
               '<div class="case-front cover-frame"' + (g.cover ? ' data-cover="' + g.cover.id + '"' : '') + '>' +
                 '<span class="no-cover-label">No cover</span>' +
               '</div>' +
@@ -4819,12 +4856,41 @@ function renderShelf(c, games) {
    front decides everything: how far along, how far back, and how far turned. */
 function layoutShelf(shelf) {
   const narrow = window.matchMedia("(max-width: 620px)").matches;
+  const sc = narrow ? 0.75 : 1;                     // the stylesheet's --sc
   const reach = narrow ? 3 : 5;                     // how many either side stay visible
-  // Spaced so each case clears the next one's spine. Packed any tighter and
-  // every case hides the edge of its neighbour, and the row reads as flat
-  // pictures in a stack rather than cases on a shelf.
-  const first = narrow ? 128 : 218;                 // gap from the front case to its neighbours
-  const step = narrow ? 70 : 118;                   // gap between the ones further out
+  /* Where each case stands is worked out case by case, from the widths either
+     side of the gap: they're different sizes now, and a slim Switch case
+     shouldn't leave the hole a Wii case does. Spaced so each one clears the
+     next one's spine — packed any tighter and every case hides the edge of its
+     neighbour, and the row reads as flat pictures in a stack rather than cases
+     on a shelf. The two factors are the fixed spacing this used to have (218
+     and 118) over the 200px case it was set for, so a shelf of DVD-sized cases
+     stands exactly where it did. */
+  const widthAt = (i) => caseSize(shelfGames[i] ? shelfGames[i].consoleId : null).w * sc;
+  // How wide a case looks from here, which is what the spacing has to go on:
+  // turned away and set back it takes up less room than its width, and the one
+  // at the front, being nearer, a little more.
+  const turnAt = (ad) => Math.min(40 + ad * 3, 52);
+  // How much nearness alone magnifies a case at that distance back.
+  const zoomAt = (ad) => (ad === 0 ? 1500 / (1500 - 90) : 1500 / (1500 + 50 + ad * 60));
+  const seenWidth = (i, ad) =>
+    widthAt(i) * zoomAt(ad) * (ad === 0 ? 1 : Math.cos(turnAt(ad) * Math.PI / 180));
+  const xs = {};
+  [-1, 1].forEach((side) => {
+    let edge = seenWidth(shelfIndex, 0) / 2;         // the front case's own edge
+    for (let k = 1; k <= reach + 1; k++) {
+      const i = shelfIndex + side * k;
+      if (i < 0 || i >= shelfGames.length) break;
+      const half = seenWidth(i, k) / 2;
+      // Clear air beside the front case; further out they tuck in behind each
+      // other a little, which is what makes the row read as a row.
+      edge += half + (k === 1 ? 44 * sc : -6 * sc);
+      // Worked out in what you see, set in where it stands: the further back a
+      // case is, the further out it has to go to look that far along.
+      xs[i] = (side * edge) / zoomAt(k);
+      edge += half;
+    }
+  });
   shelf.querySelectorAll(".case").forEach((el) => {
     const d = +el.dataset.i - shelfIndex;
     const ad = Math.abs(d);
@@ -4833,10 +4899,10 @@ function layoutShelf(shelf) {
     if (d === 0) {
       t = "translate3d(0, 0, 90px)";
     } else {
-      const x = side * (first + (ad - 1) * step);
       const z = -50 - ad * 60;
       const turn = -side * Math.min(40 + ad * 3, 52);
-      t = "translate3d(" + x + "px, 0, " + z + "px) rotateY(" + turn + "deg)";
+      t = "translate3d(" + Math.round(xs[+el.dataset.i] || 0) + "px, 0, " + z +
+          "px) rotateY(" + turn + "deg)";
     }
     el.style.transform = t;
     // Distance is shown by dimming the case's own faces, never with opacity on
@@ -4949,6 +5015,16 @@ function listenForShelfDrags() {
   // A swipe the browser takes over to scroll the page with ends in a cancel,
   // never an up: without this the shelf would still think a finger was down.
   window.addEventListener("pointercancel", () => { dragFrom = null; });
+  // The shelf is laid out in pixels, so a window that changes size — or a phone
+  // turned on its side — has to be worked out again.
+  let resizeTimer = 0;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      const shelf = document.querySelector("#gamesContainer .shelf");
+      if (shelf) layoutShelf(shelf);
+    }, 120);
+  });
   window.addEventListener("pointerup", () => {
     dragFrom = null;
     // The click that ends a drag must still see dragMoved, so it clears a tick later.
@@ -4982,6 +5058,102 @@ function listenForShelfDrags() {
    stacked into one scroll, take over from it once it's open.
    ============================================================ */
 
+/* The actual cartridge or disc, from GameTDB.
+
+   GameTDB has pictures of the real thing: DS, 3DS and Switch cards with their
+   printed labels, and Wii and Wii U discs. They're named by each game's product
+   code (ASME, SX4E01 …), so what's needed first is the code, which comes from
+   GameTDB's own title databases — mirrored in assets/gametdb/ because
+   gametdb.com sends no CORS headers: a browser may show their pictures but not
+   read their database. Refresh them with tools/update-gametdb.js.
+
+   A console they don't cover (Game Boy, GBA, PSP, Vita), or a game whose name
+   isn't in the database (romhacks, mostly), keeps the drawn cart with the
+   game's own cover as its label — which is what a real cart label usually is
+   anyway. */
+const MEDIA_ART = {
+  nds:      { db: "ds",     shape: "cart", region: 3 },
+  "3ds":    { db: "3ds",    shape: "cart", region: 3 },
+  "switch": { db: "switch", shape: "cart", region: 4 },
+  wii:      { db: "wii",    shape: "disc", region: 3 },
+  wiiu:     { db: "wiiu",   shape: "disc", region: 3 },
+};
+// A code says which region it's from; GameTDB files that region's art by language.
+const MEDIA_REGION_DIR = { E: "US", A: "US", P: "EN", U: "EN", X: "EN", Y: "EN", Z: "EN",
+                           J: "JA", K: "KO", W: "ZH", T: "TW", D: "DE", F: "FR", S: "ES",
+                           I: "IT", H: "NL", R: "RU" };
+const MEDIA_REGION_RANK = { E: 0, A: 1, P: 2, U: 2, X: 2, Y: 2, Z: 2, J: 3 };
+const mediaDbs = {};             // db name -> { name key -> [codes] }, for this session
+
+async function mediaDb(name) {
+  if (mediaDbs[name]) return mediaDbs[name];
+  const res = await fetch("assets/gametdb/" + name + ".txt");
+  if (!res.ok) throw new Error("no title database");
+  const index = {};
+  (await res.text()).split("\n").forEach((line) => {
+    const at = line.indexOf(" = ");
+    if (at < 1) return;
+    const code = line.slice(0, at).trim();
+    if (code === "TITLES") return;                       // the file's own header
+    const key = coverKey(line.slice(at + 3));
+    if (!key) return;
+    (index[key] || (index[key] = [])).push(code);
+  });
+  mediaDbs[name] = index;
+  return index;
+}
+
+/* Every picture worth trying for a game, best first. A game is in the database
+   once per region it sold in and GameTDB hasn't art for all of them, so each
+   code is tried in its own region's folder and then in the two most art is
+   under. */
+function mediaArtUrls(sys, codes) {
+  const urls = [];
+  codes.slice(0, 4).forEach((code) => {
+    [MEDIA_REGION_DIR[code[sys.region]] || "US", "US", "EN"].forEach((dir) => {
+      const url = "https://art.gametdb.com/" + sys.db + "/" + sys.shape + "/" + dir + "/" + code + ".png";
+      if (urls.indexOf(url) < 0) urls.push(url);
+    });
+  });
+  return urls.slice(0, 8);
+}
+
+// Does it load? The only way to ask: their server answers pictures, not fetches.
+function imageLoads(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img.naturalWidth > 4);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+}
+
+/* A game's real cartridge or disc, or null for the drawn one. Looked up once
+   and remembered for a month, misses included — a romhack is never going to be
+   in there, and it shouldn't cost a round of requests every time it's opened. */
+async function findMediaArt(consoleId, name) {
+  const sys = MEDIA_ART[consoleId];
+  if (!sys) return null;
+  const key = "ssw_media_" + consoleId + "_" + coverKey(name);
+  try {
+    const cached = JSON.parse(localStorage.getItem(key) || "null");
+    if (cached && Date.now() - cached.at < COVER_TTL) return cached.url || null;
+  } catch (e) {}
+  let found = null;
+  try {
+    const codes = ((await mediaDb(sys.db))[coverKey(name)] || []).slice().sort((a, b) =>
+      (MEDIA_REGION_RANK[a[sys.region]] === undefined ? 5 : MEDIA_REGION_RANK[a[sys.region]]) -
+      (MEDIA_REGION_RANK[b[sys.region]] === undefined ? 5 : MEDIA_REGION_RANK[b[sys.region]]));
+    for (const url of mediaArtUrls(sys, codes)) {
+      if (await imageLoads(url)) { found = url; break; }
+    }
+  } catch (e) {
+    return null;                 // no database to hand: the drawn one stands
+  }
+  try { localStorage.setItem(key, JSON.stringify({ url: found, at: Date.now() })); } catch (e) {}
+  return found;
+}
+
 // What each console's game physically is.
 const MEDIA_KIND = {
   gb: "cart-gb", gbc: "cart-gb", gba: "cart-gba",
@@ -4995,6 +5167,7 @@ let caseMoved = [];            // the page's own elements, while they're in the 
 let caseBusy = false;          // mid-animation
 let caseSource = null;         // the shelf case it came out of
 let caseCoverUrl = null;       // the cover on its label, kept for when the tray is redrawn
+let caseMediaToken = 0;        // so a slow picture can't land in a case that has moved on
 let caseUnwatch = null;        // stops following the window's size
 
 /* The disc, UMD or cart, drawn to scale-ish. Its label is the game's cover art,
@@ -5148,6 +5321,17 @@ function setCaseMedia(consoleId, name) {
   caseLayer.querySelector(".case-spread").style.setProperty("--spine-c", con ? con.color : "#3a4453");
   wireDiscSpin(tray.querySelector(".case-media"));
   setCaseLabel(caseCoverUrl);
+
+  // And the real thing in its place, if GameTDB has a picture of this game.
+  const mine = ++caseMediaToken;
+  findMediaArt(consoleId, name).then((url) => {
+    if (!url || !caseLayer || mine !== caseMediaToken) return;
+    const holder = caseLayer.querySelector(".case-tray");
+    if (!holder) return;
+    holder.innerHTML = '<div class="case-media media-real media-' + kind + '">' +
+      '<img class="disc-spin" src="' + escapeAttr(url) + '" alt="">' + "</div>";
+    if (kind === "disc" || kind === "umd") wireDiscSpin(holder.querySelector(".case-media"));
+  }).catch(() => {});
 }
 
 /* A disc spins while the pointer is on it: up to speed when you arrive, and
@@ -5156,7 +5340,12 @@ function setCaseMedia(consoleId, name) {
 function wireDiscSpin(media) {
   const spin = media && media.querySelector(".disc-spin");
   if (!spin || caseMotionIsReduced()) return;
+  // A drawn disc turns about the middle of its own drawing; a photographed one
+  // is an <img>, and turns about the middle of itself.
   const cx = spin.dataset.cx, cy = spin.dataset.cy;
+  const turnTo = cx === undefined
+    ? (a) => { spin.style.transform = "rotate(" + a.toFixed(2) + "deg)"; }
+    : (a) => { spin.setAttribute("transform", "rotate(" + a.toFixed(2) + " " + cx + " " + cy + ")"); };
   const FULL = 520;                        // degrees a second, flat out
   let angle = 0, speed = 0, target = 0, last = 0, raf = 0, coast = 0;
   const frame = (t) => {
@@ -5166,7 +5355,7 @@ function wireDiscSpin(media) {
     const tau = target > speed ? 0.3 : 0.6;
     speed += (target - speed) * (1 - Math.exp(-dt / tau));
     angle = (angle + speed * dt) % 360;
-    spin.setAttribute("transform", "rotate(" + angle.toFixed(2) + " " + cx + " " + cy + ")");
+    turnTo(angle);
     if (!media.isConnected || (target === 0 && speed < 8)) { raf = 0; last = 0; return; }
     raf = requestAnimationFrame(frame);
   };
