@@ -280,9 +280,23 @@ on either side. Each one is a small 3D case — the cover on the front, a spine
 in the console's colour with its name up it, and a plastic edge — so a case
 turned side-on still looks like a case.
 
-Click a case to bring it forward, click the front one to open it. Arrow keys,
-Home/End, the mouse wheel, dragging and swiping all move along it. The choice
-of Grid or Shelf is remembered.
+Click a case to bring it forward. Arrow keys, Home/End, the mouse wheel,
+dragging and swiping all move along it. The choice of Grid or Shelf is
+remembered.
+
+Click the front case and it **opens**: it comes off the shelf and swings open
+like a book.
+
+- **The left page** holds the game's page: its buttons, its save slots and, in
+  the desktop app, the save it's watching on this PC.
+- **The right page** has the game sitting in its tray, with its cover art as
+  the label and your backups underneath. It's a disc for Wii and Wii U, a UMD
+  for PSP, a cartridge for Game Boy and GBA, and a game card for DS, 3DS,
+  Switch and Vita.
+
+The ✕, Escape or a click outside closes it again, back onto the shelf. On a
+phone the pages stack instead of sitting side by side. If your system asks for
+reduced motion, the case fades in rather than swinging open.
 
 ---
 

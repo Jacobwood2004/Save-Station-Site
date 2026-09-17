@@ -34,10 +34,11 @@
 }
 .ds-linked .ds-meta {
   font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.6;
-  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  display: flex; align-items: flex-start; gap: 6px;
 }
+/* Level with the first line, and staying beside the text when it wraps. */
 .ds-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: var(--ok);
+  width: 8px; height: 8px; border-radius: 50%; background: var(--ok); margin-top: 6px;
   box-shadow: 0 0 0 3px rgba(63, 185, 80, .16); display: inline-block; flex-shrink: 0;
 }
 /* An uncommitted change is the one thing here worth interrupting for. */

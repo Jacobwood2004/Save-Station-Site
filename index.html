@@ -74,7 +74,9 @@
   .btn-ghost:hover:not(:disabled) { background: #232c38; }
   .btn-sm { padding: 6px 12px; font-size: 13px; border-radius: 8px; }
   .btn-ghost.danger:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
-  .sr-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .sr-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+  /* Short of room, a button moves down a line whole rather than splitting its label. */
+  .sr-actions > button { white-space: nowrap; }
 
   /* Choice modal — for the questions a native confirm()'s two buttons can't
      ask. Options stack, so the destructive one is never the reflex click. */
@@ -571,6 +573,157 @@
   .shelf-pos { font-variant-numeric: tabular-nums; opacity: .8; }
   .shelf-hint { margin-top: 6px; font-size: 11.5px; color: var(--muted); opacity: .6; }
 
+  /* ---- an open case ----
+
+     Above the sidebar and the drawer button, below dialogs and toasts \u2014 so a
+     choice or a cover picker opened from inside the case still shows. */
+  .case-layer { position: fixed; inset: 0; z-index: 50; perspective: 2400px; }
+  .case-backdrop {
+    position: absolute; inset: 0; opacity: 0;
+    background: radial-gradient(ellipse at 50% 45%, rgba(20,16,44,.72), rgba(4,6,10,.9));
+    backdrop-filter: blur(4px);
+  }
+  .shelf.case-is-open .case.front { visibility: hidden; }
+
+  .case-spread {
+    position: absolute; inset: 0; margin: auto;
+    width: min(1180px, 94vw); height: min(780px, 90vh);
+    display: grid; grid-template-columns: 1fr 1fr;
+    opacity: 0; pointer-events: none;
+    filter: drop-shadow(0 34px 60px rgba(0,0,0,.65));
+  }
+  .case-spread.show { opacity: 1; pointer-events: auto; }
+  /* the spine, running between the pages, in the console's colour */
+  .case-spread::before {
+    content: ""; position: absolute; left: 50%; top: -5px; bottom: -5px; width: 16px; z-index: 2;
+    transform: translateX(-50%); border-radius: 5px; pointer-events: none;
+    background: linear-gradient(90deg, rgba(0,0,0,.45), rgba(255,255,255,.12) 50%, rgba(0,0,0,.45)), var(--spine-c);
+  }
+  .case-page { position: relative; overflow: hidden; container-type: inline-size; }
+  /* the inside of a case: dark plastic, shadowed into the gutter */
+  .page-left {
+    border-radius: 16px 3px 3px 16px;
+    background: linear-gradient(90deg, #121821, #1a212b 14%, #1b222c 86%, #0d1116);
+    box-shadow: inset -30px 0 36px -26px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.05);
+  }
+  .page-right {
+    border-radius: 3px 16px 16px 3px;
+    background: linear-gradient(90deg, #0d1116, #1b222c 14%, #1a212b 86%, #121821);
+    box-shadow: inset 30px 0 36px -26px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.05);
+  }
+  .page-scroll {
+    position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain;
+    padding: 30px 30px 32px 30px;
+    /* a default light scrollbar is a white bar down a dark page */
+    scrollbar-width: thin; scrollbar-color: #3a4554 transparent;
+  }
+  .page-scroll::-webkit-scrollbar { width: 8px; }
+  .page-scroll::-webkit-scrollbar-thumb { background: #3a4554; border-radius: 8px; }
+  .page-scroll::-webkit-scrollbar-track { background: transparent; }
+  /* The inside of the front cover carries a ghost of the cover art, the way a
+     printed sleeve shows through clear plastic — and it keeps the left page from
+     being a dark slab below the buttons. */
+  .page-left::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+    background: var(--cover) center 70% / cover no-repeat;
+    filter: blur(22px) saturate(1.3); transform: scale(1.12);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 30%, #000 100%);
+    mask-image: linear-gradient(to bottom, transparent 30%, #000 100%);
+    transition: opacity .5s ease;
+  }
+  .page-left.has-art::before { opacity: .16; }
+  .page-left .page-scroll { padding-right: 34px; }
+  .page-right .page-scroll { padding-left: 34px; }
+
+  .case-close {
+    position: absolute; top: -16px; right: -16px; z-index: 3;
+    width: 40px; height: 40px; padding: 0; border-radius: 50%;
+    display: grid; place-items: center; font-size: 15px;
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  .case-close:hover { border-color: var(--accent); }
+
+  /* the stand-in that plays the opening */
+  .case-anim { position: absolute; transform-origin: 0 0; transform-style: preserve-3d; }
+  .anim-base {
+    position: absolute; inset: 0; border-radius: 3px 16px 16px 3px;
+    background: linear-gradient(90deg, #0d1116, #1b222c 14%, #1a212b 86%, #121821);
+  }
+  .anim-flap { position: absolute; inset: 0; transform-origin: left center; transform-style: preserve-3d; }
+  .flap-out, .flap-in { position: absolute; inset: 0; backface-visibility: hidden; }
+  .flap-out { border-radius: 3px 14px 14px 3px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); }
+  .flap-in {
+    transform: rotateY(180deg); border-radius: 14px 3px 3px 14px;
+    background: linear-gradient(90deg, #121821, #1a212b 14%, #1b222c 86%, #0d1116);
+  }
+
+  /* the tray, and what's sitting in it */
+  .case-tray {
+    position: relative; display: grid; place-items: center;
+    height: 250px; margin-bottom: 20px; border-radius: 16px;
+    background: radial-gradient(ellipse at 50% 55%, #090c11 0%, #10151c 62%, #141a22 100%);
+    box-shadow: inset 0 4px 14px rgba(0,0,0,.75), inset 0 -1px 0 rgba(255,255,255,.05);
+  }
+  /* a disc case has the hub it clips onto */
+  .tray-disc::before, .tray-umd::before {
+    content: ""; position: absolute; width: 58px; height: 58px; border-radius: 50%;
+    background: radial-gradient(circle, #232b35 0 40%, #161c24 41% 100%);
+    box-shadow: 0 0 0 6px rgba(255,255,255,.03);
+  }
+  .case-media {
+    position: relative; filter: drop-shadow(0 12px 18px rgba(0,0,0,.6));
+    animation: mediaIn .7s cubic-bezier(.2,.8,.2,1) both .08s;
+  }
+  .case-media svg { display: block; width: 100%; height: auto; }
+  .case-media svg text { font-family: 'Segoe UI', system-ui, sans-serif; }
+  .media-hole { fill: #0b0f14; }
+  .media-disc { width: 214px; animation-name: discIn; }
+  .media-umd { width: 150px; animation-name: discIn; }
+  .media-cart-gba { width: 250px; }
+  .media-cart-gb { width: 150px; }
+  .media-card-ds, .media-card-3ds { width: 140px; }
+  .media-card-switch, .media-card-vita { width: 124px; }
+  @keyframes mediaIn {
+    from { opacity: 0; transform: translateY(-24px) scale(.96); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes discIn {
+    from { opacity: 0; transform: translateY(-24px) rotate(-150deg) scale(.96); }
+    to { opacity: 1; transform: none; }
+  }
+  .case-list-head {
+    font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted); margin: 0 2px 12px;
+  }
+
+  /* The page's own pieces, now living in half the width they were drawn for. */
+  .case-page .history-hero { margin-bottom: 16px; }
+  .case-page .history-hero .hh-cover { display: none; }      /* the cover is the case */
+  .case-page .history-hero h3 { font-size: 24px; }
+  @container (max-width: 640px) {
+    .save-row { flex-wrap: wrap; }
+    .save-row .sr-main { flex-basis: calc(100% - 54px); }
+    .save-row .sr-actions { width: 100%; justify-content: flex-end; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .case-media { animation: none; }
+  }
+
+  /* Phones: no room for a spread, so the pages stack and the case simply grows in. */
+  .case-layer.narrow .case-spread {
+    width: 100vw; height: 100dvh; grid-template-columns: 1fr; grid-template-rows: auto auto;
+    overflow-x: hidden; overflow-y: auto; filter: none;
+  }
+  .case-layer.narrow .case-spread::before { display: none; }
+  /* Still clips: the cover ghost is drawn a little larger than its page. */
+  .case-layer.narrow .case-page { overflow: hidden; border-radius: 0; box-shadow: none; }
+  .case-layer.narrow .page-scroll { position: static; overflow: visible; padding: 22px 16px; }
+  .case-layer.narrow .page-left .page-scroll { padding-top: 60px; }
+  .case-layer.narrow .case-close { top: 12px; right: 12px; position: fixed; }
+  .case-layer.narrow .case-tray { height: 200px; }
+
   /* history hero with cover */
   .history-hero { display: flex; gap: 18px; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; }
   .history-hero .hh-cover {
@@ -652,6 +805,10 @@
   .save-row .sr-main { flex: 1; min-width: 0; }
   .save-row .sr-title { font-weight: 600; font-size: 14px; }
   .save-row .sr-sub { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  /* A save's own filename is often one long unbroken hash. Let it wrap rather than
+     push the row wider than whatever it's sitting in. */
+  .save-row .sr-title, .save-row .sr-file { overflow-wrap: anywhere; }
+  .save-row .sr-file { min-width: 0; }
   .badge {
     display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 20px;
     font-size: 11px; font-weight: 600; background: rgba(124,92,255,.15); color: #b9a6ff;
@@ -1233,7 +1390,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-09-17a";
+const BUILD = "2026-09-17b";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -2056,6 +2213,7 @@ let currentNav = "games";
 
 function navigate(view) {
   closeDrawerIfNarrow();
+  if (caseLayer) finishClosingCase();
   const views = {
     games: "gamesView",
     settings: "settingsView",
@@ -4600,7 +4758,8 @@ function renderShelf(c, games) {
   shelf.querySelectorAll(".case-front[data-cover]").forEach((el) => showCoverIn(el, el.dataset.cover));
   layoutShelf(shelf);
   wireShelf(shelf);
-  try { shelf.focus({ preventScroll: true }); } catch (e) {}
+  if (caseOpenFor) shelf.classList.add("case-is-open");
+  else { try { shelf.focus({ preventScroll: true }); } catch (e) {} }
 }
 
 /* Where every case sits, given which one is at the front. Distance from the
@@ -4664,7 +4823,8 @@ function moveShelf(shelf, to) {
 
 function openShelfGame() {
   const g = shelfGames[shelfIndex];
-  if (g) openHistory(g.folder.id, g.folder.name, g.consoleId || null);
+  const front = document.querySelector("#gamesContainer .shelf .case.front");
+  if (g) openCaseFor(g, front);
 }
 
 function wireShelf(shelf) {
@@ -4740,16 +4900,352 @@ function listenForShelfDrags() {
   });
 }
 
+/* ============================================================
+   Opening a case
+
+   On the shelf, clicking the front case opens it: it comes to
+   the middle of the screen, the cover swings open on its spine,
+   and the game is inside as a book spread. Left page: the game's
+   name, its buttons, the slot tabs and (in the desktop app) the
+   On this PC panel. Right page: the disc or cartridge sitting in
+   its tray, with the backups listed underneath.
+
+   The game page isn't redrawn for this. The elements the normal
+   page uses are moved into the case while it's open and put back
+   when it closes, so every button, handler and refresh works
+   exactly as it does on the page \u2014 an upload made from inside the
+   case refreshes inside the case.
+
+   The opening itself is played by a plain stand-in case laid over
+   the spread, which is swapped for the real, flat, clickable pages
+   the moment it lands. Nothing you can click is ever inside
+   something mid-turn.
+   ============================================================ */
+
+// What each console's game physically is.
+const MEDIA_KIND = {
+  gb: "cart-gb", gbc: "cart-gb", gba: "cart-gba",
+  nds: "card-ds", "3ds": "card-3ds", switch: "card-switch", vita: "card-vita",
+  wii: "disc", wiiu: "disc", psp: "umd",
+};
+
+let caseOpenFor = null;        // folder id of the game whose case is open
+let caseLayer = null;
+let caseMoved = [];            // the page's own elements, while they're in the case
+let caseBusy = false;          // mid-animation
+let caseSource = null;         // the shelf case it came out of
+
+/* The disc, UMD or cart, drawn to scale-ish. Its label is the game's cover art,
+   filled in once the picture arrives; until then (or with no cover) the label
+   is plain and carries the game's name. */
+function mediaSvg(kind, name) {
+  const u = "md" + Math.random().toString(36).slice(2, 8);
+  const title = escapeHtml(String(name).length > 22 ? String(name).slice(0, 21) + "\u2026" : name);
+  const art = (x, y, w, hgt) =>
+    '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + hgt + '" fill="#d9dee5"/>' +
+    '<image class="media-art" x="' + x + '" y="' + y + '" width="' + w + '" height="' + hgt +
+      '" preserveAspectRatio="xMidYMid slice" style="display:none"/>' +
+    '<text class="media-noart" x="' + (x + w / 2) + '" y="' + (y + hgt / 2 + 4) +
+      '" text-anchor="middle" font-size="11" font-weight="700" fill="#5b6572">' + title + '</text>';
+
+  if (kind === "disc" || kind === "umd") {
+    const umd = kind === "umd";
+    const W = umd ? 180 : 200, H = umd ? 196 : 200;
+    const cx = W / 2, cy = umd ? 112 : 100, r = umd ? 68 : 96;
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' +
+      '<defs>' +
+        '<clipPath id="' + u + 'c"><circle cx="' + cx + '" cy="' + cy + '" r="' + (r - 2) + '"/></clipPath>' +
+        '<radialGradient id="' + u + 's" cx="32%" cy="26%" r="85%">' +
+          '<stop offset="0" stop-color="#fff" stop-opacity=".42"/>' +
+          '<stop offset=".45" stop-color="#fff" stop-opacity="0"/>' +
+          '<stop offset=".7" stop-color="#9fd8ff" stop-opacity=".10"/>' +
+          '<stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>' +
+        '<linearGradient id="' + u + 'r" x1="0" y1="0" x2="1" y2="1">' +
+          '<stop offset="0" stop-color="#f4f7fa"/><stop offset="1" stop-color="#bcc6d1"/></linearGradient>' +
+      '</defs>' +
+      (umd
+        // the UMD's shell, with the disc showing through its window
+        ? '<rect x="4" y="4" width="172" height="188" rx="18" fill="#b9c1cb"/>' +
+          '<rect x="4" y="4" width="172" height="188" rx="18" fill="none" stroke="#8f98a3" stroke-width="2"/>' +
+          '<rect x="16" y="14" width="148" height="18" rx="5" fill="#9aa3ae"/>' +
+          '<text x="90" y="27" text-anchor="middle" font-size="11" font-weight="800" fill="#eef1f5">UMD</text>'
+        : '') +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="url(#' + u + 'r)"/>' +
+      '<g clip-path="url(#' + u + 'c)">' + art(cx - r, cy - r, r * 2, r * 2) + '</g>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r - 2) + '" fill="url(#' + u + 's)"/>' +
+      // the unprinted plastic ring round the hub, and the hole
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r * 0.34) + '" fill="#e3e8ee" opacity=".95"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r * 0.34) + '" fill="none" stroke="#aeb8c3" stroke-width="1"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r * 0.22) + '" fill="none" stroke="#c8d0d9" stroke-width="3"/>' +
+      '<circle class="media-hole" cx="' + cx + '" cy="' + cy + '" r="' + (r * 0.12) + '"/>' +
+    '</svg>';
+  }
+
+  if (kind === "cart-gba") {
+    return '<svg viewBox="0 0 240 152" aria-hidden="true">' +
+      '<defs><linearGradient id="' + u + 'b" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#9aa1ab"/><stop offset="1" stop-color="#7c838d"/></linearGradient>' +
+        '<clipPath id="' + u + 'c"><rect x="26" y="36" width="188" height="100" rx="4"/></clipPath></defs>' +
+      '<path d="M8 20 Q8 10 18 10 H222 Q232 10 232 20 V140 Q232 148 224 148 H16 Q8 148 8 140 Z" fill="url(#' + u + 'b)"/>' +
+      '<rect x="8" y="10" width="224" height="18" rx="9" fill="#8a919b"/>' +
+      '<path d="M96 19 h48 M104 23 h32" stroke="#6c737c" stroke-width="2" stroke-linecap="round"/>' +
+      '<g clip-path="url(#' + u + 'c)">' + art(26, 36, 188, 100) + '</g>' +
+      '<rect x="26" y="36" width="188" height="100" rx="4" fill="none" stroke="rgba(0,0,0,.25)"/>' +
+    '</svg>';
+  }
+
+  if (kind === "cart-gb") {
+    return '<svg viewBox="0 0 164 184" aria-hidden="true">' +
+      '<defs><linearGradient id="' + u + 'b" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#b3b7bd"/><stop offset="1" stop-color="#8f949b"/></linearGradient>' +
+        '<clipPath id="' + u + 'c"><rect x="26" y="30" width="112" height="98" rx="3"/></clipPath></defs>' +
+      '<path d="M12 8 H136 L156 28 V172 Q156 178 150 178 H18 Q12 178 12 172 Z" fill="url(#' + u + 'b)"/>' +
+      '<path d="M76 16 l6 7 l6 -7" fill="none" stroke="#72777e" stroke-width="2" stroke-linejoin="round"/>' +
+      '<g clip-path="url(#' + u + 'c)">' + art(26, 30, 112, 98) + '</g>' +
+      '<rect x="26" y="30" width="112" height="98" rx="3" fill="none" stroke="rgba(0,0,0,.25)"/>' +
+      '<path d="M34 146 H130 M34 154 H130 M34 162 H130" stroke="#80858c" stroke-width="3" stroke-linecap="round"/>' +
+    '</svg>';
+  }
+
+  if (kind === "card-switch" || kind === "card-vita") {
+    const vita = kind === "card-vita";
+    return '<svg viewBox="0 0 136 172" aria-hidden="true">' +
+      '<defs><clipPath id="' + u + 'c"><rect x="20" y="28" width="96" height="116" rx="5"/></clipPath></defs>' +
+      (vita
+        ? '<rect x="8" y="8" width="120" height="156" rx="14" fill="#23272e"/>'
+        : '<path d="M28 8 H120 Q128 8 128 16 V156 Q128 164 120 164 H16 Q8 164 8 156 V28 Z" fill="#2a2e35"/>') +
+      '<g clip-path="url(#' + u + 'c)">' + art(20, 28, 96, 116) + '</g>' +
+      '<rect x="20" y="28" width="96" height="116" rx="5" fill="none" stroke="rgba(255,255,255,.12)"/>' +
+      (vita ? '' : '<rect x="50" y="150" width="36" height="6" rx="3" fill="#3a3f47"/>') +
+    '</svg>';
+  }
+
+  // DS and 3DS cards: small, pale, notched; the 3DS one has its little tab
+  const three = kind === "card-3ds";
+  return '<svg viewBox="0 0 150 164" aria-hidden="true">' +
+    '<defs><linearGradient id="' + u + 'b" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="' + (three ? "#eef0f3" : "#dde1e6") + '"/>' +
+      '<stop offset="1" stop-color="' + (three ? "#c9ced5" : "#b9bec6") + '"/></linearGradient>' +
+      '<clipPath id="' + u + 'c"><rect x="24" y="30" width="102" height="104" rx="3"/></clipPath></defs>' +
+    (three ? '<rect x="104" y="6" width="26" height="14" rx="3" fill="#c3c8cf"/>' : '') +
+    '<path d="M24 14 H138 Q142 14 142 18 V152 Q142 156 138 156 H12 Q8 156 8 152 V30 Z" fill="url(#' + u + 'b)"/>' +
+    '<g clip-path="url(#' + u + 'c)">' + art(24, 30, 102, 104) + '</g>' +
+    '<rect x="24" y="30" width="102" height="104" rx="3" fill="none" stroke="rgba(0,0,0,.22)"/>' +
+    '<rect x="30" y="140" width="90" height="6" rx="3" fill="rgba(0,0,0,.10)"/>' +
+  '</svg>';
+}
+
+function setCaseLabel(url) {
+  if (!caseLayer) return;
+  const left = caseLayer.querySelector(".page-left");
+  if (left) {
+    if (url) { left.style.setProperty("--cover", "url('" + url + "')"); left.classList.add("has-art"); }
+    else { left.style.removeProperty("--cover"); left.classList.remove("has-art"); }
+  }
+  caseLayer.querySelectorAll(".media-art").forEach((img) => {
+    if (url) { img.setAttribute("href", url); img.style.display = ""; }
+    else { img.removeAttribute("href"); img.style.display = "none"; }
+  });
+  caseLayer.querySelectorAll(".media-noart").forEach((t) => { t.style.display = url ? "none" : ""; });
+}
+
+function moveHistoryIntoCase(layer) {
+  const hv = $("historyView");
+  const left = layer.querySelector(".page-left .page-scroll");
+  const right = layer.querySelector(".page-right .page-scroll");
+  const hero = hv.querySelector(".history-hero");
+  caseMoved = [hero, $("slotBar"), $("slotHint"), $("desktopPanel"), $("folderNote"), $("historyContainer")];
+  [hero, $("slotBar"), $("slotHint"), $("desktopPanel"), $("folderNote")].forEach((n) => left.appendChild(n));
+  right.appendChild($("historyContainer"));
+}
+
+// Back where the page keeps them, in the order it keeps them (after ← All games).
+function moveHistoryBack() {
+  const hv = $("historyView");
+  caseMoved.forEach((n) => { if (n) hv.appendChild(n); });
+  caseMoved = [];
+}
+
+function caseMotionIsSimple() {
+  return window.matchMedia("(max-width: 620px)").matches ||
+         window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+async function openCaseFor(g, fromEl) {
+  if (caseBusy || caseOpenFor || !g) return;
+  caseBusy = true;
+  caseOpenFor = g.folder.id;
+  caseSource = fromEl || null;
+  const con = consoleOf(g.consoleId);
+  const kind = MEDIA_KIND[g.consoleId] || "disc";
+  const simple = caseMotionIsSimple();
+
+  const layer = document.createElement("div");
+  layer.className = "case-layer" + (window.matchMedia("(max-width: 620px)").matches ? " narrow" : "");
+  layer.innerHTML =
+    '<div class="case-backdrop"></div>' +
+    '<div class="case-spread" role="dialog" aria-modal="true" aria-label="' + escapeAttr(g.folder.name) +
+      '" style="--spine-c:' + (con ? con.color : "#3a4453") + '">' +
+      '<button class="case-close" type="button" aria-label="Close the case">\u2715</button>' +
+      '<div class="case-page page-left"><div class="page-scroll"></div></div>' +
+      '<div class="case-page page-right"><div class="page-scroll">' +
+        '<div class="case-tray tray-' + kind + '">' +
+          '<div class="case-media media-' + kind + '">' + mediaSvg(kind, g.folder.name) + '</div>' +
+        '</div>' +
+        '<div class="case-list-head">Backups</div>' +
+      '</div></div>' +
+    '</div>' +
+    '<div class="case-anim">' +
+      '<div class="anim-base"></div>' +
+      '<div class="anim-flap">' +
+        '<div class="flap-out cover-frame"><span class="no-cover-label">No cover</span></div>' +
+        '<div class="flap-in"></div>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(layer);
+  caseLayer = layer;
+  const shelf = document.querySelector("#gamesContainer .shelf");
+  if (shelf) shelf.classList.add("case-is-open");
+
+  moveHistoryIntoCase(layer);
+  // Load the game into the moved elements. openHistory sees caseOpenFor and
+  // stays put rather than switching the screen to the game page.
+  openHistory(g.folder.id, g.folder.name, g.consoleId || null);
+
+  if (g.cover) {
+    getCoverUrl(g.cover.id).then((url) => {
+      if (caseLayer !== layer) return;
+      const flap = layer.querySelector(".flap-out");
+      flap.style.setProperty("--cover", "url('" + url + "')");
+      flap.classList.add("has-art");
+      setCaseLabel(url);
+    }).catch(() => {});
+  }
+
+  layer.querySelector(".case-close").onclick = () => closeCase(true);
+  layer.querySelector(".case-backdrop").onclick = () => closeCase(true);
+  document.addEventListener("keydown", onCaseKey);
+
+  const spread = layer.querySelector(".case-spread");
+  const anim = layer.querySelector(".case-anim");
+  const backdrop = layer.querySelector(".case-backdrop");
+  backdrop.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 380, fill: "forwards" });
+
+  try {
+    if (simple || !fromEl) {
+      anim.style.display = "none";
+      spread.classList.add("show");
+      await spread.animate([{ opacity: 0, transform: "scale(.96)" }, { opacity: 1, transform: "none" }],
+                           { duration: 240, easing: "ease-out" }).finished;
+    } else {
+      // The closed case lands exactly where the right page will be, so the spine
+      // it opens on ends up in the middle of the spread.
+      const S = spread.getBoundingClientRect();
+      const R = { left: S.left + S.width / 2, top: S.top, width: S.width / 2, height: S.height };
+      Object.assign(anim.style, { left: R.left + "px", top: R.top + "px", width: R.width + "px", height: R.height + "px" });
+      const F = fromEl.getBoundingClientRect();
+      fromEl.style.visibility = "hidden";
+
+      await anim.animate([
+        { transform: "translate(" + (F.left - R.left) + "px," + (F.top - R.top) + "px) scale(" +
+                     (F.width / R.width) + "," + (F.height / R.height) + ")" },
+        { transform: "none" },
+      ], { duration: 460, easing: "cubic-bezier(.2,.7,.2,1)", fill: "forwards" }).finished;
+
+      await layer.querySelector(".anim-flap").animate(
+        [{ transform: "rotateY(0deg)" }, { transform: "rotateY(-180deg)" }],
+        { duration: 640, easing: "cubic-bezier(.45,.05,.25,1)", fill: "forwards" }).finished;
+
+      spread.classList.add("show");
+      anim.style.visibility = "hidden";
+    }
+  } catch (e) { /* an animation cut short by closing: nothing to do */ }
+
+  caseBusy = false;
+  if (caseLayer === layer) layer.querySelector(".case-close").focus({ preventScroll: true });
+}
+
+function onCaseKey(e) {
+  if (e.key !== "Escape") return;
+  // A dialog opened from inside the case gets its Escape first.
+  if (!$("modalBack").classList.contains("hidden")) return;
+  closeCase(true);
+}
+
+async function closeCase(animate) {
+  if (!caseLayer || caseBusy) return;
+  const layer = caseLayer;
+  caseBusy = true;
+  const spread = layer.querySelector(".case-spread");
+  const anim = layer.querySelector(".case-anim");
+  const backdrop = layer.querySelector(".case-backdrop");
+  // The shelf may have been redrawn while the case was open; aim for whatever
+  // case is at the front now.
+  const target = document.querySelector("#gamesContainer .shelf .case.front");
+
+  try {
+    if (animate && !caseMotionIsSimple() && target && anim.style.display !== "none") {
+      spread.classList.remove("show");
+      anim.style.visibility = "visible";
+      await layer.querySelector(".anim-flap").animate(
+        [{ transform: "rotateY(-180deg)" }, { transform: "rotateY(0deg)" }],
+        { duration: 520, easing: "cubic-bezier(.45,.05,.25,1)", fill: "forwards" }).finished;
+      const R = anim.getBoundingClientRect();
+      const F = target.getBoundingClientRect();
+      backdrop.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, fill: "forwards" });
+      await anim.animate([
+        { transform: "none" },
+        { transform: "translate(" + (F.left - R.left) + "px," + (F.top - R.top) + "px) scale(" +
+                     (F.width / R.width) + "," + (F.height / R.height) + ")" },
+      ], { duration: 420, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" }).finished;
+    } else if (animate) {
+      await Promise.all([
+        spread.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 180, fill: "forwards" }).finished,
+        backdrop.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: "forwards" }).finished,
+      ]);
+    }
+  } catch (e) {}
+
+  finishClosingCase();
+}
+
+// Put everything back immediately. Used on its own when something navigates away
+// \u2014 deleting the game from inside its case, say \u2014 where waiting on an animation
+// would leave the page's elements stranded in a case that's about to vanish.
+function finishClosingCase() {
+  if (!caseLayer) return;
+  moveHistoryBack();
+  caseLayer.remove();
+  caseLayer = null;
+  caseOpenFor = null;
+  caseBusy = false;
+  if (caseSource) caseSource.style.visibility = "";
+  caseSource = null;
+  document.removeEventListener("keydown", onCaseKey);
+  const shelf = document.querySelector("#gamesContainer .shelf");
+  if (shelf) {
+    shelf.classList.remove("case-is-open");
+    try { shelf.focus({ preventScroll: true }); } catch (e) {}
+  }
+}
+
 let currentHistory = { folderId: null, name: null, saves: [], console: null, slots: [] };
 
 async function openHistory(folderId, name, consoleId) {
   closeDrawerIfNarrow();
-  $("gamesView").classList.add("hidden");
-  $("settingsView").classList.add("hidden");
-  $("onboardView").classList.add("hidden");
-  $("uploadPanel").classList.add("hidden");
-  $("historyView").classList.remove("hidden");
-  markNav("history");
+  // With this game's case open, its page lives in the case and the shelf stays
+  // on screen behind it \u2014 so no switching views, and no scrolling the page.
+  // Every refresh from inside the case comes through here too, which is what
+  // keeps it in the case.
+  const inCase = caseOpenFor === folderId;
+  if (!inCase) {
+    $("gamesView").classList.add("hidden");
+    $("settingsView").classList.add("hidden");
+    $("onboardView").classList.add("hidden");
+    $("uploadPanel").classList.add("hidden");
+    $("historyView").classList.remove("hidden");
+    markNav("history");
+  }
   $("historyTitle").textContent = name;
   // Arriving from a different game? Start on "All". Inheriting the last game's
   // tab would mean landing on a slot this game hasn't got.
@@ -4764,7 +5260,7 @@ async function openHistory(folderId, name, consoleId) {
   clearCoverIn(coverEl);
   const c = $("historyContainer");
   c.innerHTML = '<div class="empty"><span class="spinner"></span> Loading backups\u2026</div>';
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (!inCase) window.scrollTo({ top: 0, behavior: "smooth" });
   try {
     const { cover, saves } = splitCover(await listSaves(folderId));
     const resolved = consoleId || gameConsoleId({ appProperties: {} }, saves);
@@ -4794,6 +5290,10 @@ async function openHistory(folderId, name, consoleId) {
         (con ? "<code>" + escapeHtml(con.where) + "</code>" : "your emulator's save folder") + ".";
     }
 
+    if (inCase) {
+      if (cover) getCoverUrl(cover.id).then(setCaseLabel).catch(() => {});
+      else setCaseLabel(null);
+    }
     if (cover) {
       $("setCoverBtn").textContent = "\ud83d\uddbc\ufe0f Change cover";
       await showCoverIn(coverEl, cover.id);
@@ -4864,7 +5364,7 @@ function renderHistory() {
           (p.kind === "tree" && p.files
             ? '<span>' + escapeHtml(p.files) + ' file' + (+p.files === 1 ? "" : "s") + '</span>' : '') +
           ((s.size || p.size) ? '<span>' + humanSize(+(s.size || p.size)) + '</span>' : '') +
-          (label ? '<span>\ud83d\udcc4 ' + escapeHtml(orig) + '</span>' : '') +
+          (label ? '<span class="sr-file">\ud83d\udcc4 ' + escapeHtml(orig) + '</span>' : '') +
         '</div>' +
       '</div>' +
       '<div class="sr-actions">' +
