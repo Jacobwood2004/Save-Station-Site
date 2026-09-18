@@ -280,10 +280,14 @@ on either side. Each one is a small 3D case — the cover on the front, a spine
 in the console's colour with its name up it, and a plastic edge — so a case
 turned side-on still looks like a case.
 
-The cases are their real sizes, to scale: a DS or 3DS case is the small nearly
-square one, a Switch case is tall and narrow, a Wii case is a DVD case, and a
-GBA game is its little cardboard box. Tall and short alike stand on the same
-shelf line.
+A case is the shape of its own cover, so the art fills it corner to corner
+instead of sitting in a frame that's the wrong shape for it. Nothing grows past
+a Wii case — that's as big as a case gets — and a cover shaped like nothing on
+earth (a screenshot, say) is held within reason rather than turned into a slab.
+
+A game with no cover falls back to its console's real case, to scale: the small
+nearly square DS and 3DS one, the tall narrow Switch one, the Wii DVD case, or
+the little GBA cardboard box. Tall and short alike stand on the same shelf line.
 
 Click a case to bring it forward. Arrow keys, Home/End, the mouse wheel,
 dragging and swiping all move along it. The choice of Grid or Shelf is

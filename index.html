@@ -1457,7 +1457,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-09-17d";
+const BUILD = "2026-09-17e";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -4779,6 +4779,55 @@ const CASE_SIZE = {
 const CASE_SIZE_DEFAULT = { w: 196, h: 277, d: 20 };
 function caseSize(consoleId) { return CASE_SIZE[consoleId] || CASE_SIZE_DEFAULT; }
 
+/* A case with a cover is the shape of that cover, so the picture fills it
+   corner to corner rather than sitting in a frame the wrong shape for it.
+
+   Big as it can be without passing a Wii case, which is as big as a case gets.
+   The aspect is held within reason too: someone's cover might be a screenshot,
+   and a 16:9 case is a shelf of slabs. A game with no cover keeps its own
+   console's real size — there's no picture to take a shape from. */
+const CASE_MAX = { w: 196, h: 277 };
+function caseSizeForCover(aspect, consoleId) {
+  const a = Math.min(Math.max(aspect, 0.55), 1.15);
+  let h = CASE_MAX.h, w = h * a;
+  if (w > CASE_MAX.w) { w = CASE_MAX.w; h = w / a; }
+  return { w: Math.round(w), h: Math.round(h), d: caseSize(consoleId).d };
+}
+
+// How wide a cover is against its height, measured once per cover.
+const coverAspects = {};
+function coverAspect(fileId) {
+  if (coverAspects[fileId]) return Promise.resolve(coverAspects[fileId]);
+  return getCoverUrl(fileId).then((url) => new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      if (!img.naturalWidth || !img.naturalHeight) { reject(new Error("no size")); return; }
+      coverAspects[fileId] = img.naturalWidth / img.naturalHeight;
+      resolve(coverAspects[fileId]);
+    };
+    img.onerror = () => reject(new Error("no picture"));
+    img.src = url;
+  }));
+}
+
+/* Covers arrive one at a time and each one changes a width, which the spacing
+   is worked out from — so the row is worked out again once they've settled,
+   rather than once per picture. */
+let shelfSettle = 0;
+function fitCaseToCover(el, fileId, shelf) {
+  if (!el || !fileId) return;
+  const g = shelfGames[+el.dataset.i];
+  coverAspect(fileId).then((aspect) => {
+    if (!el.isConnected) return;
+    const size = caseSizeForCover(aspect, g ? g.consoleId : null);
+    el.style.setProperty("--cw", size.w + "px");
+    el.style.setProperty("--ch", size.h + "px");
+    el.style.setProperty("--depth", size.d + "px");
+    clearTimeout(shelfSettle);
+    shelfSettle = setTimeout(() => { if (shelf.isConnected) layoutShelf(shelf); }, 40);
+  }).catch(() => {});
+}
+
 let shelfActiveFid = null;       // which game is at the front, kept across redraws
 let shelfGames = [];
 let shelfIndex = 0;
@@ -4845,7 +4894,10 @@ function renderShelf(c, games) {
     '</div>';
 
   const shelf = c.querySelector(".shelf");
-  shelf.querySelectorAll(".case-front[data-cover]").forEach((el) => showCoverIn(el, el.dataset.cover));
+  shelf.querySelectorAll(".case-front[data-cover]").forEach((el) => {
+    showCoverIn(el, el.dataset.cover);
+    fitCaseToCover(el.closest(".case"), el.dataset.cover, shelf);
+  });
   layoutShelf(shelf);
   wireShelf(shelf);
   if (caseOpenFor) shelf.classList.add("case-is-open");
@@ -4866,7 +4918,13 @@ function layoutShelf(shelf) {
      on a shelf. The two factors are the fixed spacing this used to have (218
      and 118) over the 200px case it was set for, so a shelf of DVD-sized cases
      stands exactly where it did. */
-  const widthAt = (i) => caseSize(shelfGames[i] ? shelfGames[i].consoleId : null).w * sc;
+  const cases = shelf.querySelectorAll(".case");
+  const widthAt = (i) => {
+    const el = cases[i];
+    // Its own width once a cover has shaped it; its console's until then.
+    const own = el && parseFloat(el.style.getPropertyValue("--cw"));
+    return (own || caseSize(shelfGames[i] ? shelfGames[i].consoleId : null).w) * sc;
+  };
   // How wide a case looks from here, which is what the spacing has to go on:
   // turned away and set back it takes up less room than its width, and the one
   // at the front, being nearer, a little more.
