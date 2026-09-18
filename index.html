@@ -526,6 +526,11 @@
     transition: transform .5s cubic-bezier(.2,.75,.25,1);
   }
   .case > div { position: absolute; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+  /* A .cover-frame is 5:7 wherever else it's used, and a case used to be 5:7
+     too. Now that a case is the shape of its own cover, the ratio would win
+     over the box it's pinned to — leaving the face hanging below the case,
+     with the art letterboxed inside it. The case says what shape it is. */
+  .case .case-front, .anim-flap .flap-out { aspect-ratio: auto; }
   /* front: the cover, set into the case a hair so the plastic edge shows */
   .case-front {
     inset: 0; border-radius: 3px 5px 5px 3px;
@@ -588,6 +593,7 @@
   .shelf-arrow.next { right: 8px; }
 
   .shelf-caption { text-align: center; margin-top: -54px; position: relative; z-index: 4; padding: 0 60px; }
+  .shelf-caption { transition: margin-top .18s ease; }
   .shelf-title { font-size: 21px; font-weight: 700; line-height: 1.25; word-break: break-word; }
   .shelf-meta {
     margin-top: 8px; display: flex; justify-content: center; align-items: center;
@@ -1457,7 +1463,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-09-17e";
+const BUILD = "2026-09-17f";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -4919,6 +4925,19 @@ function layoutShelf(shelf) {
      and 118) over the 200px case it was set for, so a shelf of DVD-sized cases
      stands exactly where it did. */
   const cases = shelf.querySelectorAll(".case");
+  /* The stage is built around --chmax, the tallest a case can be, and the cases
+     stand on a line near the bottom of it. Covers come in all shapes, so a
+     library of squat ones would otherwise sit under a band of empty space. It
+     only needs to be as tall as the tallest case actually in there — taken
+     over the whole shelf, not just what's on screen, so it doesn't change
+     height as you move along. */
+  let tallest = 120;
+  cases.forEach((el, i) => {
+    const own = parseFloat(el.style.getPropertyValue("--ch"));
+    tallest = Math.max(tallest, own || caseSize(shelfGames[i] ? shelfGames[i].consoleId : null).h);
+  });
+  shelf.style.setProperty("--chmax", "calc(" + Math.round(tallest) + "px * var(--sc))");
+
   const widthAt = (i) => {
     const el = cases[i];
     // Its own width once a cover has shaped it; its console's until then.
@@ -4973,6 +4992,8 @@ function layoutShelf(shelf) {
     el.classList.toggle("front", d === 0);
   });
 
+  settleShelfBox(shelf);
+
   const g = shelfGames[shelfIndex];
   if (!g) return;
   shelfActiveFid = g.folder.id;
@@ -4989,6 +5010,25 @@ function layoutShelf(shelf) {
     '<span class="shelf-pos">' + (shelfIndex + 1) + " of " + shelfGames.length + '</span>';
   shelf.querySelector(".prev").disabled = shelfIndex === 0;
   shelf.querySelector(".next").disabled = shelfIndex === shelfGames.length - 1;
+}
+
+/* The caption is pulled up under the cases, and how far up depends on where
+   they come down to — which perspective decides, not arithmetic. So it's
+   measured rather than guessed, and the name never lands on the artwork. The
+   offset is relative to the stage, so measuring it again once it's applied
+   gives the same answer. */
+function settleShelfBox(shelf) {
+  const stage = shelf.querySelector(".shelf-stage");
+  const caption = shelf.querySelector(".shelf-caption");
+  if (!stage || !caption) return;
+  const box = stage.getBoundingClientRect();
+  let bottom = -Infinity;
+  shelf.querySelectorAll(".case").forEach((el) => {
+    if (el.style.visibility === "hidden") return;
+    bottom = Math.max(bottom, el.getBoundingClientRect().bottom);
+  });
+  if (!isFinite(bottom)) return;
+  caption.style.marginTop = Math.round(bottom - box.bottom + 16) + "px";
 }
 
 function moveShelf(shelf, to) {
