@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Save Station Web</title>
 <!-- The mark, simplified for 16px. Inline so the page still needs no network. -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20width%3D%2264%22%20height%3D%2264%22%20role%3D%22img%22%20aria-label%3D%22Save%20Station%22%3E%20%3Cdefs%3E%20%3ClinearGradient%20id%3D%22fvFloppy%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%239a80ff%22%2F%3E%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%235b8cff%22%2F%3E%20%3C%2FlinearGradient%3E%20%3ClinearGradient%20id%3D%22fvTile%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%231b2330%22%2F%3E%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230e1420%22%2F%3E%20%3C%2FlinearGradient%3E%20%3C%2Fdefs%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22url(%23fvTile)%22%2F%3E%20%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2224%22%20fill%3D%22none%22%20stroke%3D%22%237c5cff%22%20stroke-width%3D%222%22%20opacity%3D%22.45%22%2F%3E%20%3Ccircle%20cx%3D%2232%22%20cy%3D%228%22%20r%3D%225.2%22%20fill%3D%22%234ad2c9%22%2F%3E%20%3Ccircle%20cx%3D%2254.8%22%20cy%3D%2224.6%22%20r%3D%224.4%22%20fill%3D%22%23c8d3e2%22%2F%3E%20%3Ccircle%20cx%3D%2246.1%22%20cy%3D%2251.4%22%20r%3D%224.4%22%20fill%3D%22%23c8d3e2%22%2F%3E%20%3Ccircle%20cx%3D%2217.9%22%20cy%3D%2251.4%22%20r%3D%224.4%22%20fill%3D%22%23c8d3e2%22%2F%3E%20%3Ccircle%20cx%3D%229.2%22%20cy%3D%2224.6%22%20r%3D%224.4%22%20fill%3D%22%23c8d3e2%22%2F%3E%20%3Cpath%20d%3D%22M22.6%2018.8h16.6l6%206V42a3.2%203.2%200%200%201-3.2%203.2H22.6A3.2%203.2%200%200%201%2019.4%2042V22a3.2%203.2%200%200%201%203.2-3.2Z%22%20fill%3D%22url(%23fvFloppy)%22%2F%3E%20%3Cpath%20d%3D%22M27.2%2018.8h9.2v8.8a1.2%201.2%200%200%201-1.2%201.2h-6.8a1.2%201.2%200%200%201-1.2-1.2Z%22%20fill%3D%22%23e9eefc%22%2F%3E%20%3Crect%20x%3D%2224.2%22%20y%3D%2233.4%22%20width%3D%2215.6%22%20height%3D%229.6%22%20rx%3D%221.6%22%20fill%3D%22%23f2f5ff%22%2F%3E%20%3Cpath%20d%3D%22M26.8%2037.4h10.4%22%20stroke%3D%22%23a99bff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%2F%3E%20%3C%2Fsvg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20128%20128%22%20width%3D%2264%22%20height%3D%2264%22%20role%3D%22img%22%20aria-label%3D%22Save%20Station%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22fssTile%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23262521%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23151513%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22fssCard%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23ffb24f%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ff9420%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%22120%22%20height%3D%22120%22%20rx%3D%2228%22%20fill%3D%22url%28%23fssTile%29%22%2F%3E%3Crect%20x%3D%224.75%22%20y%3D%224.75%22%20width%3D%22118.5%22%20height%3D%22118.5%22%20rx%3D%2227.25%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%22.09%22%20stroke-width%3D%221.5%22%2F%3E%3Cg%20transform%3D%22translate%2837%2025%29%20scale%281.5%29%22%3E%3Cpath%20d%3D%22M6%200h17.5L36%2012.5V46a6%206%200%200%201-6%206H6a6%206%200%200%201-6-6V6a6%206%200%200%201%206-6Z%22%20fill%3D%22url%28%23fssCard%29%22%2F%3E%3Crect%20x%3D%226.5%22%20y%3D%224.5%22%20width%3D%223.2%22%20height%3D%229%22%20rx%3D%221.2%22%20fill%3D%22%231b1a17%22%20opacity%3D%22.5%22%2F%3E%3Crect%20x%3D%2212%22%20y%3D%224.5%22%20width%3D%223.2%22%20height%3D%229%22%20rx%3D%221.2%22%20fill%3D%22%231b1a17%22%20opacity%3D%22.5%22%2F%3E%3Crect%20x%3D%2217.5%22%20y%3D%224.5%22%20width%3D%223.2%22%20height%3D%229%22%20rx%3D%221.2%22%20fill%3D%22%231b1a17%22%20opacity%3D%22.5%22%2F%3E%3Cpath%20d%3D%22M18%2041V25.5M11.5%2031.8%2018%2025.3l6.5%206.5%22%20fill%3D%22none%22%20stroke%3D%22%231b1a17%22%20stroke-width%3D%224.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E">
+<meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ecebe6" media="(prefers-color-scheme: light)">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <!-- Firebase Authentication runs the Save Station account (email + password).
      Google sign-in is separate and comes later, to link your Drive. -->
@@ -32,93 +34,179 @@
   window.dispatchEvent(new Event("fb-ready"));
 </script>
 <style>
-  :root {
-    --bg: #0e1116;
-    --panel: #161b22;
-    --panel-2: #1c232d;
-    --border: #2a323d;
-    --text: #e6edf3;
-    --muted: #8b98a5;
-    --accent: #7c5cff;
-    --accent-2: #4ad2c9;
-    --danger: #ff6b6b;
-    --ok: #3fb950;
-    --shadow: 0 8px 30px rgba(0,0,0,.4);
+  /* ==========================================================
+     Save Station — the same look as the Windows app.
+
+     Warm graphite neutrals and one accent: the amber of a
+     "saving…" light. Amber is "your attention / your action";
+     green is "safe in Drive". Nothing else gets colour except
+     the consoles' own. Follows the device's light/dark setting.
+     ========================================================== */
+  :root, .case-layer {
+    color-scheme: dark;
+    --font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    --font-display: "Segoe UI Variable Display", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --mono: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, "SF Mono", monospace;
+
+    --bg: #0f0f0e;
+    --bg-sunk: #0b0b0a;
+    --chrome: #141413;
+    --panel: #191917;
+    --panel-2: #20201d;
+    --panel-3: #292925;
+    --hover: rgba(255, 255, 255, .045);
+    --border: #2a2a26;
+    --border-2: #383733;
+    --border-3: #48473f;
+
+    --text: #ecebe6;
+    --muted: #a9a79f;
+    --faint: #76746d;
+
+    --accent: #ffa033;
+    --accent-hover: #ffb359;
+    --accent-press: #f0902a;
+    --accent-ink: #1d1304;
+    --accent-text: #ffb359;
+    --accent-soft: rgba(255, 160, 51, .12);
+    --accent-line: rgba(255, 160, 51, .38);
+    --accent-2: var(--accent-text);          /* older name, still used inline */
+
+    --ok: #62cf8d;
+    --ok-soft: rgba(98, 207, 141, .12);
+    --danger: #f37570;
+    --danger-soft: rgba(243, 117, 112, .12);
+    --info: #86b6ff;
+    --info-soft: rgba(134, 182, 255, .12);
+
+    --focus: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+    --shadow: 0 12px 32px rgba(0, 0, 0, .45);
+    --shadow-pop: 0 18px 50px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 255, 255, .05);
+    --scrim: rgba(6, 6, 5, .62);
+    --ease: cubic-bezier(.2, .7, .2, 1);
   }
+  @media (prefers-color-scheme: light) {
+    :root {
+      color-scheme: light;
+      --bg: #f6f5f1;
+      --bg-sunk: #efeee9;
+      --chrome: #ecebe6;
+      --panel: #ffffff;
+      --panel-2: #f4f3ef;
+      --panel-3: #eae9e3;
+      --hover: rgba(30, 28, 22, .05);
+      --border: #e4e2dc;
+      --border-2: #d6d4cc;
+      --border-3: #c3c0b7;
+      --text: #1c1b18;
+      --muted: #5d5b55;
+      --faint: #8b8982;
+      --accent: #ff9a26;
+      --accent-hover: #ffaa47;
+      --accent-press: #f08a12;
+      --accent-text: #b25d00;
+      --accent-soft: rgba(255, 154, 38, .14);
+      --accent-line: rgba(214, 120, 0, .4);
+      --ok: #1f9a54;
+      --ok-soft: rgba(31, 154, 84, .1);
+      --danger: #d23f3a;
+      --danger-soft: rgba(210, 63, 58, .09);
+      --info: #2f6fd6;
+      --info-soft: rgba(47, 111, 214, .1);
+      --shadow: 0 10px 28px rgba(40, 35, 25, .14);
+      --shadow-pop: 0 18px 50px rgba(40, 35, 25, .16), 0 0 0 1px rgba(40, 35, 25, .08);
+      --scrim: rgba(28, 26, 20, .34);
+    }
+  }
+
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    background: radial-gradient(1200px 600px at 80% -10%, #1b1440 0%, transparent 60%),
-                radial-gradient(1000px 500px at -10% 110%, #0d2f2c 0%, transparent 55%),
-                var(--bg);
+    background: var(--bg);
     color: var(--text);
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font: 400 14px/1.45 var(--font);
+    -webkit-font-smoothing: antialiased;
     min-height: 100vh;
   }
-  a { color: var(--accent-2); }
+  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -.01em; }
+  a { color: var(--accent-text); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { font-family: var(--mono); font-size: .9em; background: var(--panel-3); padding: 1px 5px; border-radius: 4px; }
+  ::selection { background: var(--accent-soft); }
+  :focus { outline: none; }
+  :focus-visible { box-shadow: var(--focus); }
+
+  /* Line icons — the same set the Windows app uses. */
+  .ico {
+    width: 16px; height: 16px; flex-shrink: 0;
+    fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    vertical-align: -3px;
+  }
+
+  ::-webkit-scrollbar { width: 12px; height: 12px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-2); border: 4px solid transparent; background-clip: padding-box; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background-color: var(--border-3); }
+
+  /* ---------------------------------------------------------- buttons */
   button {
     font-family: inherit;
     cursor: pointer;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 16px;
-    font-size: 14px;
-    font-weight: 600;
-    transition: transform .06s ease, filter .15s ease, background .15s ease;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 0 14px;
+    height: 36px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: inherit;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background .12s, border-color .12s, color .12s, transform .06s;
   }
-  button:active { transform: translateY(1px); }
-  button:disabled { opacity: .5; cursor: not-allowed; }
-  .btn-primary { background: linear-gradient(135deg, var(--accent), #5b8cff); color: white; }
-  .btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
-  .btn-ghost { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
-  .btn-ghost:hover:not(:disabled) { background: #232c38; }
-  .btn-sm { padding: 6px 12px; font-size: 13px; border-radius: 8px; }
-  .btn-ghost.danger:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
-  .sr-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
-  /* Short of room, a button moves down a line whole rather than splitting its label. */
+  button:active:not(:disabled) { transform: translateY(.5px); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+  .btn-primary:active:not(:disabled) { background: var(--accent-press); }
+  .btn-ghost { background: var(--panel-2); color: var(--text); border-color: var(--border-2); }
+  .btn-ghost:hover:not(:disabled) { background: var(--panel-3); border-color: var(--border-3); }
+  .btn-sm { height: 30px; padding: 0 11px; font-size: 12.5px; border-radius: 7px; gap: 6px; }
+  .btn-sm .ico { width: 14px; height: 14px; }
+  .btn-lg { height: 44px; padding: 0 22px; font-size: 15px; border-radius: 12px; }
+  .btn-ghost.danger { color: var(--danger); }
+  .btn-ghost.danger:hover:not(:disabled) { background: var(--danger-soft); border-color: var(--danger); color: var(--danger); }
+  .btn-icon { width: 30px; padding: 0; }
+  .sr-actions { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
   .sr-actions > button { white-space: nowrap; }
 
-  /* Choice modal — for the questions a native confirm()'s two buttons can't
-     ask. Options stack, so the destructive one is never the reflex click. */
+  .spinner {
+    width: 16px; height: 16px; border: 2px solid var(--border-3); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin .8s linear infinite; display: inline-block; vertical-align: middle; flex-shrink: 0;
+  }
+  .btn-primary .spinner { border-color: rgba(29, 19, 4, .25); border-top-color: var(--accent-ink); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ----------------------------------------------------------- dialog */
   .modal-back {
     position: fixed; inset: 0; z-index: 60; display: grid; place-items: center;
-    background: rgba(8,11,16,.68); backdrop-filter: blur(6px); padding: 20px;
+    background: var(--scrim); backdrop-filter: blur(3px); padding: 20px;
+    animation: fadeIn .15s ease;
   }
   .modal-card {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 18px;
-    padding: 24px; width: 100%; max-width: 460px; box-shadow: 0 24px 60px rgba(0,0,0,.5);
+    background: var(--panel); border: 1px solid var(--border-2); border-radius: 16px;
+    padding: 22px; width: 100%; max-width: 460px; box-shadow: var(--shadow-pop);
+    animation: modalIn .2s var(--ease);
   }
-  /* The cover picker is the one dialog whose content is pictures, and two
-     columns of box art is not enough to choose between them. */
-  .modal-card.wide { max-width: 780px; }
-  .modal-card h3 { margin: 0 0 10px; font-size: 18px; word-break: break-word; }
-  .modal-body { font-size: 13.5px; color: var(--muted); line-height: 1.65; }
+  .modal-card.wide { max-width: 800px; }
+  .modal-card h3 { margin: 0 0 8px; font-size: 18px; font-weight: 600; word-break: break-word; }
+  .modal-body { font-size: 13.5px; color: var(--muted); line-height: 1.6; }
   .modal-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
-  .modal-actions button { width: 100%; justify-content: center; padding: 11px 14px; }
+  .modal-actions button { width: 100%; height: 40px; }
+  @keyframes fadeIn { from { opacity: 0; } }
+  @keyframes modalIn { from { opacity: 0; transform: translateY(8px) scale(.985); } }
 
-  header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 24px; border-bottom: 1px solid var(--border);
-    background: rgba(14,17,22,.7); backdrop-filter: blur(8px);
-    position: sticky; top: 0; z-index: 20;
-  }
-  .brand { display: flex; align-items: center; gap: 12px; }
-  .logo {
-    width: 40px; height: 40px; border-radius: 10px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    display: grid; place-items: center; font-size: 22px;
-    box-shadow: var(--shadow);
-  }
-  .brand h1 { font-size: 18px; margin: 0; letter-spacing: .3px; }
-  .brand p { font-size: 12px; margin: 0; color: var(--muted); }
-
-  .userbox { display: flex; align-items: center; gap: 12px; }
-  .userbox img { width: 32px; height: 32px; border-radius: 50%; }
-  .userbox .uname { font-size: 13px; color: var(--muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-  /* ---- App shell: collapsible sidebar + offset content ---- */
+  /* ---------------------------------------------------------- sidebar */
   .sidebar {
-    width: 236px; background: var(--panel);
+    width: 236px; background: var(--chrome);
     border-right: 1px solid var(--border);
     display: flex; flex-direction: column;
     position: fixed; left: 0; top: 0; height: 100vh; z-index: 30;
@@ -126,369 +214,385 @@
   }
   .sidebar.collapsed { width: 68px; }
 
-  .sb-head { display: flex; align-items: center; gap: 10px; padding: 16px 14px; min-height: 68px; }
-  .sb-logo {
-    width: 40px; height: 40px; flex-shrink: 0;
-    display: grid; place-items: center;
-  }
+  .sb-head { display: flex; align-items: center; gap: 10px; padding: 16px 16px 12px; min-height: 62px; }
+  .sb-logo { width: 30px; height: 30px; flex-shrink: 0; display: grid; place-items: center; }
   .sb-logo svg { display: block; }
-  .sb-title { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; }
-  .sb-title small { display: block; font-size: 11px; color: var(--muted); font-weight: 500; }
+  .sb-title { font: 600 14px/1.2 var(--font-display); white-space: nowrap; overflow: hidden; }
+  .sb-title small { display: block; font: 400 11.5px var(--font); color: var(--faint); margin-top: 1px; }
 
-  .sb-toggle {
-    margin: 0 10px 8px; background: var(--panel-2); border: 1px solid var(--border);
-    color: var(--muted); border-radius: 9px; padding: 7px; font-size: 13px;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
-  .sb-toggle:hover { color: var(--text); }
-
-  /* The nav is the part that scrolls: pinned games and ten consoles can
-     easily outrun a short viewport, and the footer must stay put. */
   .sb-nav {
-    padding: 6px 10px; display: flex; flex-direction: column; gap: 3px;
+    padding: 4px 10px 10px; display: flex; flex-direction: column; gap: 2px;
     flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
   }
-  .sb-nav::-webkit-scrollbar { width: 8px; }
-  .sb-nav::-webkit-scrollbar-thumb { background: var(--panel-2); border-radius: 8px; }
-  .sb-group { display: flex; flex-direction: column; gap: 3px; }
+  .sb-group { display: flex; flex-direction: column; gap: 2px; }
+  /* A long list scrolls; it never squashes its rows to fit. */
+  .sb-nav > *, .sb-group > *, .sb-foot > * { flex-shrink: 0; }
   .sb-sec {
-    font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted);
-    padding: 14px 10px 6px; font-weight: 700; white-space: nowrap; overflow: hidden;
+    font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint);
+    padding: 14px 10px 6px; font-weight: 600; white-space: nowrap; overflow: hidden;
   }
   .sb-item {
-    display: flex; align-items: center; gap: 12px; width: 100%;
-    background: none; color: var(--muted); border-radius: 10px;
-    padding: 10px 11px; font-size: 14px; text-align: left; white-space: nowrap; overflow: hidden;
+    position: relative;
+    display: flex; align-items: center; justify-content: flex-start; gap: 10px; width: 100%;
+    background: none; color: var(--muted); border-radius: 8px; border: 0;
+    height: 36px; padding: 0 10px; font-size: 13.5px; font-weight: 500;
+    text-align: left; white-space: nowrap; overflow: hidden;
   }
-  .sb-item .sb-ico { width: 22px; flex-shrink: 0; display: grid; place-items: center; font-size: 16px; }
-  /* Game names run long; clip rather than let a row break the column. */
+  .sb-item .sb-ico { width: 20px; flex-shrink: 0; display: grid; place-items: center; }
+  .sb-item .sb-ico .ico { width: 17px; height: 17px; vertical-align: 0; }
   .sb-item .sb-label { overflow: hidden; text-overflow: ellipsis; }
-  .sb-item:hover { background: var(--panel-2); color: var(--text); }
-  .sb-item.on { background: rgba(124,92,255,.16); color: #c7b8ff; }
-  .sb-item .sb-count {
-    margin-left: auto; font-size: 11px; font-weight: 700; color: var(--muted);
-    background: var(--panel-2); border-radius: 20px; padding: 2px 8px;
+  .sb-item:hover { background: var(--hover); color: var(--text); }
+  .sb-item.on { background: var(--panel-2); color: var(--text); overflow: visible; }
+  .sb-item.on::before {
+    content: ""; position: absolute; left: -10px; top: 9px; bottom: 9px; width: 3px;
+    border-radius: 0 3px 3px 0; background: var(--accent);
   }
+  .sb-item .sb-count {
+    margin-left: auto; font-size: 12px; font-weight: 500; color: var(--faint);
+    font-variant-numeric: tabular-nums;
+  }
+  /* "Add game": the one thing the sidebar exists to start. */
+  .sb-item.sb-add {
+    background: var(--accent); color: var(--accent-ink); font-weight: 600;
+    justify-content: center; margin: 2px 0 6px; height: 36px;
+  }
+  .sb-item.sb-add:hover, .sb-item.sb-add.on { background: var(--accent-hover); color: var(--accent-ink); }
+  .sb-item.sb-add.on::before { display: none; }
+  .sb-item.sb-add .sb-ico { width: auto; }
 
-  /* Trailing control on a nav row. Counts sit quietly; the unpin button
-     stays hidden until you're actually on the row, so the pinned list reads
-     as names rather than a column of buttons. */
   .sb-item .sb-pin {
     margin-left: auto; flex-shrink: 0; opacity: 0; transition: opacity .12s;
-    font-size: 12px; color: var(--muted); padding: 2px 5px; border-radius: 6px; background: none;
+    display: grid; place-items: center; color: var(--faint); padding: 3px; border-radius: 6px;
   }
-  .sb-item:hover .sb-pin { opacity: .75; }
-  .sb-item .sb-pin:hover { opacity: 1; color: #ff8f8f; background: var(--panel); }
+  .sb-item .sb-pin .ico { width: 13px; height: 13px; vertical-align: 0; }
+  .sb-item:hover .sb-pin { opacity: .8; }
+  .sb-item .sb-pin:hover { opacity: 1; color: var(--danger); background: var(--panel-3); }
   .sb-ico-img { display: grid; place-items: center; }
-  .sb-empty {
-    font-size: 11px; color: var(--muted); padding: 2px 11px 6px;
-    line-height: 1.5; white-space: normal;
-  }
+  .sb-empty { font-size: 12px; color: var(--faint); padding: 0 10px 6px; line-height: 1.5; white-space: normal; }
   .sidebar.collapsed .sb-empty { display: none; }
 
-  .sb-foot { padding: 10px; border-top: 1px solid var(--border); }
+  .sb-foot { padding: 8px 10px 10px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px; }
+  .sb-toggle {
+    background: none; color: var(--faint); border: 0; height: 32px; padding: 0 10px; font-size: 12.5px;
+    justify-content: flex-start; gap: 10px; border-radius: 8px;
+  }
+  .sb-toggle:hover { color: var(--text); background: var(--hover); }
+  .sb-toggle #sbToggleIcon { width: 20px; display: grid; place-items: center; }
   .sb-user { display: flex; align-items: center; gap: 10px; padding: 8px 10px; overflow: hidden; }
   .sb-user img { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; }
   .sb-user .sb-who { min-width: 0; }
   .sb-user .sb-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sb-user .sb-mail { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user .sb-mail { font-size: 11.5px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  /* Collapsed: icons only */
   .sidebar.collapsed .sb-title,
   .sidebar.collapsed .sb-label,
   .sidebar.collapsed .sb-sec,
   .sidebar.collapsed .sb-count,
   .sidebar.collapsed .sb-who,
   .sidebar.collapsed .sb-pin { display: none; }
-  .sidebar.collapsed .sb-item { justify-content: center; padding: 10px 0; }
-  .sidebar.collapsed .sb-head { justify-content: center; padding: 16px 0; }
+  .sidebar.collapsed .sb-item, .sidebar.collapsed .sb-toggle { justify-content: center; padding: 0; }
+  .sidebar.collapsed .sb-head { justify-content: center; padding: 16px 0 12px; }
   .sidebar.collapsed .sb-user { justify-content: center; padding: 8px 0; }
-  .sidebar.collapsed .sb-toggle { margin: 0 12px 8px; }
 
-  main { max-width: 1000px; margin: 0 auto; padding: 24px; }
-  main#app { margin: 0 0 0 236px; max-width: 1180px; transition: margin-left .16s ease; }
+  /* -------------------------------------------------------------- page */
+  main { max-width: 1000px; margin: 0 auto; padding: 28px 32px; }
+  main#app { margin: 0 0 0 236px; max-width: 1180px; transition: margin-left .16s ease; padding-bottom: 60px; }
   body.sb-collapsed main#app { margin-left: 68px; }
-  /* A wide window: the page sits in the middle of the room beside the sidebar,
-     not pressed up against it with the rest of the screen left empty. 1132px is
-     the width its content has always had (1180 less the padding). */
   @media (min-width: 961px) {
     main#app {
       max-width: none;
-      padding-left: max(24px, calc((100% - 236px - 1132px) / 2));
-      padding-right: max(24px, calc((100% - 236px - 1132px) / 2));
+      padding-left: max(32px, calc((100% - 236px - 1132px) / 2));
+      padding-right: max(32px, calc((100% - 236px - 1132px) / 2));
       transition: margin-left .16s ease, padding-left .16s ease, padding-right .16s ease;
     }
     body.sb-collapsed main#app {
-      padding-left: max(24px, calc((100% - 68px - 1132px) / 2));
-      padding-right: max(24px, calc((100% - 68px - 1132px) / 2));
+      padding-left: max(32px, calc((100% - 68px - 1132px) / 2));
+      padding-right: max(32px, calc((100% - 68px - 1132px) / 2));
     }
   }
-  /* Login gate */
+
+  /* ------------------------------------------------------------ gates */
   .gate {
-    min-height: 70vh; display: grid; place-items: center; text-align: center;
+    min-height: 100vh; display: grid; place-items: center; padding: 40px 20px;
+    background: radial-gradient(800px 420px at 50% 0%, rgba(255, 160, 51, .07), transparent 70%);
   }
   .gate-card {
     background: var(--panel); border: 1px solid var(--border);
-    border-radius: 20px; padding: 48px 40px; max-width: 460px;
-    box-shadow: var(--shadow);
+    border-radius: 20px; padding: 34px 34px 28px; width: 100%; max-width: 480px;
+    box-shadow: var(--shadow); text-align: left;
   }
-  .gate-card .biglogo {
-    width: 92px; height: 92px; margin: 0 auto 18px;
-    display: grid; place-items: center;
-  }
+  .gate-card .biglogo { width: 48px; height: 48px; margin: 0 0 18px; display: grid; place-items: center; }
   .gate-card .biglogo svg { display: block; }
-  .build-tag {
-    margin-top: 18px; font-size: 11px; color: var(--muted); opacity: .65;
-    letter-spacing: .04em;
+  .gate-card h2 { margin: 0 0 6px; font-size: 22px; font-weight: 600; }
+  .gate-card p { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 0 0 22px; }
+  .build-tag { margin-top: 18px; font-size: 11px; color: var(--faint); letter-spacing: .04em; text-align: center; }
+  .gate-restoring { color: var(--muted); font-size: 13px; margin-top: 18px; display: flex; align-items: center; gap: 8px; }
+
+  /* The sign-in gate splits in two on a wide screen, like the app's. */
+  .gate.gate-main { padding: 0; place-items: stretch; background: none; }
+  .gate-split { display: grid; grid-template-columns: minmax(380px, 1.05fr) minmax(380px, 1fr); min-height: 100vh; }
+  .gate-art {
+    position: relative; overflow: hidden; padding: 56px;
+    display: flex; align-items: center;
+    background:
+      radial-gradient(900px 500px at 0% 100%, rgba(255, 160, 51, .13), transparent 60%),
+      linear-gradient(180deg, var(--chrome), var(--bg-sunk));
+    border-right: 1px solid var(--border);
   }
-  .gate-card h2 { margin: 0 0 8px; font-size: 24px; }
-  .gate-card p { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 0 0 28px; }
-  .gbtn {
-    background: white; color: #3c4043; display: inline-flex; align-items: center; gap: 12px;
-    padding: 12px 20px; border-radius: 10px; font-weight: 600; font-size: 15px;
-    box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  .gate-art::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image: radial-gradient(var(--border) 1px, transparent 1px); background-size: 22px 22px;
+    -webkit-mask-image: linear-gradient(180deg, transparent, #000 40%, #000 70%, transparent);
+    mask-image: linear-gradient(180deg, transparent, #000 40%, #000 70%, transparent);
+    opacity: .55;
   }
-  .gbtn:hover { filter: brightness(.97); }
-  .gbtn svg { width: 20px; height: 20px; }
-  .gate-restoring { color: var(--muted); font-size: 13px; margin-top: 18px; }
+  .ga-inner { position: relative; z-index: 1; max-width: 500px; }
+  .ga-title { font-size: 34px; line-height: 1.12; font-weight: 600; letter-spacing: -.025em; margin: 0; text-wrap: balance; }
+  .ga-lede { margin: 14px 0 0; color: var(--muted); font-size: 15px; max-width: 440px; line-height: 1.5; }
+  .ga-points { list-style: none; margin: 30px 0 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+  .ga-points li { display: flex; gap: 14px; align-items: flex-start; }
+  .ga-points li > .ico {
+    width: 34px; height: 34px; padding: 8px; border-radius: 10px;
+    background: var(--panel-2); border: 1px solid var(--border-2); color: var(--accent-text);
+  }
+  .ga-points b { display: block; font-size: 14px; }
+  .ga-points span { display: block; color: var(--muted); font-size: 13px; margin-top: 1px; }
+  .ga-log {
+    margin-top: 36px; padding: 8px; border-radius: 16px; border: 1px solid var(--border-2);
+    background: var(--panel); box-shadow: var(--shadow);
+  }
+  .ga-log-row { display: flex; align-items: center; gap: 12px; padding: 10px; font-size: 13.5px; }
+  .ga-log-row + .ga-log-row { border-top: 1px solid var(--border); }
+  .ga-log-row > div { flex: 1; min-width: 0; }
+  .ga-log-row b { display: block; font-weight: 600; }
+  .ga-log-row small { display: block; color: var(--faint); font-size: 12px; }
+  .gate-main .gate-form { display: grid; place-items: center; padding: 40px; }
+  .gate-main .gate-card { background: none; border: 0; box-shadow: none; padding: 0; max-width: 380px; }
 
   /* Account login / sign-up */
   .auth-tabs {
-    display: flex; gap: 6px; background: var(--panel-2); border: 1px solid var(--border);
-    border-radius: 12px; padding: 5px; margin-bottom: 22px;
+    display: flex; gap: 2px; background: var(--bg-sunk); border: 1px solid var(--border);
+    border-radius: 9px; padding: 3px; margin-bottom: 18px;
   }
-  .auth-tab {
-    flex: 1; background: none; color: var(--muted); border-radius: 9px; padding: 9px 10px;
-    font-size: 14px;
-  }
-  .auth-tab.on { background: var(--accent); color: #fff; }
+  .auth-tab { flex: 1; background: none; color: var(--muted); border-radius: 6px; height: 30px; font-size: 13px; border: 0; }
+  .auth-tab.on { background: var(--panel-3); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, .25); }
   .auth-tab:not(.on):hover { color: var(--text); }
 
   #authForm { text-align: left; }
   #authForm .field { margin-bottom: 14px; }
-  #authForm input {
-    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
-    border-radius: 10px; padding: 12px 13px; font-size: 15px; font-family: inherit; width: 100%;
+  #authForm input { height: 40px; font-size: 14.5px; width: 100%; }
+  #authSubmit { width: 100%; height: 44px; font-size: 15px; margin-top: 4px; border-radius: 12px; }
+  .auth-error, .auth-note {
+    padding: 11px 13px; border-radius: 10px; font-size: 13px; line-height: 1.45; margin-bottom: 14px; text-align: left;
   }
-  #authForm input:focus { outline: none; border-color: var(--accent); }
-  #authForm .field label {
-    font-size: 12px; color: var(--muted); font-weight: 600;
-    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; display: block;
-  }
-  #authSubmit { width: 100%; padding: 13px; font-size: 15px; margin-top: 4px; }
-  .auth-error {
-    background: rgba(255,107,107,.1); border: 1px solid rgba(255,107,107,.4); color: #ff9d9d;
-    padding: 11px 13px; border-radius: 10px; font-size: 13px; line-height: 1.45;
-    margin-bottom: 14px; text-align: left;
-  }
-  .auth-note {
-    background: rgba(63,185,80,.1); border: 1px solid rgba(63,185,80,.35); color: #86e29b;
-    padding: 11px 13px; border-radius: 10px; font-size: 13px; line-height: 1.45;
-    margin-bottom: 14px; text-align: left;
-  }
+  .auth-error { background: var(--danger-soft); color: var(--danger); }
+  .auth-note { background: var(--ok-soft); color: var(--ok); }
   .linklike {
-    background: none; color: var(--muted); font-size: 13px; font-weight: 500;
-    padding: 8px 4px; text-decoration: underline; text-underline-offset: 3px;
+    background: none; border: 0; color: var(--accent-text); font-size: 13px; font-weight: 500;
+    height: auto; padding: 8px 4px; display: inline-flex;
   }
-  .linklike:hover { color: var(--accent-2); }
-  .pw-hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .linklike:hover { text-decoration: underline; }
+  #forgotBtn { display: flex; margin: 8px auto 0; }
+  .pw-hint { font-size: 12px; color: var(--faint); margin-top: 6px; }
 
   /* Link-your-Drive step */
-  .link-steps {
-    text-align: left; font-size: 13px; color: var(--muted); line-height: 1.6;
-    background: var(--panel-2); border: 1px solid var(--border);
-    border-radius: 12px; padding: 14px 16px; margin-bottom: 22px;
-  }
-  .link-steps b { color: var(--text); }
+  .steps { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 0 0 24px; font-size: 12.5px; font-weight: 600; color: var(--faint); }
+  .steps li { display: flex; align-items: center; gap: 7px; }
+  .steps li + li::before { content: ""; width: 20px; height: 1px; background: var(--border-3); margin-right: 4px; }
+  .steps .step-n { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid var(--border-3); font-size: 11px; }
+  .steps .step-n .ico { width: 12px; height: 12px; vertical-align: 0; }
+  .steps li.on { color: var(--text); }
+  .steps li.on .step-n { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+  .steps li.done { color: var(--muted); }
+  .steps li.done .step-n { border-color: var(--ok); background: var(--ok-soft); color: var(--ok); }
+  .drive-visual { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+  .drive-visual > span:first-child svg { display: block; }
+  .dv-line { display: flex; gap: 5px; }
+  .dv-line i { width: 6px; height: 6px; border-radius: 50%; background: var(--border-3); animation: dv 1.4s ease-in-out infinite; }
+  .dv-line i:nth-child(2) { animation-delay: .2s; }
+  .dv-line i:nth-child(3) { animation-delay: .4s; }
+  @keyframes dv { 0%, 100% { background: var(--border-3); } 50% { background: var(--accent); } }
+  .dv-drive { width: 52px; height: 52px; border-radius: 15px; display: grid; place-items: center; background: var(--panel-2); border: 1px solid var(--border-2); }
+  .dv-drive .ico { width: 24px; height: 24px; vertical-align: 0; }
+  .link-steps { font-size: 14px; color: var(--muted); line-height: 1.55; margin-bottom: 22px; }
+  .link-steps b { color: var(--text); font-weight: 600; }
+  .link-status { font-size: 13px; color: var(--muted); margin-top: 14px; min-height: 18px; display: flex; align-items: center; gap: 8px; }
+  .stage-note { display: flex; align-items: center; gap: 8px; margin-top: 18px; color: var(--faint); font-size: 12.5px; }
+  .stage-note .ico { color: var(--ok); width: 15px; height: 15px; }
+  .stage-foot { display: flex; justify-content: flex-end; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); }
   .who-chip {
-    display: inline-flex; align-items: center; gap: 8px; background: var(--panel-2);
-    border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px;
-    font-size: 13px; color: var(--muted); margin-bottom: 20px;
+    display: inline-block; background: var(--panel-2);
+    border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px;
+    font-size: 12.5px; color: var(--muted); margin-bottom: 14px;
   }
-  .who-chip b { color: var(--text); }
+  .who-chip:empty { display: none; }
+  .who-chip b { color: var(--text); font-weight: 600; }
 
   .config-warn {
-    background: #2a1f12; border: 1px solid #6b4a1f; color: #f0c674;
-    padding: 14px 16px; border-radius: 12px; font-size: 13px; line-height: 1.5;
-    margin-bottom: 20px; text-align: left;
+    background: var(--accent-soft); border: 1px solid var(--accent-line); color: var(--text);
+    padding: 14px 16px; border-radius: 12px; font-size: 13px; line-height: 1.5; margin-bottom: 20px; text-align: left;
   }
-  .config-warn code { background: rgba(0,0,0,.35); padding: 1px 6px; border-radius: 5px; }
 
-  /* Upload panel */
+  /* ----------------------------------------------------------- panels */
   .panel {
     background: var(--panel); border: 1px solid var(--border);
-    border-radius: 16px; padding: 20px; margin-bottom: 24px; box-shadow: var(--shadow);
+    border-radius: 16px; padding: 20px; margin-bottom: 20px;
   }
-  .panel h3 { margin: 0 0 16px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+  .panel h3 { margin: 0 0 14px; font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+  .panel h3 .ico { color: var(--muted); width: 18px; height: 18px; }
 
   .dropzone {
-    border: 2px dashed var(--border); border-radius: 14px; padding: 32px;
-    text-align: center; color: var(--muted); transition: border .15s, background .15s;
-    cursor: pointer;
+    border: 1.5px dashed var(--border-3); border-radius: 16px; padding: 32px 24px;
+    text-align: center; color: var(--muted); background: var(--bg-sunk);
+    transition: border-color .15s, background .15s; cursor: pointer;
   }
-  .dropzone.drag { border-color: var(--accent); background: rgba(124,92,255,.08); color: var(--text); }
-  .dropzone .dz-icon { font-size: 34px; margin-bottom: 8px; }
-  .dropzone b { color: var(--text); }
+  .dropzone:hover, .dropzone.drag { border-color: var(--accent); background: var(--accent-soft); color: var(--text); }
+  .dropzone .dz-icon {
+    width: 52px; height: 52px; margin: 0 auto 12px; border-radius: 15px; display: grid; place-items: center;
+    background: var(--panel-2); border: 1px solid var(--border-2); color: var(--accent-text);
+  }
+  .dropzone .dz-icon .ico { width: 24px; height: 24px; vertical-align: 0; }
+  .dropzone b { color: var(--text); font-weight: 600; }
   .dz-or { margin-top: 14px; font-size: 12px; }
-  .dz-or button { margin-top: 6px; }
+  .dz-or button { margin-top: 8px; }
 
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
   .field { display: flex; flex-direction: column; gap: 6px; }
-  .field label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
-  .field input, .field select {
-    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
-    border-radius: 10px; padding: 10px 12px; font-size: 14px; font-family: inherit;
+  .field label { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+  .field input, .field select, #authForm input {
+    background: var(--bg-sunk); border: 1px solid var(--border-2); color: var(--text);
+    border-radius: 8px; height: 38px; padding: 0 12px; font-size: 14px; font-family: inherit;
+    transition: border-color .12s, box-shadow .12s, background .12s;
   }
-  .field input:focus, .field select:focus { outline: none; border-color: var(--accent); }
-  .field .hint { font-size: 11px; color: var(--muted); }
+  .field input::placeholder { color: var(--faint); }
+  .field input:hover, .field select:hover { border-color: var(--border-3); }
+  .field input:focus, .field select:focus, #authForm input:focus {
+    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); background: var(--panel);
+  }
+  .field .hint { font-size: 12px; color: var(--faint); }
   .file-chip {
     display: inline-flex; align-items: center; gap: 8px; background: var(--panel-2);
-    border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; font-size: 13px; margin-top: 12px;
+    border: 1px solid var(--border-2); border-radius: 8px; padding: 7px 12px; font-size: 13px; margin-top: 12px;
   }
-  .file-chip .x { color: var(--muted); cursor: pointer; font-weight: bold; }
+  .file-chip .x { color: var(--faint); cursor: pointer; display: grid; place-items: center; }
+  .file-chip .x:hover { color: var(--text); }
   .upload-actions { display: flex; gap: 12px; margin-top: 18px; align-items: center; }
 
-  /* Console pills */
+  /* ----------------------------------------------------- console bits */
   .cpill {
-    display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 20px;
-    font-size: 11px; font-weight: 700; letter-spacing: .2px; color: #fff;
-    background: #3a4453; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 6px;
+    font-size: 11.5px; font-weight: 600; color: #fff; background: #3a4453; white-space: nowrap;
   }
-  /* Console icons sit inline with their labels everywhere they appear. */
   .cpill svg, .chip svg, .gc-emu-tag svg { vertical-align: -2px; }
   .chip { display: inline-flex; align-items: center; gap: 6px; }
   .gc-emu-tag { display: inline-flex; align-items: center; gap: 5px; }
-  .console-card .cc-icon { display: grid; place-items: center; }
-  .console-card { align-items: center; }
 
-  /* Console picker grid (onboarding + account) */
-  .console-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px;
-  }
+  /* console tiles — onboarding, settings, and the change-console picker */
+  .console-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
   .console-card {
-    background: var(--panel-2); border: 2px solid var(--border); border-radius: 14px;
-    padding: 14px; text-align: left; cursor: pointer; display: flex; gap: 12px;
-    transition: border .15s, background .15s, transform .1s;
+    position: relative; display: flex; align-items: center; gap: 11px;
+    padding: 10px 12px; min-height: 54px; cursor: pointer; text-align: left;
+    border-radius: 12px; border: 1px solid var(--border-2); background: var(--panel-2);
+    transition: border-color .12s, background .12s;
   }
-  .console-card:hover { transform: translateY(-2px); }
-  .console-card .cc-icon { font-size: 26px; line-height: 1; }
-  .console-card .cc-name { font-weight: 700; font-size: 14px; }
-  .console-card.on { border-color: var(--accent); background: rgba(124,92,255,.12); }
+  .console-card:hover { border-color: var(--border-3); }
+  .console-card .cc-icon { display: grid; place-items: center; line-height: 0; }
+  .console-card .cc-name { font-weight: 500; font-size: 13.5px; line-height: 1.25; }
+  .console-card > div:nth-child(2) { flex: 1; min-width: 0; }
+  .console-card.on { border-color: var(--accent); background: var(--accent-soft); }
   .console-card .cc-check {
-    margin-left: auto; width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
-    border: 2px solid var(--border); display: grid; place-items: center; font-size: 12px; color: transparent;
+    margin-left: auto; width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+    border: 1.5px solid var(--border-3); display: grid; place-items: center; font-size: 11px; color: transparent;
   }
-  .console-card.on .cc-check { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .console-card.on .cc-check { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); font-weight: 700; }
 
-  /* Onboarding */
-  .onboard { max-width: 900px; margin: 0 auto; }
-  .onboard-head { text-align: center; margin-bottom: 26px; }
-  .onboard-head h2 { margin: 0 0 8px; font-size: 26px; }
-  .onboard-head p { color: var(--muted); font-size: 14px; margin: 0; line-height: 1.55; }
-  .onboard-foot {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    margin-top: 22px; flex-wrap: wrap;
-  }
+  .onboard { max-width: 880px; margin: 20px auto 0; }
+  .onboard-head { margin-bottom: 24px; }
+  .onboard-head h2 { margin: 0 0 8px; font-size: 26px; font-weight: 600; }
+  .onboard-head p { color: var(--muted); font-size: 14.5px; margin: 0; line-height: 1.55; max-width: 620px; }
+  .onboard-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
   .onboard-foot .of-count { font-size: 13px; color: var(--muted); }
 
-  /* Filter chips */
   .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
   .chip {
-    background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
-    border-radius: 20px; padding: 5px 13px; font-size: 12px; font-weight: 600; cursor: pointer;
+    background: var(--panel-2); border: 1px solid var(--border-2); color: var(--muted);
+    border-radius: 14px; height: 28px; padding: 0 12px; font-size: 12.5px; font-weight: 500;
   }
   .chip:hover { color: var(--text); }
-  .chip.on { background: rgba(124,92,255,.18); border-color: var(--accent); color: #c7b8ff; }
+  .chip.on { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
 
-  /* Games grid */
-  .section-title { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 16px; }
-  .section-title h3 { margin: 0; font-size: 16px; }
-  .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(190px, 100%), 1fr)); gap: 18px; }
+  /* ------------------------------------------------------------ games */
+  .section-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 6px 0 22px; flex-wrap: wrap; }
+  .section-title h3 { margin: 0; font-size: 22px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+  .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(168px, 100%), 1fr)); gap: 26px 20px; }
   .game-card {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
-    cursor: pointer; transition: transform .12s, border .15s, box-shadow .15s; overflow: hidden;
+    background: none; border: 0; cursor: pointer; display: flex; flex-direction: column; min-width: 0;
   }
-  .game-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 12px 30px rgba(124,92,255,.20); }
-  /* One frame for every cover in the app: the proportions of a game case.
+  .game-card .gc-cover {
+    position: relative; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 0 0 1px var(--border);
+    transition: transform .18s var(--ease), box-shadow .18s var(--ease);
+  }
+  .game-card:hover .gc-cover { transform: translateY(-3px); box-shadow: 0 0 0 1px var(--border-3), var(--shadow); }
 
-     Box art comes in every shape — a 3DS box is nearly square, a Wii case is
-     tall, a hand-picked picture can be anything — and cropping them all to
-     one shape cut the titles off. So the art is fitted inside the frame whole,
-     never cropped, over a blurred wash of itself that fills whatever space is
-     left. Every cover ends up exactly the same size, and none of it is lost.
-
-     The art arrives as --cover on the element, and .has-art turns it on. */
+  /* One frame for every cover: the art shown whole, over a blur of itself, so
+     a square 3DS box and a tall Wii case end up the same size. The art arrives
+     as --cover on the element; .has-art turns it on. */
   .cover-frame {
     position: relative; aspect-ratio: 5 / 7; overflow: hidden;
-    background: linear-gradient(160deg, #2c333d, #1b2029);
+    background:
+      repeating-linear-gradient(135deg, transparent 0 10px, rgba(255, 255, 255, .02) 10px 11px),
+      var(--panel-2);
   }
   .cover-frame::before, .cover-frame::after {
-    content: ""; position: absolute; pointer-events: none;
-    opacity: 0; transition: opacity .25s ease;
+    content: ""; position: absolute; pointer-events: none; opacity: 0; transition: opacity .25s ease;
   }
-  .cover-frame::before {                       /* the wash */
-    inset: -14%;
-    background: var(--cover) center / cover no-repeat;
-    filter: blur(20px) brightness(.5) saturate(1.25);
-  }
-  .cover-frame::after {                        /* the art, whole */
-    inset: 0;
-    background: var(--cover) center / contain no-repeat;
-  }
+  .cover-frame::before { inset: -14%; background: var(--cover) center / cover no-repeat; filter: blur(20px) brightness(.6) saturate(1.2); }
+  .cover-frame::after { inset: 0; background: var(--cover) center / contain no-repeat; }
   .cover-frame.has-art::before, .cover-frame.has-art::after { opacity: 1; }
   .cover-frame.has-art .no-cover-label { display: none; }
-  /* A game without a cover says so, plainly, on gray — not a guessed emoji. */
   .no-cover-label {
     position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
-    font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
-    color: #737e8c;
+    font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--faint);
   }
+  /* In the library a game with no cover shows its console and its name instead. */
+  .no-cover-label.nc-rich {
+    display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 10px;
+    padding: 12px; text-transform: none; letter-spacing: -.005em; text-align: left;
+    font: 600 14px/1.2 var(--font-display); color: var(--text);
+    background: linear-gradient(160deg, color-mix(in srgb, var(--console, #555) 32%, transparent), transparent 62%);
+  }
+  .no-cover-label.nc-rich span { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 
-  .game-card .gc-cover { position: relative; }
-  .game-card .gc-cover .gc-emu-tag {
-    position: absolute; top: 8px; right: 8px; z-index: 2;
-    font-size: 10px; font-weight: 700; letter-spacing: .3px;
-    color: #fff; padding: 3px 9px; border-radius: 20px; backdrop-filter: blur(4px);
-    box-shadow: 0 2px 8px rgba(0,0,0,.35);
+  .game-card .gc-body { padding: 10px 2px 0; }
+  .game-card .gc-name {
+    font-weight: 600; font-size: 13.5px; line-height: 1.3;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word;
   }
-  .game-card .gc-body { padding: 14px 16px; }
-  .game-card .gc-name { font-weight: 700; font-size: 15px; line-height: 1.25; word-break: break-word; }
-  .game-card .gc-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  /* Pin toggle. Hidden until hover so the grid stays about the cover art —
-     except once pinned, when it has to stay visible to explain the state. */
+  .game-card .gc-meta { font-size: 12px; color: var(--faint); margin-top: 5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .gc-meta .gc-con { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-weight: 600; }
   .game-card .gc-pin {
     position: absolute; top: 8px; left: 8px; z-index: 2;
-    /* padding:0 matters more than it looks: buttons carry 10px/16px by default,
-       which is wider than this button is, so the content box collapsed and the
-       pin was pushed nine pixels right of the circle it sits in. */
-    width: 30px; height: 30px; padding: 0; border-radius: 50%;
-    display: grid; place-items: center;
-    font-size: 13px; line-height: 1; color: #fff; background: rgba(8,11,16,.6);
+    width: 26px; height: 26px; padding: 0; border-radius: 50%; border: 0;
+    color: #f1efe9; background: rgba(14, 14, 13, .72); backdrop-filter: blur(6px);
     opacity: 0; transition: opacity .12s, transform .12s, background .12s;
-    backdrop-filter: blur(4px); box-shadow: 0 2px 8px rgba(0,0,0,.35);
   }
+  .game-card .gc-pin .ico { width: 13px; height: 13px; vertical-align: 0; }
   .game-card:hover .gc-pin { opacity: 1; }
-  .game-card .gc-pin.on { opacity: 1; background: var(--accent); }
-  .game-card .gc-pin:hover { transform: scale(1.12); }
-  /* Touch screens have no hover, so the control would never appear. */
+  .game-card .gc-pin.on { opacity: 1; background: var(--accent); color: var(--accent-ink); }
+  .game-card .gc-pin:hover { transform: scale(1.1); }
   @media (hover: none) {
     .game-card .gc-pin { opacity: 1; }
     .sb-item .sb-pin { opacity: .75; }
   }
 
-  /* Grid / Shelf switch */
   .view-toggle {
-    display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px;
-    background: var(--panel-2); border: 1px solid var(--border);
+    display: inline-flex; padding: 3px; gap: 2px; border-radius: 9px;
+    background: var(--bg-sunk); border: 1px solid var(--border);
   }
-  .view-toggle button {
-    display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px;
-    font-size: 12.5px; font-weight: 600; border-radius: 7px;
-    background: transparent; color: var(--muted);
-  }
+  .view-toggle button { height: 26px; padding: 0 10px; font-size: 12.5px; font-weight: 500; border-radius: 6px; background: transparent; color: var(--muted); border: 0; gap: 6px; }
   .view-toggle button:hover { color: var(--text); }
-  .view-toggle button.on { background: #2a3442; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.35); }
-
+  .view-toggle button.on { background: var(--panel-3); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, .25); }
   /* The shelf. */
   .shelf {
     /* Each case carries its own size (see CASE_SIZE); these are the fallback,
@@ -508,7 +612,7 @@
   /* A soft pool of light for the cases to stand in. */
   .shelf-floor {
     position: absolute; left: 50%; bottom: 18px; width: 760px; height: 150px; transform: translateX(-50%);
-    background: radial-gradient(ellipse at center, rgba(124,92,255,.22), rgba(74,210,201,.06) 45%, transparent 70%);
+    background: radial-gradient(ellipse at center, rgba(255,160,51,.16), rgba(255,160,51,.04) 45%, transparent 70%);
     pointer-events: none;
   }
   .shelf-track {
@@ -570,7 +674,7 @@
     background: linear-gradient(#dfe5ec, #a9b2bd);
   }
   .case-back {
-    inset: 0; background: #151a21; border-radius: 3px 5px 5px 3px;
+    inset: 0; background: #171614; border-radius: 3px 5px 5px 3px;
     transform: translateZ(calc(var(--dp) / -2)) rotateY(180deg);
   }
   /* Dimmed per face, not per case — see layoutShelf. filter on the case would
@@ -584,17 +688,17 @@
     position: absolute; top: calc(44px + var(--chmax) / 2); transform: translateY(-50%);
     width: 44px; height: 44px; padding: 0; border-radius: 50%;
     display: grid; place-items: center;
-    background: rgba(22,27,34,.72); color: var(--text); border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--panel) 80%, transparent); color: var(--text); border: 1px solid var(--border-2);
     backdrop-filter: blur(6px); box-shadow: var(--shadow); z-index: 5;
   }
-  .shelf-arrow:hover:not(:disabled) { border-color: var(--accent); color: #fff; }
+  .shelf-arrow:hover:not(:disabled) { border-color: var(--accent); }
   .shelf-arrow:disabled { opacity: .25; }
   .shelf-arrow.prev { left: 8px; }
   .shelf-arrow.next { right: 8px; }
 
   .shelf-caption { text-align: center; margin-top: -54px; position: relative; z-index: 4; padding: 0 60px; }
   .shelf-caption { transition: margin-top .18s ease; }
-  .shelf-title { font-size: 21px; font-weight: 700; line-height: 1.25; word-break: break-word; }
+  .shelf-title { font-family: var(--font-display); font-size: 22px; font-weight: 600; line-height: 1.25; word-break: break-word; }
   .shelf-meta {
     margin-top: 8px; display: flex; justify-content: center; align-items: center;
     gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--muted);
@@ -606,10 +710,11 @@
 
      Above the sidebar and the drawer button, below dialogs and toasts \u2014 so a
      choice or a cover picker opened from inside the case still shows. */
-  .case-layer { position: fixed; inset: 0; z-index: 50; }
+  /* An open case is always dark plastic inside, whatever the page's theme. */
+  .case-layer { position: fixed; inset: 0; z-index: 50; color: var(--text); }
   .case-backdrop {
     position: absolute; inset: 0; opacity: 0;
-    background: radial-gradient(ellipse at 50% 45%, rgba(20,16,44,.72), rgba(4,6,10,.9));
+    background: radial-gradient(ellipse at 50% 45%, rgba(14,13,11,.74), rgba(4,4,3,.92));
     backdrop-filter: blur(4px);
   }
   .shelf.case-is-open .case.front { visibility: hidden; }
@@ -638,12 +743,12 @@
   /* the inside of a case: dark plastic, shadowed into the gutter */
   .page-left {
     border-radius: 16px 3px 3px 16px;
-    background: linear-gradient(90deg, #121821, #1a212b 14%, #1b222c 86%, #0d1116);
+    background: linear-gradient(90deg, #161513, #1d1c19 14%, #1e1d1a 86%, #0e0d0c);
     box-shadow: inset -30px 0 36px -26px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.05);
   }
   .page-right {
     border-radius: 3px 16px 16px 3px;
-    background: linear-gradient(90deg, #0d1116, #1b222c 14%, #1a212b 86%, #121821);
+    background: linear-gradient(90deg, #0e0d0c, #1e1d1a 14%, #1d1c19 86%, #161513);
     box-shadow: inset 30px 0 36px -26px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.05);
   }
   .page-scroll {
@@ -651,10 +756,10 @@
     -webkit-overflow-scrolling: touch;
     padding: 30px 30px 32px 30px;
     /* a default light scrollbar is a white bar down a dark page */
-    scrollbar-width: thin; scrollbar-color: #3a4554 transparent;
+    scrollbar-width: thin; scrollbar-color: #3c3a35 transparent;
   }
   .page-scroll::-webkit-scrollbar { width: 8px; }
-  .page-scroll::-webkit-scrollbar-thumb { background: #3a4554; border-radius: 8px; }
+  .page-scroll::-webkit-scrollbar-thumb { background: #3c3a35; border-radius: 8px; }
   .page-scroll::-webkit-scrollbar-track { background: transparent; }
   /* The inside of the front cover carries a ghost of the cover art, the way a
      printed sleeve shows through clear plastic — and it keeps the left page from
@@ -675,7 +780,7 @@
     position: absolute; top: -16px; right: -16px; z-index: 3;
     width: 40px; height: 40px; padding: 0; border-radius: 50%;
     display: grid; place-items: center; font-size: 15px;
-    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    background: var(--panel-2); border-radius: 50%; color: var(--text); border: 1px solid var(--border);
     box-shadow: var(--shadow);
   }
   .case-close:hover { border-color: var(--accent); }
@@ -686,27 +791,27 @@
   .case-anim { position: absolute; transform-origin: 0 0; transform-style: preserve-3d; }
   .anim-base {
     position: absolute; inset: 0; border-radius: 3px 16px 16px 3px;
-    background: linear-gradient(90deg, #0d1116, #1b222c 14%, #1a212b 86%, #121821);
+    background: linear-gradient(90deg, #0e0d0c, #1e1d1a 14%, #1d1c19 86%, #161513);
   }
   .anim-flap { position: absolute; inset: 0; transform-origin: left center; transform-style: preserve-3d; }
   .flap-out, .flap-in { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
   .flap-out { border-radius: 3px 14px 14px 3px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); }
   .flap-in {
     transform: rotateY(180deg); border-radius: 14px 3px 3px 14px;
-    background: linear-gradient(90deg, #121821, #1a212b 14%, #1b222c 86%, #0d1116);
+    background: linear-gradient(90deg, #161513, #1d1c19 14%, #1e1d1a 86%, #0e0d0c);
   }
 
   /* the tray, and what's sitting in it */
   .case-tray {
     position: relative; display: grid; place-items: center;
     height: 250px; margin-bottom: 20px; border-radius: 16px;
-    background: radial-gradient(ellipse at 50% 55%, #090c11 0%, #10151c 62%, #141a22 100%);
+    background: radial-gradient(ellipse at 50% 55%, #0a0a09 0%, #121110 62%, #171614 100%);
     box-shadow: inset 0 4px 14px rgba(0,0,0,.75), inset 0 -1px 0 rgba(255,255,255,.05);
   }
   /* a disc case has the hub it clips onto */
   .tray-disc::before, .tray-umd::before {
     content: ""; position: absolute; width: 58px; height: 58px; border-radius: 50%;
-    background: radial-gradient(circle, #232b35 0 40%, #161c24 41% 100%);
+    background: radial-gradient(circle, #272622 0 40%, #191816 41% 100%);
     box-shadow: 0 0 0 6px rgba(255,255,255,.03);
   }
   .case-media {
@@ -722,8 +827,8 @@
   .media-real.media-card-switch { width: 134px; }
   .media-real.media-card-vita { width: 130px; }
   .media-real.media-cart-gba, .media-real.media-cart-gb { width: 168px; }
-  .case-media svg text { font-family: 'Segoe UI', system-ui, sans-serif; }
-  .media-hole { fill: #0b0f14; }
+  .case-media svg text { font-family: var(--font); }
+  .media-hole { fill: #0b0b0a; }
   .media-disc { width: 214px; animation-name: discIn; }
   .media-umd { width: 150px; animation-name: discIn; }
   .media-cart-gba { width: 250px; }
@@ -739,8 +844,8 @@
     to { opacity: 1; transform: none; }
   }
   .case-list-head {
-    font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--muted); margin: 0 2px 12px;
+    font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--faint); margin: 0 2px 12px;
   }
 
   /* The page's own pieces, now living in half the width they were drawn for. */
@@ -776,274 +881,242 @@
 
   /* Changing a game's console: the button beside its pill, and the picker. */
   .cpill-edit {
-    padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600;
-    background: transparent; color: var(--muted); border: 1px dashed #3b4654;
+    height: 22px; padding: 0 9px; border-radius: 6px; font-size: 11.5px; font-weight: 500;
+    background: transparent; color: var(--muted); border: 1px dashed var(--border-3);
   }
   .cpill-edit:hover { color: var(--text); border: 1px solid var(--accent); }
-  .console-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
-    gap: 8px; margin-top: 14px;
-  }
+  .modal-card .console-grid { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); margin-top: 14px; }
   .console-pick {
-    display: flex; flex-direction: column; align-items: center; gap: 7px;
+    display: flex; flex-direction: column; align-items: center; gap: 7px; height: auto;
     padding: 12px 8px 10px; border-radius: 12px; line-height: 1.25; text-align: center;
-    font-size: 12.5px; font-weight: 600;
-    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    font-size: 12.5px; font-weight: 500;
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border-2);
   }
-  .console-pick:hover { border-color: var(--accent); background: #232c38; }
-  .console-pick.on { border-color: var(--accent-2); box-shadow: inset 0 0 0 1px var(--accent-2); }
-  .console-pick small {
-    margin-top: -3px; font-size: 10px; font-weight: 700; letter-spacing: .08em;
-    text-transform: uppercase; color: var(--accent-2);
-  }
+  .console-pick:hover { border-color: var(--border-3); background: var(--panel-3); }
+  .console-pick.on { border-color: var(--accent); background: var(--accent-soft); }
+  .console-pick small { margin-top: -3px; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-text); }
 
-  /* history hero with cover */
-  .history-hero { display: flex; gap: 18px; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; }
+  /* ----------------------------------------------------- game history */
+  .history-hero { display: flex; gap: 24px; align-items: flex-end; margin-bottom: 24px; flex-wrap: wrap; }
   .history-hero .hh-cover {
-    width: 150px; aspect-ratio: 5 / 7; border-radius: 12px; border: 1px solid var(--border);
-    background: linear-gradient(135deg, #232c38, #12161c); background-size: cover; background-position: center;
-    display: grid; place-items: center; font-size: 48px; flex-shrink: 0;
+    width: 160px; aspect-ratio: 5 / 7; border-radius: 12px; flex-shrink: 0;
+    box-shadow: 0 0 0 1px var(--border-2), var(--shadow);
+    display: grid; place-items: center;
   }
   .history-hero .hh-info { flex: 1; min-width: 220px; }
-  .history-hero h3 { margin: 0 0 6px; font-size: 22px; word-break: break-word; }
-  .history-hero .hh-console { margin-bottom: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .history-hero .hh-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .history-hero h3 { margin: 0 0 10px; font-size: 28px; line-height: 1.15; font-weight: 600; letter-spacing: -.02em; word-break: break-word; }
+  .history-hero .hh-console { margin-bottom: 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: var(--faint); }
+  .history-hero .hh-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .cover-input-hidden { display: none; }
 
-  /* The cover picker. The pictures are the answer to the question, so they get
-     the room, and the filename underneath is what tells two regions apart. */
   .cover-note { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 14px; }
-  .cover-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(min(132px, 100%), 1fr));
-    gap: 12px; max-height: 52vh; overflow-y: auto; padding-right: 4px;
-  }
+  .cover-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(128px, 100%), 1fr)); gap: 14px; max-height: 52vh; overflow-y: auto; padding: 3px 4px 3px 3px; }
   .cover-pick {
-    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
-    padding: 8px; display: flex; flex-direction: column; gap: 7px; align-items: center;
-    color: var(--text); text-align: center;
+    background: none; border: 0; padding: 0; height: auto;
+    display: flex; flex-direction: column; gap: 7px; align-items: stretch; color: var(--text); text-align: left;
   }
-  .cover-pick:hover { border-color: var(--accent); background: #232c38; }
-  .cover-pick .cover-frame { width: 100%; border-radius: 6px; }
-  .cover-pick.cover-choice .cover-frame { border: 1px dashed #3b4654; }
+  .cover-pick .cover-frame { width: 100%; border-radius: 10px; box-shadow: 0 0 0 1px var(--border-2); transition: box-shadow .12s, transform .15s var(--ease); }
+  .cover-pick:hover .cover-frame { box-shadow: 0 0 0 2px var(--accent); transform: translateY(-2px); }
+  .cover-pick.cover-choice .cover-frame { background: transparent; box-shadow: none; border: 1.5px dashed var(--border-3); }
   .cover-pick.cover-choice:hover .cover-frame { border-color: var(--accent); }
-  .no-cover-label.cover-plus { font-size: 34px; font-weight: 400; letter-spacing: 0; }
-  /* Direct children only: the frame's own "No cover" label is a span too, and
-     this rule's display would knock it out of its centring. */
+  .no-cover-label.cover-plus { font-size: 30px; font-weight: 300; letter-spacing: 0; }
   .cover-pick > span {
-    font-size: 10.5px; font-weight: 500; color: var(--muted); line-height: 1.35;
-    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+    font-size: 11.5px; color: var(--muted); line-height: 1.35;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
   }
   .folder-note {
-    background: rgba(74,210,201,.08); border: 1px solid rgba(74,210,201,.28); color: var(--accent-2);
-    border-radius: 10px; padding: 10px 13px; font-size: 12px; line-height: 1.5; margin-bottom: 16px;
+    display: flex; gap: 10px; align-items: flex-start;
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
+    border-radius: 12px; padding: 11px 14px; font-size: 13px; line-height: 1.55; margin-bottom: 18px;
   }
-  .folder-note code { background: rgba(0,0,0,.3); padding: 1px 5px; border-radius: 4px; }
+  .folder-note > .ico { margin-top: 2px; color: var(--accent-text); }
+  .folder-note b { color: var(--text); font-weight: 600; }
 
-  /* Save slots — the tabs across a game's history.
-
-     One game can have more than one save file on the go: a second playthrough,
-     a co-op file, a nuzlocke. Each slot is its own lane, so the two timelines
-     never mix and restoring the wrong one can't happen by accident. */
-  .slot-bar {
-    display: flex; align-items: flex-end; gap: 4px; flex-wrap: wrap;
-    border-bottom: 1px solid var(--border); margin-bottom: 16px;
-  }
+  /* Save slots — tabs across a game's history, each its own lane. */
+  .slot-bar { display: flex; align-items: flex-end; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
   .slot-tab {
-    background: transparent; color: var(--muted); border: 1px solid transparent;
-    border-radius: 10px 10px 0 0; padding: 9px 14px; font-size: 13px; font-weight: 600;
-    display: inline-flex; align-items: center; gap: 8px; margin-bottom: -1px;
+    position: relative; background: transparent; color: var(--muted); border: 0; border-radius: 0;
+    height: 40px; padding: 0 12px; font-size: 13.5px; font-weight: 500; gap: 7px;
   }
-  .slot-tab:hover:not(.on) { color: var(--text); background: rgba(255,255,255,.035); }
-  .slot-tab.on {
-    color: var(--text); background: var(--panel-2);
-    border-color: var(--border); border-bottom-color: var(--panel-2);
-  }
-  .slot-tab .slot-n {
-    font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 20px;
-    background: rgba(255,255,255,.07); color: var(--muted);
-  }
-  .slot-tab.on .slot-n { background: rgba(124,92,255,.22); color: #b9a6ff; }
-  .slot-tab.slot-add { color: var(--accent-2); }
-  .slot-tools { margin-left: auto; display: flex; gap: 6px; padding-bottom: 7px; }
-  .slot-hint { font-size: 12px; color: var(--muted); margin: -6px 0 16px; line-height: 1.5; }
-  .badge.slot { background: rgba(124,92,255,.15); color: #b9a6ff; }
+  .slot-tab:hover:not(.on) { color: var(--text); }
+  .slot-tab.on { color: var(--text); font-weight: 600; }
+  .slot-tab.on::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: 0; height: 2px; border-radius: 2px; background: var(--accent); }
+  .slot-tab .slot-n { font-size: 11.5px; font-weight: 600; padding: 0 6px; border-radius: 8px; background: var(--panel-2); color: var(--faint); }
+  .slot-tab.slot-add { color: var(--faint); }
+  .slot-tab.slot-add:hover { color: var(--accent-text); }
+  .slot-tools { margin-left: auto; display: flex; gap: 4px; padding-bottom: 5px; }
+  .slot-hint { font-size: 12.5px; color: var(--faint); margin: -8px 0 18px; line-height: 1.5; }
 
-  /* History view */
-  .history-list { display: flex; flex-direction: column; gap: 10px; }
+  /* History: a log of every backup, newest first. */
+  .history-list { position: relative; display: flex; flex-direction: column; gap: 4px; }
+  .history-list::before {
+    content: ""; position: absolute; left: 15px; top: 22px; bottom: 22px; width: 2px;
+    background: var(--border); border-radius: 2px;
+  }
   .save-row {
-    display: flex; align-items: center; gap: 14px; background: var(--panel-2);
-    border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px;
+    position: relative; display: flex; align-items: center; gap: 14px;
+    background: transparent; border: 1px solid transparent; border-radius: 12px; padding: 10px 12px 10px 0;
+    transition: background .12s, border-color .12s;
   }
-  .save-row .sr-icon { font-size: 20px; }
+  .save-row:hover { background: var(--panel); border-color: var(--border); }
+  .save-row .sr-icon {
+    width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%; position: relative; z-index: 1;
+    display: grid; place-items: center; color: var(--faint);
+    background: var(--bg); border: 2px solid var(--border-2);
+  }
+  .save-row:hover .sr-icon { background: var(--panel); }
+  .save-row .sr-icon .ico { width: 14px; height: 14px; vertical-align: 0; }
+  .history-list .save-row:first-child .sr-icon { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); box-shadow: 0 0 0 4px var(--accent-soft); }
   .save-row .sr-main { flex: 1; min-width: 0; }
-  .save-row .sr-title { font-weight: 600; font-size: 14px; }
-  .save-row .sr-sub { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-  /* A save's own filename is often one long unbroken hash. Let it wrap rather than
-     push the row wider than whatever it's sitting in. */
+  .save-row .sr-title { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .save-row .sr-sub { font-size: 12.5px; color: var(--muted); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
+  .save-row .sr-sub > span { display: inline-flex; align-items: center; gap: 5px; }
+  .save-row .sr-sub .ico { width: 13px; height: 13px; vertical-align: 0; color: var(--faint); }
   .save-row .sr-title, .save-row .sr-file { overflow-wrap: anywhere; }
-  .save-row .sr-file { min-width: 0; }
+  .save-row .sr-file { min-width: 0; color: var(--faint); }
+  @media (hover: hover) {
+    .save-row .sr-actions { opacity: .55; transition: opacity .12s; }
+    .save-row:hover .sr-actions, .save-row:focus-within .sr-actions { opacity: 1; }
+  }
   .badge {
-    display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 20px;
-    font-size: 11px; font-weight: 600; background: rgba(124,92,255,.15); color: #b9a6ff;
+    display: inline-flex; align-items: center; gap: 5px; height: 20px; padding: 0 7px; border-radius: 5px;
+    font-size: 11.5px; font-weight: 600; background: var(--panel-3); color: var(--muted); white-space: nowrap;
   }
-  .badge.device { background: rgba(74,210,201,.14); color: var(--accent-2); }
-  .badge.latest { background: rgba(63,185,80,.16); color: var(--ok); }
+  .badge .ico { width: 12px; height: 12px; vertical-align: 0; }
+  .badge.device { background: var(--panel-3); color: var(--muted); }
+  .badge.latest { background: var(--accent-soft); color: var(--accent-text); }
+  .badge.slot { background: var(--info-soft); color: var(--info); }
 
-  .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); background: none; padding: 4px 0; margin-bottom: 8px; }
-  .back-link:hover { color: var(--text); }
-
-  .empty { text-align: center; color: var(--muted); padding: 40px 20px; }
-  .empty .e-icon { font-size: 40px; margin-bottom: 8px; }
-
-  .spinner {
-    width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent);
-    border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; vertical-align: middle;
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px 0 6px; margin: 0 0 14px -6px;
+    color: var(--muted); background: none; border: 0; font-size: 13px;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .back-link:hover { color: var(--text); background: var(--hover); }
+
+  .empty { text-align: center; color: var(--muted); padding: 48px 20px; line-height: 1.5; }
+  .empty .e-icon {
+    width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; margin: 0 auto 14px;
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
+  }
+  .empty .e-icon .ico { width: 26px; height: 26px; vertical-align: 0; }
+  .empty b { color: var(--text); }
 
   #toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-    background: var(--panel); border: 1px solid var(--border); color: var(--text);
-    padding: 12px 20px; border-radius: 12px; box-shadow: var(--shadow); font-size: 14px;
-    opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 100;
+    position: fixed; bottom: 20px; right: 20px; max-width: min(420px, calc(100vw - 40px));
+    background: var(--panel-2); border: 1px solid var(--border-2); border-left: 3px solid var(--accent); color: var(--text);
+    padding: 12px 16px; border-radius: 12px; box-shadow: var(--shadow-pop); font-size: 13.5px; line-height: 1.45;
+    opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity .2s, transform .2s var(--ease); z-index: 100;
   }
-  #toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
-  #toast.err { border-color: var(--danger); }
-  #toast.ok { border-color: var(--ok); }
+  #toast.show { opacity: 1; transform: none; }
+  #toast.err { border-left-color: var(--danger); }
+  #toast.ok { border-left-color: var(--ok); }
 
-  .acct-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
-  .acct-row b { color: var(--text); font-weight: 600; }
+  /* --------------------------------------------------------- settings */
+  .acct-row {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+    padding: 10px 0; border-top: 1px solid var(--border); font-size: 13.5px; color: var(--muted);
+  }
+  .panel h3 + .acct-row { border-top: 0; padding-top: 0; }
+  .acct-row b { color: var(--text); font-weight: 600; text-align: right; }
+  .panel-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .panel-note { font-size: 12.5px; color: var(--faint); margin-top: 10px; line-height: 1.5; }
 
   /* QR sign-in */
   .qr-wrap { display: flex; gap: 22px; align-items: flex-start; flex-wrap: wrap; margin-top: 16px; }
-  .qr-box {
-    background: #fff; padding: 14px; border-radius: 14px; line-height: 0;
-    box-shadow: var(--shadow); flex-shrink: 0;
-  }
+  .qr-box { background: #fff; padding: 14px; border-radius: 14px; line-height: 0; box-shadow: var(--shadow); flex-shrink: 0; }
   .qr-box svg { display: block; width: 232px; height: 232px; }
-  .qr-side { flex: 1; min-width: 240px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .qr-side { flex: 1; min-width: 240px; font-size: 13.5px; color: var(--muted); line-height: 1.6; }
   .qr-side ol { margin: 0 0 14px; padding-left: 20px; }
   .qr-side li { margin-bottom: 4px; }
-  .qr-count { font-size: 13px; font-weight: 700; color: var(--accent-2); }
+  .qr-count { font-size: 13px; font-weight: 700; color: var(--accent-text); font-variant-numeric: tabular-nums; }
   .qr-count.low { color: var(--danger); }
   .qr-warn {
-    background: #2a1f12; border: 1px solid #6b4a1f; color: #f0c674;
-    padding: 11px 14px; border-radius: 10px; font-size: 12px; line-height: 1.5; margin-top: 14px;
+    display: flex; gap: 10px; align-items: flex-start;
+    background: var(--accent-soft); border: 1px solid var(--accent-line); color: var(--text);
+    padding: 11px 14px; border-radius: 10px; font-size: 12.5px; line-height: 1.5; margin-top: 14px;
   }
+  .qr-warn .ico { color: var(--accent-text); margin-top: 1px; }
   .qr-expired { text-align: center; color: var(--muted); font-size: 13px; padding: 30px 10px; }
 
   /* Scanner (mobile) */
-  .scan-card { max-width: 460px; margin: 0 auto; text-align: left; }
-  #scanVideo {
-    width: 100%; max-width: 360px; border-radius: 14px; background: #000;
-    aspect-ratio: 1 / 1; object-fit: cover; display: block; margin: 0 auto 14px;
-  }
-  .gate-or { color: var(--muted); font-size: 12px; margin: 18px 0 12px; letter-spacing: .5px; }
-  .btn-scan {
-    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
-    display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px;
-    border-radius: 10px; font-size: 15px;
-  }
-  .btn-scan:hover { background: #232c38; }
+  .scan-card { max-width: 460px; margin: 0 auto; }
+  .scan-card h2 { display: flex; align-items: center; gap: 10px; }
+  #scanVideo { width: 100%; max-width: 360px; border-radius: 14px; background: #000; aspect-ratio: 1 / 1; object-fit: cover; display: block; margin: 0 auto 14px; }
+  .gate-or { color: var(--faint); font-size: 12px; margin: 18px 0 12px; letter-spacing: .5px; text-align: center; }
+  .btn-scan { background: var(--panel-2); color: var(--text); border: 1px solid var(--border-2); width: 100%; height: 42px; border-radius: 10px; font-size: 14px; }
+  .btn-scan:hover { background: var(--panel-3); }
 
   .hidden { display: none !important; }
   @media (max-width: 620px) { .form-grid { grid-template-columns: 1fr; } }
-  /* Narrow windows.
 
-     Three sizes, because a fixed sidebar is fine at desktop width, cramped on a
-     tablet and ruinous on a phone — where 236px of navigation would leave the
-     games with nothing. So: full sidebar, then an icon rail, then a drawer that
-     slides over the content and gets out of the way again.
-
-     The desktop app resizes through all three, which is how you find out that
-     "it works on my monitor" was never the test. */
-
-  /* Tablet, or an app window pulled in: the rail. */
+  /* ------------------------------------------------------- narrower
+     Full sidebar, then an icon rail, then a drawer. */
+  @media (max-width: 1040px) {
+    .gate-split { grid-template-columns: 1fr; }
+    .gate-art { display: none; }
+  }
   @media (max-width: 960px) {
     .sidebar { width: 68px; }
     main#app, body.sb-collapsed main#app { margin-left: 68px; }
     .sidebar .sb-title, .sidebar .sb-label, .sidebar .sb-sec,
     .sidebar .sb-count, .sidebar .sb-who, .sidebar .sb-empty,
     .sidebar .sb-pin { display: none; }
-    .sidebar .sb-item { justify-content: center; padding: 10px 0; }
-    .sidebar .sb-head { justify-content: center; padding: 16px 0; }
+    .sidebar .sb-item { justify-content: center; padding: 0; }
+    .sidebar .sb-head { justify-content: center; padding: 16px 0 12px; }
     .sidebar .sb-user { justify-content: center; padding: 8px 0; }
     .sb-toggle { display: none; }
-    main { padding: 16px; }
-    .history-hero .hh-cover { width: 116px; }
-    /* Line the cover up with the title rather than with the bottom of the row
-       of buttons. Once those wrap to two lines — which they do as soon as the
-       window isn't maximised — bottom-alignment leaves the cover stranded at
-       the foot of a tall column with the name it belongs to floating above it. */
+    main { padding: 20px; }
+    .history-hero .hh-cover { width: 120px; }
     .history-hero { align-items: flex-start; }
   }
-
-  /* Phone, or an app window squeezed right down: the drawer. */
   @media (max-width: 620px) {
-    .sidebar {
-      width: 236px; transform: translateX(-100%);
-      transition: transform .18s ease; box-shadow: none;
-    }
-    body.sb-open .sidebar { transform: none; box-shadow: 0 0 40px rgba(0,0,0,.55); }
-    /* Everything the rail hid comes back — there's room for it in the drawer. */
+    .sidebar { width: 248px; transform: translateX(-100%); transition: transform .18s ease; box-shadow: none; }
+    body.sb-open .sidebar { transform: none; box-shadow: 0 0 40px rgba(0, 0, 0, .55); }
     .sidebar .sb-title, .sidebar .sb-label, .sidebar .sb-sec,
     .sidebar .sb-count, .sidebar .sb-who, .sidebar .sb-pin { display: revert; }
-    .sidebar .sb-item { justify-content: flex-start; padding: 10px 12px; }
-    .sidebar .sb-head { justify-content: flex-start; padding: 16px 14px; }
+    .sidebar .sb-item { justify-content: flex-start; padding: 0 10px; }
+    .sidebar .sb-item.sb-add { justify-content: center; }
+    .sidebar .sb-head { justify-content: flex-start; padding: 16px 16px 12px; }
     .sidebar .sb-user { justify-content: flex-start; padding: 8px 4px; }
-    main#app, body.sb-collapsed main#app { margin-left: 0; padding: 14px 14px 30px; }
+    main#app, body.sb-collapsed main#app { margin-left: 0; padding: 14px 14px 40px; }
     .sb-open-btn:not(.hidden) { display: grid; }
     body.sb-open .sb-scrim { display: block; }
-    main#app { padding-top: 58px; }        /* room for the ☰ button */
+    main#app { padding-top: 62px; }
 
-    .section-title { flex-wrap: wrap; gap: 10px; }
-    .games-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-    /* Stacked, not side by side: at this width a cover and a title sharing a
-       row leaves neither with enough room, and the buttons end up two-up. */
-    .history-hero { gap: 12px; flex-direction: column; align-items: stretch; }
-    .history-hero .hh-cover { width: 118px; }
+    .section-title { gap: 10px; }
+    .section-title h3 { font-size: 19px; }
+    .games-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 18px 12px; }
+    .history-hero { gap: 14px; flex-direction: column; align-items: stretch; }
+    .history-hero .hh-cover { width: 120px; }
+    .history-hero h3 { font-size: 22px; }
     .shelf { --sc: .75; }
     .shelf-caption { padding: 0 10px; }
     .shelf-title { font-size: 18px; }
     .shelf-arrow { width: 38px; height: 38px; }
     .view-toggle button span { display: none; }
     .panel { padding: 16px; }
-    .gate-card { padding: 32px 22px; }
-    /* Actions drop under what they act on, rather than squeezing it to nothing. */
+    .gate-card { padding: 26px 20px; }
+    .gate-main .gate-form { padding: 32px 20px; }
     .save-row { flex-wrap: wrap; }
     .save-row .sr-main { flex-basis: calc(100% - 54px); }
     .save-row .sr-actions { width: 100%; justify-content: flex-end; }
+    #toast { left: 14px; right: 14px; bottom: 14px; max-width: none; }
   }
 
-  /* There is nothing to open while a gate is up: no sidebar behind it, and no
-     app to navigate. Pinning this to the app's own visibility catches every
-     screen in front of it, rather than each one having to remember. */
-  body:has(#app.hidden) .sb-open-btn { display: none; }
-
-  /* The button that opens the drawer, and the tap-anywhere-else that closes it. */
+  body:has(#app.hidden) .sb-open-btn, body.sb-open .sb-open-btn { display: none; }
   .sb-open-btn {
     display: none; position: fixed; top: 12px; left: 12px; z-index: 40;
     width: 38px; height: 38px; padding: 0; place-items: center;
-    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
-    border-radius: 10px; font-size: 16px; box-shadow: var(--shadow);
+    background: var(--panel-2); border: 1px solid var(--border-2); color: var(--text);
+    border-radius: 10px; box-shadow: var(--shadow);
   }
-  .sb-scrim {
-    display: none; position: fixed; inset: 0; z-index: 29;
-    background: rgba(6,9,13,.6); backdrop-filter: blur(2px);
-  }
+  .sb-open-btn .ico { width: 18px; height: 18px; vertical-align: 0; }
+  .sb-scrim { display: none; position: fixed; inset: 0; z-index: 29; background: var(--scrim); backdrop-filter: blur(2px); }
 
-  /* Anything that can't shrink gets to scroll on its own rather than pushing
-     the whole page sideways. */
-  .slot-bar {
-    flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
-    /* The tabs scroll sideways when there are more than fit; the bar itself
-       shouldn't advertise that with a scrollbar sitting in the middle of the UI. */
-    scrollbar-width: none; -ms-overflow-style: none;
-  }
+  .slot-bar { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -ms-overflow-style: none; }
   .slot-bar::-webkit-scrollbar { display: none; }
   .slot-bar .slot-tab { flex-shrink: 0; }
   .slot-tools { flex-shrink: 0; padding-left: 10px; }
-  .games-grid { grid-template-columns: repeat(auto-fill, minmax(min(190px, 100%), 1fr)); }
   .hh-info, .sr-main, .gc-name { min-width: 0; }
   .ds-linked .ds-path, .acct-row b { word-break: break-word; }
 </style>
@@ -1052,27 +1125,24 @@
 
 <!-- On a narrow window the sidebar becomes a drawer; these two open and
      dismiss it. Both are invisible at any width where the sidebar just fits. -->
-<button class="sb-open-btn hidden" id="sbOpenBtn" title="Menu" aria-label="Open the menu">&#9776;</button>
+<button class="sb-open-btn hidden" id="sbOpenBtn" title="Menu" aria-label="Open the menu"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></svg></button>
 <div class="sb-scrim" id="sbScrim"></div>
 
 <aside class="sidebar hidden" id="appHeader">
   <div class="sb-head">
-    <div class="sb-logo" data-logo="40"></div>
+    <div class="sb-logo" data-logo="30"></div>
     <div class="sb-title">Save Station<small>your saves, your Drive</small></div>
   </div>
 
-  <button class="sb-toggle" id="sbToggle" title="Collapse sidebar">
-    <span id="sbToggleIcon">«</span><span class="sb-label">Collapse</span>
-  </button>
-
   <div class="sb-nav" id="sbNav">
+    <button class="sb-item sb-add" data-view="upload" title="Add a game">
+      <span class="sb-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><span class="sb-label">Add game</span>
+    </button>
+
     <div class="sb-sec">Library</div>
     <button class="sb-item on" data-view="games" title="All games">
-      <span class="sb-ico">🕹️</span><span class="sb-label">All games</span>
+      <span class="sb-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="18" x="3" y="3" rx="1"/><path d="M7 3v18"/><path d="M20.4 18.9c.2.5-.1 1.1-.6 1.3l-1.9.7c-.5.2-1.1-.1-1.3-.6L11.1 5.1c-.2-.5.1-1.1.6-1.3l1.9-.7c.5-.2 1.1.1 1.3.6Z"/></svg></span><span class="sb-label">All games</span>
       <span class="sb-count" id="sbGameCount"></span>
-    </button>
-    <button class="sb-item" data-view="upload" title="Add a game">
-      <span class="sb-ico">＋</span><span class="sb-label">New game</span>
     </button>
 
     <!-- Both filled in by renderSidebar(): pins come from your profile,
@@ -1083,13 +1153,16 @@
     <div class="sb-sec">Consoles</div>
     <div class="sb-group" id="sbConsoles"></div>
 
-    <div class="sb-sec">Settings</div>
+    <div class="sb-sec">Account</div>
     <button class="sb-item" data-view="settings" title="Settings">
-      <span class="sb-ico">⚙</span><span class="sb-label">Settings</span>
+      <span class="sb-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="sb-label">Settings</span>
     </button>
   </div>
 
   <div class="sb-foot">
+    <button class="sb-toggle" id="sbToggle" title="Collapse sidebar">
+      <span id="sbToggleIcon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg></span><span class="sb-label">Collapse</span>
+    </button>
     <div class="sb-user">
       <img id="userAvatar" alt="" class="hidden">
       <div class="sb-who">
@@ -1098,16 +1171,34 @@
       </div>
     </div>
     <button class="sb-item" id="signOutBtn" title="Sign out">
-      <span class="sb-ico">⏻</span><span class="sb-label">Sign out</span>
+      <span class="sb-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg></span><span class="sb-label">Sign out</span>
     </button>
   </div>
 </aside>
 
 <!-- ACCOUNT GATE — log in / create a Save Station account -->
-<div class="gate" id="gate">
+<div class="gate gate-main" id="gate">
+ <div class="gate-split">
+  <aside class="gate-art" aria-hidden="true">
+    <div class="ga-inner">
+      <h1 class="ga-title">Every save, kept safe in your own Google Drive.</h1>
+      <p class="ga-lede">Back up your console and emulator saves from any browser, phone or PC. Every version is kept, in a folder that belongs to you.</p>
+      <ul class="ga-points">
+        <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg><div><b>Every version kept</b><span>Each upload is a new backup. Go back to any of them, any time.</span></div></li>
+        <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg><div><b>Save slots</b><span>Two playthroughs of one game never get mixed up.</span></div></li>
+        <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="10" height="14" x="3" y="8" rx="2"/><path d="M5 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-2.4"/><path d="M8 18h.01"/></svg><div><b>One library, everywhere</b><span>This site, your phone and the Windows app all share it.</span></div></li>
+      </ul>
+      <div class="ga-log">
+        <div class="ga-log-row"><span data-cicon="gba"></span><div><b>Beat the 4th gym</b><small>Pokémon Emerald · just now</small></div><span class="badge latest">Latest</span></div>
+        <div class="ga-log-row"><span data-cicon="3ds"></span><div><b>Before the final boss</b><small>Fire Emblem Awakening · 2 hr ago</small></div><span class="badge">GAMING-PC</span></div>
+        <div class="ga-log-row"><span data-cicon="psp"></span><div><b>Chapter 6 done</b><small>Crisis Core · yesterday</small></div><span class="badge">iPhone</span></div>
+      </div>
+    </div>
+  </aside>
+  <div class="gate-form">
   <div class="gate-card">
-    <div class="biglogo" data-logo="92"></div>
-    <h2>Save Station</h2>
+    <div class="biglogo" data-logo="48"></div>
+    <h2 id="gateTitle">Welcome back</h2>
     <p id="gateBlurb">Your game saves, versioned and backed up to your own Google Drive.</p>
 
     <div class="config-warn hidden" id="configWarn"></div>
@@ -1142,32 +1233,30 @@
     <!-- Phones and iPads only: sign in by scanning a signed-in computer's code. -->
     <div id="qrLoginOption" class="hidden">
       <div class="gate-or">— or —</div>
-      <button class="btn-scan" id="scanQrBtn">📷 Scan a QR code from a signed-in device</button>
+      <button class="btn-scan" id="scanQrBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg> Scan a QR code from a signed-in device</button>
     </div>
     <div class="gate-restoring hidden" id="gateRestoring"><span class="spinner"></span> Signing you back in…</div>
     <div class="build-tag" data-build></div>
   </div>
+  </div>
+ </div>
 </div>
 
 <!-- LINK GATE — connect Google Drive (required; this is where saves live) -->
 <div class="gate hidden" id="linkGate">
   <div class="gate-card">
-    <div class="biglogo" data-logo="92"></div>
+    <ol class="steps"><li class="done"><span class="step-n"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span>Account</li><li class="on"><span class="step-n">2</span>Google Drive</li><li><span class="step-n">3</span>Consoles</li></ol>
+    <div class="drive-visual"><span data-logo="52"></span><span class="dv-line"><i></i><i></i><i></i></span><span class="dv-drive"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><path d="M6 16h.01"/><path d="M10 16h.01"/></svg></span></div>
     <h2 id="linkTitle">Connect your Google Drive</h2>
     <div class="who-chip" id="linkWho"></div>
     <div class="link-steps">
       Save Station doesn't store your saves — <b>your Google Drive does</b>. Connect it and
       we'll make one folder called <b>Save Station Web Saves</b> and use only that.
-      <br><br>
-      We ask for the <b>drive.file</b> permission, which lets this site see
-      <b>only the files it creates</b> — never the rest of your Drive.
     </div>
-    <button class="gbtn" id="linkDriveBtn">
-      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-      Connect Google Drive
-    </button>
-    <div id="linkStatus" style="font-size:13px;color:var(--muted);margin-top:16px;min-height:18px;"></div>
-    <button class="linklike" id="linkSignOutBtn" type="button">Sign out</button>
+    <button class="btn-primary btn-lg" id="linkDriveBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Connect Google Drive</button>
+    <div id="linkStatus" class="link-status"></div>
+    <div class="stage-note"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg><span>Save Station can only see files it created — never the rest of your Drive.</span></div>
+    <div class="stage-foot"><button class="linklike" id="linkSignOutBtn" type="button">Use a different account</button></div>
     <div class="build-tag" data-build></div>
   </div>
 </div>
@@ -1175,9 +1264,9 @@
 <!-- QR SCAN (mobile) -->
 <div class="gate hidden" id="scanGate">
   <div class="gate-card scan-card">
-    <h2 style="text-align:center;">📷 Scan to sign in</h2>
-    <p style="text-align:center;">On the computer that's already signed in, open
-       <b>⚙ Account → Sign in on another device</b> and point this phone at the code.</p>
+    <h2><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg> Scan to sign in</h2>
+    <p>On the computer that's already signed in, open
+       <b>Settings → Sign in on another device</b> and point this phone at the code.</p>
     <video id="scanVideo" class="hidden" playsinline muted></video>
     <div id="scanFallback" class="hidden" style="font-size:13px;color:var(--muted);line-height:1.6;">
       This browser can't scan from inside the page. Use your normal
@@ -1185,7 +1274,7 @@
     </div>
     <div id="scanStatus" style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:14px;"></div>
     <div style="text-align:center;">
-      <button class="btn-ghost btn-sm" id="scanCancelBtn">← Back to sign in</button>
+      <button class="btn-ghost btn-sm" id="scanCancelBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Back to sign in</button>
     </div>
   </div>
 </div>
@@ -1197,10 +1286,10 @@
   <div id="onboardView" class="hidden">
     <div class="onboard">
       <div class="onboard-head">
-        <h2 id="onboardTitle">Welcome to Save Station 👋</h2>
+        <h2 id="onboardTitle">Welcome to Save Station</h2>
         <p id="onboardBlurb">
           Which consoles do you plan on keeping saves for? Pick as many as you like — this just tailors
-          the upload form and filters to you. You can change it any time under <b>⚙ Account</b>.
+          the upload form and filters to you. You can change it any time in <b>Settings</b>.
         </p>
       </div>
       <div class="console-grid" id="consoleGrid"></div>
@@ -1217,9 +1306,9 @@
 
   <!-- SETTINGS — account and console preferences, one place -->
   <div id="settingsView" class="hidden">
-    <button class="back-link" id="acctBackBtn">← Back</button>
+    <button class="back-link" id="acctBackBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Back</button>
     <div class="panel">
-      <h3>👤 Account</h3>
+      <h3><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Account</h3>
       <div class="acct-row">Save Station account <b id="acctName">—</b></div>
       <div class="acct-row">Email <b id="acctEmail">—</b></div>
       <div class="acct-row">Google Drive linked <b id="acctGoogle">—</b></div>
@@ -1230,11 +1319,11 @@
       <div class="acct-row hidden" id="acctQrNote">
         📱 This device was signed in by scanning a QR code.
       </div>
-      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn-ghost btn-sm" id="changePwBtn">✉ Send me a password reset</button>
-        <button class="btn-ghost btn-sm danger" id="disconnectDriveBtn">⛔ Disconnect Google Drive</button>
+      <div class="panel-actions">
+        <button class="btn-ghost btn-sm" id="changePwBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> Send me a password reset</button>
+        <button class="btn-ghost btn-sm danger" id="disconnectDriveBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m18.84 12.25 1.72-1.71a5 5 0 0 0-.12-7.07 5 5 0 0 0-6.95 0l-1.72 1.71"/><path d="m5.17 11.75-1.71 1.71a5 5 0 0 0 .12 7.07 5 5 0 0 0 6.95 0l1.71-1.71"/><path d="M8 2v3"/><path d="M2 8h3"/><path d="M16 19v3"/><path d="M19 16h3"/></svg> Disconnect Google Drive</button>
       </div>
-      <div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5;">
+      <div class="panel-note">
         Signing out keeps your Drive connected, so you're not asked to approve Google every time.
         Disconnecting revokes that — your saves stay in your Drive either way.
       </div>
@@ -1247,7 +1336,7 @@
       </div>
     </div>
     <div class="panel">
-      <h3>🎮 Your consoles</h3>
+      <h3><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h4"/><path d="M8 10v4"/><path d="M15 13h.01"/><path d="M18 11h.01"/><rect width="20" height="12" x="2" y="6" rx="2"/></svg> Your consoles</h3>
       <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:16px;">
         Tick the ones you keep saves for. This tailors the upload form and picks which
         consoles lead the sidebar — <b>unticking one never deletes saves</b>, and every
@@ -1260,12 +1349,12 @@
       </div>
     </div>
     <div class="panel">
-      <h3>📱 Sign in on another device</h3>
+      <h3><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg> Sign in on another device</h3>
       <div style="font-size:13px;color:var(--muted);line-height:1.6;">
         Show a one-time code, then scan it with your phone or iPad to sign that device
         into this account — no typing your password on a small screen.
       </div>
-      <button class="btn-ghost btn-sm" id="showQrBtn" style="margin-top:14px;">▦ Show QR code</button>
+      <button class="btn-ghost btn-sm" id="showQrBtn" style="margin-top:14px;"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg> Show QR code</button>
       <div id="qrArea" class="hidden">
         <div class="qr-wrap">
           <div class="qr-box" id="qrBox"></div>
@@ -1277,14 +1366,14 @@
             </ol>
             <div>Expires in <span class="qr-count" id="qrCount">2:00</span></div>
             <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
-              <button class="btn-ghost btn-sm" id="qrRefreshBtn">↻ New code</button>
-              <button class="btn-ghost btn-sm" id="hideQrBtn">✕ Hide</button>
+              <button class="btn-ghost btn-sm" id="qrRefreshBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg> New code</button>
+              <button class="btn-ghost btn-sm" id="hideQrBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> Hide</button>
             </div>
           </div>
         </div>
         <div class="qr-warn">
-          🔒 <b>Treat this like a password.</b> Anyone who scans it gets into your Save Station
-          folder until it expires. Don't screenshot it, share it, or show it on a stream.
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span><b>Treat this like a password.</b> Anyone who scans it gets into your Save Station
+          folder until it expires. Don't screenshot it, share it, or show it on a stream.</span>
         </div>
       </div>
     </div>
@@ -1293,8 +1382,8 @@
   <!-- New game upload panel (hidden until "＋ New game") -->
   <div class="panel hidden" id="uploadPanel">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <h3 style="margin:0;">➕ New game — upload its first save</h3>
-      <button class="btn-ghost btn-sm" id="closeUploadBtn">✕ Cancel</button>
+      <h3 style="margin:0;"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Add a game — upload its first save</h3>
+      <button class="btn-ghost btn-sm" id="closeUploadBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> Cancel</button>
     </div>
 
     <div class="field" style="margin-bottom:16px;max-width:420px;">
@@ -1304,12 +1393,12 @@
     </div>
 
     <div class="dropzone" id="dropzone">
-      <div class="dz-icon">📁</div>
+      <div class="dz-icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13v8"/><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.24"/><path d="m8 17 4-4 4 4"/></svg></div>
       <div id="dzLead"><b>Drop a save file here</b> or click to browse</div>
       <div style="font-size:12px;margin-top:6px;" id="dzExts"></div>
       <div class="dz-or hidden" id="dzFolderRow">
         — or —<br>
-        <button class="btn-ghost btn-sm" id="pickFolderBtn" type="button">📂 Choose a save folder</button>
+        <button class="btn-ghost btn-sm" id="pickFolderBtn" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg> Choose a save folder</button>
       </div>
       <input type="file" id="fileInput" class="hidden">
       <input type="file" id="folderInput" class="hidden" webkitdirectory directory multiple>
@@ -1350,7 +1439,7 @@
   <!-- Games list -->
   <div id="gamesView">
     <div class="section-title">
-      <h3 id="gamesTitle">🕹️ Your games</h3>
+      <h3 id="gamesTitle">Your games</h3>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <!-- Grid or shelf. Remembered per browser. -->
         <div class="view-toggle" id="viewToggle" role="group" aria-label="Library view">
@@ -1365,9 +1454,9 @@
             <span>Shelf</span>
           </button>
         </div>
-        <button class="btn-ghost btn-sm hidden" id="clearFilterBtn">✕ All consoles</button>
-        <button class="btn-primary btn-sm" id="newGameBtn">＋ New game</button>
-        <button class="btn-ghost btn-sm" id="refreshBtn">↻ Refresh</button>
+        <button class="btn-ghost btn-sm hidden" id="clearFilterBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> All consoles</button>
+        <button class="btn-ghost btn-sm" id="refreshBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg> Refresh</button>
+        <button class="btn-primary btn-sm" id="newGameBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Add game</button>
       </div>
     </div>
     <div id="gamesContainer"></div>
@@ -1375,20 +1464,20 @@
 
   <!-- History (per game) -->
   <div id="historyView" class="hidden">
-    <button class="back-link" id="backBtn">← All games</button>
+    <button class="back-link" id="backBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> All games</button>
     <div class="history-hero">
       <div class="hh-cover cover-frame" id="historyCover"><span class="no-cover-label">No cover</span></div>
       <div class="hh-info">
         <h3 id="historyTitle"></h3>
         <div class="hh-console" id="historyConsole"></div>
         <div class="hh-actions">
-          <button class="btn-primary btn-sm" id="uploadToGameBtn">⬆ Upload save</button>
-          <button class="btn-ghost btn-sm hidden" id="uploadFolderToGameBtn">📂 Upload save folder</button>
-          <button class="btn-ghost btn-sm" id="pinGameBtn">📌 Pin</button>
-          <button class="btn-ghost btn-sm" id="findCoverBtn">🔎 Find cover</button>
-          <button class="btn-ghost btn-sm" id="setCoverBtn">🖼️ Add cover</button>
-          <button class="btn-ghost btn-sm" id="downloadLatestBtn">⬇ Download latest</button>
-          <button class="btn-ghost btn-sm danger" id="deleteGameBtn">🗑 Delete game</button>
+          <button class="btn-primary btn-sm" id="uploadToGameBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13v8"/><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.24"/><path d="m8 17 4-4 4 4"/></svg> Upload save</button>
+          <button class="btn-ghost btn-sm hidden" id="uploadFolderToGameBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg> Upload save folder</button>
+          <button class="btn-ghost btn-sm" id="downloadLatestBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Download latest</button>
+          <button class="btn-ghost btn-sm" id="findCoverBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Find cover</button>
+          <button class="btn-ghost btn-sm" id="setCoverBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/></svg> Add cover</button>
+          <button class="btn-ghost btn-sm" id="pinGameBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg> Pin</button>
+          <button class="btn-ghost btn-sm danger" id="deleteGameBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Delete game</button>
         </div>
       </div>
     </div>
@@ -1463,7 +1552,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-09-17f";
+const BUILD = "2026-10-01a";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -1606,8 +1695,8 @@ const ICON_GLYPHS = {
 };
 
 /* ============================================================
-   The Save Station mark — everything you play on, in orbit
-   around one save file, with the cloud they all sync through.
+   The Save Station mark — a memory card with an upload arrow
+   through it, the same mark as the Windows app's icon.
 
    Inline, so the page still loads no assets and the mark stays
    sharp at any size. The same artwork lives in assets/logo.svg
@@ -1619,61 +1708,14 @@ const ICON_GLYPHS = {
    second copy borrow the first one's fills.
    ============================================================ */
 const LOGO_MARK = `
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="__S__" height="__S__" role="img" aria-label="Save Station">
-    <defs>
-      <linearGradient id="__U__ssFloppy" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#9a80ff"/>
-        <stop offset="1" stop-color="#5b8cff"/>
-      </linearGradient>
-      <linearGradient id="__U__ssRing" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#7c5cff"/>
-        <stop offset="1" stop-color="#4ad2c9"/>
-      </linearGradient>
-    </defs>
-    <circle cx="64" cy="64" r="46" fill="none" stroke="url(#__U__ssRing)" stroke-width="2.6" opacity=".5"/>
-    <circle cx="64" cy="64" r="29" fill="#111823" stroke="#2e3a4a" stroke-width="1.6"/>
-    <path d="M49.5 44.5h26.4l8.1 8.1v26.9a4.5 4.5 0 0 1-4.5 4.5h-30a4.5 4.5 0 0 1-4.5-4.5V49a4.5 4.5 0 0 1 4.5-4.5Z" fill="url(#__U__ssFloppy)"/>
-    <path d="M57.5 44.5h13v13.5a1.6 1.6 0 0 1-1.6 1.6h-9.8a1.6 1.6 0 0 1-1.6-1.6Z" fill="#e9eefc"/>
-    <rect x="65.4" y="47.4" width="3.4" height="9" rx="1" fill="#8ea0c4"/>
-    <rect x="52.5" y="64.5" width="23" height="15.5" rx="2" fill="#f2f5ff"/>
-    <path d="M56 70.4h16M56 75h10.5" stroke="#a99bff" stroke-width="1.9" stroke-linecap="round"/>
-    <circle cx="64" cy="18" r="14" fill="#141c26" stroke="#3a4a5e" stroke-width="1.6"/>
-    <g transform="translate(64 18)">
-      <path d="M-7.6 4.6a4.3 4.3 0 0 1 .6-8.5 5.9 5.9 0 0 1 11.3-.6 4.2 4.2 0 0 1 .5 8.3Z" fill="#4ad2c9"/>
-      <path d="M0 3.4V-2m0 0-2.6 2.6M0-2l2.6 2.6" stroke="#141c26" stroke-width="1.9"
-            stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-    </g>
-    <circle cx="107.7" cy="49.8" r="14" fill="#141c26" stroke="#3a4a5e" stroke-width="1.6"/>
-    <g transform="translate(107.7 49.8)" fill="none" stroke="#e6edf3" stroke-width="1.8"
-       stroke-linecap="round" stroke-linejoin="round">
-      <rect x="-8.8" y="-6.6" width="17.6" height="13.2" rx="2.6"/>
-      <path d="M-4.3-6.6v13.2M4.3-6.6v13.2"/>
-      <circle cx="-6.5" cy="-2.6" r="1.15" fill="#e6edf3" stroke="none"/>
-      <circle cx="6.5" cy="2.6" r="1.15" fill="#e6edf3" stroke="none"/>
-    </g>
-    <circle cx="90.9" cy="100.5" r="14" fill="#141c26" stroke="#3a4a5e" stroke-width="1.6"/>
-    <g transform="translate(90.9 100.5)" fill="none" stroke="#e6edf3" stroke-width="1.9"
-       stroke-linecap="round" stroke-linejoin="round">
-      <rect x="-5.6" y="-8.4" width="11.2" height="16.8" rx="2.4"/>
-      <path d="M-1.8-5.6h3.6"/>
-      <path d="M-1.6 5.4h3.2"/>
-    </g>
-    <circle cx="37.1" cy="100.5" r="14" fill="#141c26" stroke="#3a4a5e" stroke-width="1.6"/>
-    <g transform="translate(37.1 100.5)" fill="none" stroke="#e6edf3" stroke-width="1.9"
-       stroke-linecap="round" stroke-linejoin="round">
-      <rect x="-7.6" y="-8.6" width="15.2" height="17.2" rx="2.2"/>
-      <path d="M-7.6 0h15.2"/>
-      <path d="M-4.6 4.4h3.4M-2.9 2.7v3.4"/>
-      <path d="M3.4 3.2h.02M4.9 5.4h.02" stroke-width="2.4"/>
-    </g>
-    <circle cx="20.3" cy="49.8" r="14" fill="#141c26" stroke="#3a4a5e" stroke-width="1.6"/>
-    <g transform="translate(20.3 49.8)" fill="none" stroke="#e6edf3" stroke-width="1.9"
-       stroke-linecap="round" stroke-linejoin="round">
-      <rect x="-8.4" y="-7.8" width="16.8" height="11.6" rx="2"/>
-      <path d="M0 3.8v3.2M-4.2 7h8.4"/>
-    </g>
-  </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="__S__" height="__S__" role="img" aria-label="Save Station"><defs><linearGradient id="__U__ssTile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#262521"/><stop offset="1" stop-color="#151513"/></linearGradient><linearGradient id="__U__ssCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb24f"/><stop offset="1" stop-color="#ff9420"/></linearGradient></defs><rect x="4" y="4" width="120" height="120" rx="28" fill="url(#__U__ssTile)"/><rect x="4.75" y="4.75" width="118.5" height="118.5" rx="27.25" fill="none" stroke="#fff" stroke-opacity=".09" stroke-width="1.5"/><g transform="translate(37 25) scale(1.5)"><path d="M6 0h17.5L36 12.5V46a6 6 0 0 1-6 6H6a6 6 0 0 1-6-6V6a6 6 0 0 1 6-6Z" fill="url(#__U__ssCard)"/><rect x="6.5" y="4.5" width="3.2" height="9" rx="1.2" fill="#1b1a17" opacity=".5"/><rect x="12" y="4.5" width="3.2" height="9" rx="1.2" fill="#1b1a17" opacity=".5"/><rect x="17.5" y="4.5" width="3.2" height="9" rx="1.2" fill="#1b1a17" opacity=".5"/><path d="M18 41V25.5M11.5 31.8 18 25.3l6.5 6.5" fill="none" stroke="#1b1a17" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
 `.trim();
+
+/* Line icons — the same set the Windows app uses. */
+const ICON_PATHS = {"plus": "<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>", "library": "<rect width=\"8\" height=\"18\" x=\"3\" y=\"3\" rx=\"1\"/><path d=\"M7 3v18\"/><path d=\"M20.4 18.9c.2.5-.1 1.1-.6 1.3l-1.9.7c-.5.2-1.1-.1-1.3-.6L11.1 5.1c-.2-.5.1-1.1.6-1.3l1.9-.7c.5-.2 1.1.1 1.3.6Z\"/>", "settings": "<path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>", "log-out": "<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><path d=\"m16 17 5-5-5-5\"/><path d=\"M21 12H9\"/>", "upload": "<path d=\"M12 13v8\"/><path d=\"M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.24\"/><path d=\"m8 17 4-4 4 4\"/>", "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><path d=\"m7 10 5 5 5-5\"/><path d=\"M12 15V3\"/>", "folder": "<path d=\"M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z\"/>", "pin": "<path d=\"M12 17v5\"/><path d=\"M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z\"/>", "search": "<circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/>", "image": "<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><circle cx=\"9\" cy=\"9\" r=\"2\"/><path d=\"m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21\"/>", "trash": "<path d=\"M3 6h18\"/><path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\"/><path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\"/>", "pencil": "<path d=\"M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z\"/><path d=\"m15 5 4 4\"/>", "move": "<path d=\"M8 3 4 7l4 4\"/><path d=\"M4 7h16\"/><path d=\"m16 21 4-4-4-4\"/><path d=\"M20 17H4\"/>", "refresh": "<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\"/><path d=\"M8 16H3v5\"/>", "arrow-left": "<path d=\"m12 19-7-7 7-7\"/><path d=\"M19 12H5\"/>", "x": "<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>", "monitor": "<rect width=\"20\" height=\"14\" x=\"2\" y=\"3\" rx=\"2\"/><path d=\"M8 21h8\"/><path d=\"M12 17v4\"/>", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 6v6l4 2\"/>", "file": "<path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\"/><path d=\"M14 2v4a2 2 0 0 0 2 2h4\"/>", "menu": "<path d=\"M4 12h16\"/><path d=\"M4 6h16\"/><path d=\"M4 18h16\"/>", "chevrons-left": "<path d=\"m11 17-5-5 5-5\"/><path d=\"m18 17-5-5 5-5\"/>", "chevrons-right": "<path d=\"m6 17 5-5-5-5\"/><path d=\"m13 17 5-5-5-5\"/>", "user": "<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\"/><circle cx=\"12\" cy=\"7\" r=\"4\"/>", "gamepad": "<path d=\"M6 12h4\"/><path d=\"M8 10v4\"/><path d=\"M15 13h.01\"/><path d=\"M18 11h.01\"/><rect width=\"20\" height=\"12\" x=\"2\" y=\"6\" rx=\"2\"/>", "qr": "<rect width=\"5\" height=\"5\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"5\" height=\"5\" x=\"16\" y=\"3\" rx=\"1\"/><rect width=\"5\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\"/><path d=\"M21 16h-3a2 2 0 0 0-2 2v3\"/><path d=\"M21 21v.01\"/><path d=\"M12 7v3a2 2 0 0 1-2 2H7\"/><path d=\"M3 12h.01\"/><path d=\"M12 3h.01\"/><path d=\"M12 16v.01\"/><path d=\"M16 12h1\"/><path d=\"M21 12v.01\"/><path d=\"M12 21v-1\"/>", "mail": "<rect width=\"20\" height=\"16\" x=\"2\" y=\"4\" rx=\"2\"/><path d=\"m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7\"/>", "unlink": "<path d=\"m18.84 12.25 1.72-1.71a5 5 0 0 0-.12-7.07 5 5 0 0 0-6.95 0l-1.72 1.71\"/><path d=\"m5.17 11.75-1.71 1.71a5 5 0 0 0 .12 7.07 5 5 0 0 0 6.95 0l1.71-1.71\"/><path d=\"M8 2v3\"/><path d=\"M2 8h3\"/><path d=\"M16 19v3\"/><path d=\"M19 16h3\"/>", "camera": "<path d=\"M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z\"/><circle cx=\"12\" cy=\"13\" r=\"3\"/>", "history": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/><path d=\"M12 7v5l4 2\"/>", "layers": "<path d=\"m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z\"/><path d=\"m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65\"/><path d=\"m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65\"/>", "devices": "<rect width=\"10\" height=\"14\" x=\"3\" y=\"8\" rx=\"2\"/><path d=\"M5 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-2.4\"/><path d=\"M8 18h.01\"/>", "shield": "<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m9 12 2 2 4-4\"/>", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/>", "archive": "<rect width=\"20\" height=\"5\" x=\"2\" y=\"3\" rx=\"1\"/><path d=\"M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8\"/><path d=\"M10 12h4\"/>", "save": "<path d=\"M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z\"/><path d=\"M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7\"/><path d=\"M7 3v4a1 1 0 0 0 1 1h7\"/>", "drive": "<path d=\"M22 12H2\"/><path d=\"M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z\"/><path d=\"M6 16h.01\"/><path d=\"M10 16h.01\"/>", "external": "<path d=\"M15 3h6v6\"/><path d=\"M10 14 21 3\"/><path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\"/>", "check": "<path d=\"M20 6 9 17l-5-5\"/>", "inbox": "<path d=\"M22 12h-6l-2 3h-4l-2-3H2\"/><path d=\"M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z\"/>"};
+function ico(name) {
+  return '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">' + (ICON_PATHS[name] || "") + '</svg>';
+}
 
 function logoSvg(size, uid) {
   return LOGO_MARK.replace(/__U__/g, uid || "l").replace(/__S__/g, size || 128);
@@ -1683,6 +1725,10 @@ function logoSvg(size, uid) {
 // as the script parses — all of them are above it in the document.
 document.querySelectorAll("[data-logo]").forEach((el, i) => {
   el.innerHTML = logoSvg(el.dataset.logo, "m" + i);
+});
+// The sample history on the sign-in screen borrows the real console tiles.
+document.querySelectorAll("[data-cicon]").forEach((el) => {
+  el.innerHTML = consoleIcon(el.dataset.cicon, 30, 8);
 });
 
 // A colour tile with the glyph on top. `size` is the box in px.
@@ -1929,6 +1975,7 @@ function setAuthMode(mode) {
   $("nameField").classList.toggle("hidden", !signup);
   $("pwHint").classList.toggle("hidden", !signup);
   $("authSubmit").textContent = signup ? "Create account" : "Log in";
+  $("gateTitle").textContent = signup ? "Create your account" : "Welcome back";
   $("authPassword").setAttribute("autocomplete", signup ? "new-password" : "current-password");
   $("forgotBtn").classList.toggle("hidden", signup);
   $("gateBlurb").textContent = signup
@@ -2276,7 +2323,7 @@ function closeDrawerIfNarrow() {
 function setSidebarCollapsed(on) {
   document.body.classList.toggle("sb-collapsed", !!on);
   $("appHeader").classList.toggle("collapsed", !!on);
-  $("sbToggleIcon").textContent = on ? "»" : "«";
+  $("sbToggleIcon").innerHTML = ico(on ? "chevrons-right" : "chevrons-left");
   $("sbToggle").title = on ? "Expand sidebar" : "Collapse sidebar";
   localStorage.setItem("ssw_sb_collapsed", on ? "1" : "0");
 }
@@ -2600,18 +2647,18 @@ function renderSlotBar() {
     (n === null ? "" : '<span class="slot-n">' + n + "</span>") + "</button>";
 
   let html = "";
-  if (slots.length > 1) html += tab("all", "\ud83d\uddc2\ufe0f All", saves.length);
+  if (slots.length > 1) html += tab("all", "All slots", saves.length);
   slots.forEach((s) => {
-    html += tab(s.id, "\ud83d\udcbe " + escapeHtml(s.name), savesInSlot(saves, s.id).length);
+    html += tab(s.id, escapeHtml(s.name), savesInSlot(saves, s.id).length);
   });
-  html += '<button class="slot-tab slot-add" data-addslot="1">\uff0b New slot</button>';
+  html += '<button class="slot-tab slot-add" data-addslot="1">' + ico("plus") + ' New slot</button>';
   html += '<div class="slot-tools">' +
     (activeSlot === "all" ? "" :
       '<button class="btn-ghost btn-sm" data-renameslot="' + escapeAttr(activeSlot) +
-        '" title="Rename this slot">\u270f\ufe0f</button>' +
+        '" title="Rename this slot">' + ico("pencil") + '</button>' +
       (slots.length > 1
         ? '<button class="btn-ghost btn-sm danger" data-delslot="' + escapeAttr(activeSlot) +
-          '" title="Delete this slot">\ud83d\uddd1</button>'
+          '" title="Delete this slot">' + ico("trash") + '</button>'
         : "")) +
     "</div>";
   bar.innerHTML = html;
@@ -2626,7 +2673,7 @@ function renderSlotBar() {
   if (del) del.onclick = () => deleteSlot(del.dataset.delslot);
 
   if (slots.length === 1) {
-    hint.innerHTML = "Playing this game on a second save file? \uff0b <b>New slot</b> gives it a " +
+    hint.innerHTML = "Playing this game on a second save file? <b>New slot</b> gives it a " +
       "history of its own, so the two never mix.";
     hint.classList.remove("hidden");
   } else if (activeSlot === "all") {
@@ -2647,7 +2694,7 @@ function renderPinnedNav() {
   const box = $("sbPinned");
   const ids = pinnedIds();
   if (!ids.length) {
-    box.innerHTML = '<div class="sb-empty">Nothing pinned yet — hover a game and hit 📌 to park it here.</div>';
+    box.innerHTML = '<div class="sb-empty">Nothing pinned yet — hover a game and hit its pin to keep it here.</div>';
     return;
   }
   // Profile order is pin order, which is the order they chose.
@@ -2656,9 +2703,9 @@ function renderPinnedNav() {
     const name = g ? g.folder.name : "Loading…";
     const con = g ? consoleOf(g.consoleId) : null;
     return '<button class="sb-item sb-pinned" data-pin="' + escapeAttr(id) + '" title="' + escapeAttr(name) + '">' +
-      '<span class="sb-ico">' + (g ? emojiFor(name, con) : "📌") + '</span>' +
+      '<span class="sb-ico sb-ico-img">' + (g ? consoleIcon(g.consoleId, 18, 5) : ico("pin")) + '</span>' +
       '<span class="sb-label">' + escapeHtml(name) + '</span>' +
-      '<span class="sb-pin" data-unpin="' + escapeAttr(id) + '" title="Unpin">✕</span>' +
+      '<span class="sb-pin" data-unpin="' + escapeAttr(id) + '" title="Unpin">' + ico("x") + '</span>' +
     '</button>';
   }).join("");
   box.querySelectorAll(".sb-pinned").forEach((b) => {
@@ -2732,7 +2779,7 @@ function syncHistoryPinButton() {
   const b = $("pinGameBtn");
   if (!b) return;
   const on = isPinned(currentHistory.folderId);
-  b.textContent = on ? "📌 Pinned" : "📌 Pin";
+  b.innerHTML = ico("pin") + (on ? " Pinned" : " Pin");
   b.title = on ? "Remove from the sidebar" : "Keep this game in the sidebar";
 }
 
@@ -3162,11 +3209,11 @@ function startOnboarding(mode) {
   $("settingsView").classList.add("hidden");
   $("uploadPanel").classList.add("hidden");
   $("onboardView").classList.remove("hidden");
-  $("onboardTitle").textContent = mode === "edit" ? "Your consoles" : "Welcome to Save Station 👋";
+  $("onboardTitle").textContent = mode === "edit" ? "Your consoles" : "Welcome to Save Station";
   $("onboardBlurb").innerHTML = mode === "edit"
     ? "Add or remove consoles any time. Unticking one never deletes saves — it just hides it from the pickers."
     : "Which consoles do you plan on keeping saves for? Pick as many as you like — this just tailors " +
-      "the upload form and filters to you. You can change it any time under <b>⚙ Account</b>.";
+      "the upload form and filters to you. You can change it any time in <b>Settings</b>.";
   $("onboardCancelBtn").classList.toggle("hidden", mode !== "edit");
   $("onboardDoneBtn").textContent = mode === "edit" ? "Save" : "Continue";
   renderConsoleGrid();
@@ -4384,7 +4431,7 @@ async function downloadSave(fileId, filename) {
 function onFileChosen(file) {
   if (!file) return;
   selectedUpload = { kind: "file", file, name: file.name, size: file.size };
-  showUploadChip("💾", file.name, file.size);
+  showUploadChip(ico("file"), file.name, file.size);
 
   const detected = gameNameFromFilename(file.name);
   if (detected) $("gameName").value = detected;
@@ -4397,7 +4444,7 @@ async function onFolderChosen(fileList) {
   const rootName = folderRootName(fileList);
   const total = Array.from(fileList).reduce((n, f) => n + f.size, 0);
   selectedUpload = { kind: "folder", files: fileList, name: rootName, size: total };
-  showUploadChip("📂", rootName + "  (" + fileList.length + " files → .zip)", total);
+  showUploadChip(ico("folder"), rootName + "  (" + fileList.length + " files → .zip)", total);
   if (!$("gameName").value) $("gameName").value = gameNameFromFilename(rootName);
   $("uploadBtn").disabled = false;
 }
@@ -4407,7 +4454,7 @@ function showUploadChip(icon, label, size) {
   chip.classList.remove("hidden");
   chip.innerHTML = '<div class="file-chip">' + icon + ' <b>' + escapeHtml(label) +
     '</b> <span style="color:var(--muted)">(' + humanSize(size) + ')</span> ' +
-    '<span class="x" id="clearFile">✕</span></div>';
+    '<span class="x" id="clearFile" title="Remove">' + ico("x") + '</span></div>';
   $("clearFile").onclick = clearFile;
 }
 
@@ -4665,7 +4712,7 @@ async function loadGames() {
       $("sbGameCount").textContent = "";
       renderSidebar();
       announceGames();
-      c.innerHTML = '<div class="empty"><div class="e-icon">🎲</div>No games yet — click <b>＋ New game</b> to upload your first save.</div>';
+      c.innerHTML = '<div class="empty"><div class="e-icon">' + ico("gamepad") + '</div>No games yet — <b>Add game</b> uploads your first save.</div>';
       return;
     }
     // Fetch counts + latest + cover per game (in parallel)
@@ -4695,13 +4742,13 @@ function renderGames() {
   const filterCon = activeFilter === "all" ? null : consoleOf(activeFilter);
   $("gamesTitle").innerHTML = filterCon
     ? consoleIcon(filterCon.id, 18, 5) + " " + escapeHtml(filterCon.label)
-    : "🕹️ Your games";
+    : "Your games";
   $("clearFilterBtn").classList.toggle("hidden", activeFilter === "all");
   updateNavHighlight();
 
   if (!games.length) {
     const label = activeFilter === "all" ? "" : " for " + ((consoleOf(activeFilter) || {}).label || activeFilter);
-    c.innerHTML = '<div class="empty"><div class="e-icon">🎲</div>No games' + escapeHtml(label) + " yet.</div>";
+    c.innerHTML = '<div class="empty"><div class="e-icon">' + ico("gamepad") + '</div>No games' + escapeHtml(label) + " yet.</div>";
     return;
   }
   syncViewToggle();
@@ -4716,19 +4763,19 @@ function renderGames() {
       : "No backups yet";
     const con = consoleOf(g.consoleId);
     const tag = con
-      ? '<span class="gc-emu-tag" style="background:' + con.color + ';">' +
-        consoleIcon(con.id, 13, 4) + " " + escapeHtml(con.short) + "</span>"
+      ? '<span class="gc-con">' + consoleIcon(con.id, 14, 3.5) + " " + escapeHtml(con.short) + "</span>"
       : "";
     const coverAttr = g.cover ? ' data-cover="' + g.cover.id + '"' : '';
     const pinned = isPinned(g.folder.id);
     const pin = '<button class="gc-pin' + (pinned ? " on" : "") + '" data-pin="' + escapeAttr(g.folder.id) +
-      '" title="' + (pinned ? "Unpin from sidebar" : "Pin to sidebar") + '">📌</button>';
+      '" title="' + (pinned ? "Unpin from sidebar" : "Pin to sidebar") + '">' + ico("pin") + '</button>';
     return '<div class="game-card" data-fid="' + g.folder.id + '" data-name="' +
       escapeAttr(g.folder.name) + '" data-console="' + escapeAttr(g.consoleId || "") + '">' +
-      '<div class="gc-cover cover-frame"' + coverAttr + '>' + pin +
-        '<span class="no-cover-label">No cover</span>' + tag + '</div>' +
+      '<div class="gc-cover cover-frame"' + coverAttr + (con ? ' style="--console:' + con.color + '"' : '') + '>' + pin +
+        '<span class="no-cover-label nc-rich">' + consoleIcon(g.consoleId, 30, 8) +
+        '<span>' + escapeHtml(g.folder.name) + '</span></span></div>' +
       '<div class="gc-body"><div class="gc-name">' + escapeHtml(g.folder.name) + '</div>' +
-      '<div class="gc-meta">' + meta + '</div></div></div>';
+      '<div class="gc-meta">' + tag + '<span>' + meta + '</span></div></div></div>';
   }).join("") + "</div>";
 
   c.querySelectorAll(".game-card").forEach((card) => {
@@ -5741,16 +5788,16 @@ async function openHistory(folderId, name, consoleId) {
     const treeConsole = storesAsTree(resolved);
     $("folderNote").classList.toggle("hidden", !zipSave && !treeConsole);
     if (treeConsole) {
-      $("folderNote").innerHTML = "\ud83d\udcc1 This console's saves are <b>folders</b>, and they're kept as " +
+      $("folderNote").innerHTML = ico("folder") + "<span>This console's saves are <b>folders</b>, and they're kept as " +
         "folders in your Drive \u2014 open one and the save's files are right there, nothing to unpack. " +
         "Put one back in " + (con ? "<code>" + escapeHtml(con.where) + "</code>" : "your emulator's save folder") +
         ". <br>Downloading from this page gives you a <code>.zip</code> of it, because a browser can't " +
         "hand you a folder; the desktop app writes it back as one." +
-        (zipSave ? " Older backups here are <code>.zip</code> files and still download that way." : "");
+        (zipSave ? " Older backups here are <code>.zip</code> files and still download that way." : "") + "</span>";
     } else if (zipSave) {
-      $("folderNote").innerHTML = "\ud83d\udce6 This game's saves are <b>folders</b>, stored as <code>.zip</code>. " +
+      $("folderNote").innerHTML = ico("archive") + "<span>This game's saves are <b>folders</b>, stored as <code>.zip</code>. " +
         "Download one and extract its contents into " +
-        (con ? "<code>" + escapeHtml(con.where) + "</code>" : "your emulator's save folder") + ".";
+        (con ? "<code>" + escapeHtml(con.where) + "</code>" : "your emulator's save folder") + ".</span>";
     }
 
     if (inCase) {
@@ -5758,10 +5805,10 @@ async function openHistory(folderId, name, consoleId) {
       else setCaseLabel(null);
     }
     if (cover) {
-      $("setCoverBtn").textContent = "\ud83d\uddbc\ufe0f Change cover";
+      $("setCoverBtn").innerHTML = ico("image") + " Change cover";
       await showCoverIn(coverEl, cover.id);
     } else {
-      $("setCoverBtn").textContent = "\ud83d\uddbc\ufe0f Add cover";
+      $("setCoverBtn").innerHTML = ico("image") + " Add cover";
     }
 
     renderSlotBar();
@@ -5894,11 +5941,11 @@ function renderHistory() {
   }));
 
   if (!saves.length) {
-    c.innerHTML = '<div class="empty"><div class="e-icon">\ud83d\udced</div>' +
+    c.innerHTML = '<div class="empty"><div class="e-icon">' + ico("inbox") + '</div>' +
       (activeSlot === "all" || slots.length < 2
         ? "No backups for this game yet."
         : "Nothing in \u201c" + escapeHtml((slotById(slots, activeSlot) || {}).name || "") +
-          "\u201d yet \u2014 \u2b06 <b>Upload save</b> puts the first one here.") + "</div>";
+          "\u201d yet \u2014 <b>Upload save</b> puts the first one here.") + "</div>";
     $("downloadLatestBtn").disabled = true;
     announce();
     return;
@@ -5916,29 +5963,29 @@ function renderHistory() {
     const sl = showSlot ? (slotById(slots, slotOf(s)) || {}).name : "";
     return '<div class="save-row">' +
       '<div class="sr-icon">' +
-        (p.kind === "tree" ? "\ud83d\udcc1" : p.kind === "folder" ? "\ud83d\udce6" : "\ud83d\udcbe") + '</div>' +
+        ico(p.kind === "tree" ? "folder" : p.kind === "folder" ? "archive" : "save") + '</div>' +
       '<div class="sr-main">' +
         '<div class="sr-title">' + escapeHtml(title) +
-          (i === 0 ? ' <span class="badge latest">\u25cf Latest</span>' : '') + '</div>' +
+          (i === 0 ? ' <span class="badge latest">Latest</span>' : '') + '</div>' +
         '<div class="sr-sub">' +
-          '<span>\ud83d\udd52 ' + fmtTime(s.createdTime) + '</span>' +
-          (sl ? '<span class="badge slot">\ud83d\udcbe ' + escapeHtml(sl) + '</span>' : '') +
+          '<span>' + ico("clock") + fmtTime(s.createdTime) + '</span>' +
+          (sl ? '<span class="badge slot">' + escapeHtml(sl) + '</span>' : '') +
           (sc ? consolePill(sc) : '') +
-          '<span class="badge device">\ud83d\udda5\ufe0f ' + escapeHtml(device) + '</span>' +
-          (emu ? '<span class="badge">' + escapeHtml(emu) + '</span>' : '') +
-          (p.source === "desktop" ? '<span class="badge">\ud83d\udda5 committed</span>' : '') +
+          '<span>' + ico("monitor") + escapeHtml(device) + '</span>' +
+          (emu ? '<span>' + escapeHtml(emu) + '</span>' : '') +
+          (p.source === "desktop" ? '<span class="badge">Windows app</span>' : '') +
           (p.kind === "tree" && p.files
             ? '<span>' + escapeHtml(p.files) + ' file' + (+p.files === 1 ? "" : "s") + '</span>' : '') +
           ((s.size || p.size) ? '<span>' + humanSize(+(s.size || p.size)) + '</span>' : '') +
-          (label ? '<span class="sr-file">\ud83d\udcc4 ' + escapeHtml(orig) + '</span>' : '') +
+          (label ? '<span class="sr-file">' + ico("file") + escapeHtml(orig) + '</span>' : '') +
         '</div>' +
       '</div>' +
       '<div class="sr-actions">' +
-        '<button class="btn-ghost btn-sm" data-id="' + s.id + '" data-fn="' + escapeAttr(orig) + '">\u2b07 Download</button>' +
-        (canMove ? '<button class="btn-ghost btn-sm" data-moveslot="' + s.id +
-                   '" title="Move to another slot">\ud83d\uddc2\ufe0f</button>' : '') +
-        '<button class="btn-ghost btn-sm" data-rename="' + s.id + '" data-cur="' + escapeAttr(label) + '" title="Rename this backup">\u270f\ufe0f</button>' +
-        '<button class="btn-ghost btn-sm danger" data-del="' + s.id + '" title="Delete this backup">\ud83d\uddd1</button>' +
+        '<button class="btn-ghost btn-sm" data-id="' + s.id + '" data-fn="' + escapeAttr(orig) + '">' + ico("download") + ' Download</button>' +
+        (canMove ? '<button class="btn-ghost btn-sm btn-icon" data-moveslot="' + s.id +
+                   '" title="Move to another slot">' + ico("move") + '</button>' : '') +
+        '<button class="btn-ghost btn-sm btn-icon" data-rename="' + s.id + '" data-cur="' + escapeAttr(label) + '" title="Rename this backup">' + ico("pencil") + '</button>' +
+        '<button class="btn-ghost btn-sm btn-icon danger" data-del="' + s.id + '" title="Delete this backup">' + ico("trash") + '</button>' +
       '</div>' +
     '</div>';
   }).join("") + "</div>";
@@ -5949,7 +5996,7 @@ function renderHistory() {
       b.disabled = true; b.innerHTML = '<span class="spinner"></span>';
       try { await downloadSaveFor(b.dataset.id, b.dataset.fn, save); toast("Downloaded \u2714", "ok"); }
       catch (e) { toast("Download failed: " + e.message, "err"); }
-      finally { b.disabled = false; b.innerHTML = "\u2b07 Download"; }
+      finally { b.disabled = false; b.innerHTML = ico("download") + " Download"; }
     };
   });
   c.querySelectorAll("button[data-moveslot]").forEach((b) => {
@@ -5967,7 +6014,7 @@ function renderHistory() {
         await openHistory(currentHistory.folderId, currentHistory.name, currentHistory.console);
       } catch (e) {
         toast("Rename failed: " + e.message, "err");
-        b.disabled = false; b.innerHTML = "\u270f\ufe0f";
+        b.disabled = false; b.innerHTML = ico("pencil");
       }
     };
   });
@@ -5981,7 +6028,7 @@ function renderHistory() {
         await openHistory(currentHistory.folderId, currentHistory.name, currentHistory.console);
       } catch (e) {
         toast("Delete failed: " + e.message, "err");
-        b.disabled = false; b.innerHTML = "\ud83d\uddd1";
+        b.disabled = false; b.innerHTML = ico("trash");
       }
     };
   });

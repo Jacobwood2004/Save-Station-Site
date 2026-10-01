@@ -28,7 +28,7 @@ device each one came from.
 
 ## Supported consoles
 
-Picked once when you make your account, changeable any time under **⚙ Account**.
+Picked once when you make your account, changeable any time in **Settings**.
 
 | Console | Saves look like | Where they usually live |
 |---|---|---|
@@ -94,7 +94,7 @@ logged out.
 Typing a Google password on a phone is miserable, so a computer that's already
 signed in can hand its session over:
 
-1. On the computer: **⚙ Account → Sign in on another device → Show QR code**.
+1. On the computer: **Settings → Sign in on another device → Show QR code**.
 2. On the phone or iPad: open the **Camera app** and point it at the code (or tap
    **Scan a QR code from a signed-in device** on the sign-in screen — that option
    only appears on phones and iPads).
@@ -250,14 +250,14 @@ that hasn't actually changed.
 
 ## Cover art, without hunting for a picture
 
-**🔎 Find cover** on any game searches the libretro box-art collection by
+**Find cover** on any game searches the libretro box-art collection by
 name and shows you what matches. Pick one and it's copied into your Drive as
 that game's cover — so it lives with the game, works offline afterwards, and
 shows up on every device, exactly like one you'd uploaded yourself.
 
 It covers nine of the ten consoles here (there's no Switch collection), and it
 finds more than you'd expect: ROM hacks like *Pokemon Quetzal* are in there too.
-Where a game genuinely isn't — homebrew, a personal translation — **🖼️ Add
+Where a game genuinely isn't — homebrew, a personal translation — **Add
 cover** still takes a picture from your computer.
 
 No account or API key: the file list and the images both come from GitHub, which
@@ -350,9 +350,9 @@ A game's history is a row of tabs, one per save file you're playing it on:
 
 ```
 Pokemon Emerald
-┌──────────┬──────────────┬──────────────┐
-│ 🗂 All   │ 💾 Main run  │ 💾 Nuzlocke  │  ＋ New slot
-└──────────┴──────────────┴──────────────┘
+┌───────────┬──────────┬──────────┐
+│ All slots │ Main run │ Nuzlocke │  + New slot
+└───────────┴──────────┴──────────┘
 ```
 
 Uploads land in the slot you're looking at, the history filters to it, and the
@@ -360,8 +360,8 @@ desktop app watches a **different file on your PC** for each one. That last part
 is the point: two playthroughs of the same game are two files, and one restore
 into the wrong one costs you forty hours.
 
-- **＋ New slot** on any game's page. Name it whatever the playthrough is.
-- A backup in the wrong slot moves with the 🗂 button on its row — metadata only,
+- **New slot** on any game's page. Name it whatever the playthrough is.
+- A backup in the wrong slot moves with the move button on its row — metadata only,
   so it's instant and costs no upload.
 - Deleting a slot asks what happens to its backups: move them to another slot,
   or send them to your Drive trash.
