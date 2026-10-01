@@ -250,7 +250,19 @@ that hasn't actually changed.
 
 ## Cover art, without hunting for a picture
 
-**Find cover** on any game searches the libretro box-art collection by
+**Every cover is the same size.** Whatever a cover comes from — IGDB, libretro,
+or a picture of your own — it's saved at 528 × 748, IGDB's standard cover size,
+so the library lines up. A picture close to that shape is trimmed to fit; one
+that's well off (a square box, a screenshot) is kept whole over a blurred copy
+of itself. Covers added before this can be resized in one go from
+**Settings → Covers**.
+
+**IGDB first.** With IGDB set up in the Drive broker (see
+[`worker/README.md`](worker/README.md#cover-art-from-igdb-optional)), **Find
+cover** shows IGDB's covers first — the same source Backloggd uses, and the only
+one here with Switch box art. Without it, it searches libretro alone.
+
+**Find cover** on any game also searches the libretro box-art collection by
 name and shows you what matches. Pick one and it's copied into your Drive as
 that game's cover — so it lives with the game, works offline afterwards, and
 shows up on every device, exactly like one you'd uploaded yourself.

@@ -250,6 +250,136 @@ async function handleUnlink(request, env) {
   return json({ ok: true }, 200, env);
 }
 
+/* ---------------------------------------------------------- covers (IGDB)
+   Box art from IGDB, the database Backloggd and most game trackers use. Every
+   cover there comes back from IGDB's own image server at fixed sizes, so a
+   library of them lines up perfectly — and unlike libretro, it has Switch.
+
+   IGDB's API needs a Twitch app's client secret, which can't live in a web
+   page, and it won't answer a browser anyway. So the site and the desktop app
+   ask here; this holds the secret and the app token, and hands back covers.
+
+   Optional: with IGDB_CLIENT_ID / IGDB_CLIENT_SECRET unset, /covers/search
+   says { configured: false } and both clients fall back to libretro. */
+
+const TWITCH_TOKEN = "https://id.twitch.tv/oauth2/token";
+const IGDB_GAMES = "https://api.igdb.com/v4/games";
+const IGDB_TOKEN_KEY = "igdb:token";
+const igdbImage = (size, id) => `https://images.igdb.com/igdb/image/upload/t_${size}/${id}.jpg`;
+
+// Save Station's console ids -> IGDB platform ids.
+const IGDB_PLATFORMS = {
+  gb: [33], gbc: [22], gba: [24], nds: [20], "3ds": [37, 137],
+  wii: [5], wiiu: [41], switch: [130], psp: [38], vita: [46],
+};
+
+let igdbToken = { value: null, exp: 0 };
+
+function igdbConfigured(env) {
+  return !!(env.IGDB_CLIENT_ID && env.IGDB_CLIENT_SECRET);
+}
+
+// A Twitch app token: kept in memory, and in KV so cold starts share it.
+// They last about two months; this renews a day early.
+async function igdbAccessToken(env) {
+  if (igdbToken.value && Date.now() < igdbToken.exp) return igdbToken.value;
+  const cached = await env.TOKENS.get(IGDB_TOKEN_KEY, "json");
+  if (cached && cached.value && Date.now() < cached.exp) {
+    igdbToken = cached;
+    return cached.value;
+  }
+  const r = await fetch(TWITCH_TOKEN, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: env.IGDB_CLIENT_ID,
+      client_secret: env.IGDB_CLIENT_SECRET,
+      grant_type: "client_credentials",
+    }),
+  });
+  if (!r.ok) throw new Error("igdb_login_failed");
+  const t = await r.json();
+  const ttl = Math.max(3600, (t.expires_in || 86400) - 86400);
+  igdbToken = { value: t.access_token, exp: Date.now() + ttl * 1000 };
+  await env.TOKENS.put(IGDB_TOKEN_KEY, JSON.stringify(igdbToken), { expirationTtl: ttl });
+  return igdbToken.value;
+}
+
+async function igdbGames(env, query, retried) {
+  const r = await fetch(IGDB_GAMES, {
+    method: "POST",
+    headers: {
+      "Client-ID": env.IGDB_CLIENT_ID,
+      Authorization: "Bearer " + (await igdbAccessToken(env)),
+      Accept: "application/json",
+      "Content-Type": "text/plain",
+    },
+    body: query,
+  });
+  if (r.status === 401 && !retried) {
+    // Revoked or rotated early: drop it and log in again, once.
+    igdbToken = { value: null, exp: 0 };
+    await env.TOKENS.delete(IGDB_TOKEN_KEY);
+    return igdbGames(env, query, true);
+  }
+  if (!r.ok) throw new Error("igdb_failed_" + r.status);
+  return r.json();
+}
+
+// IGDB's query language quotes the search term; keep it to plain text.
+function igdbTerm(s) {
+  return String(s || "").replace(/["\\;]/g, " ").replace(/\s+/g, " ").trim().slice(0, 100);
+}
+
+async function handleCoverSearch(request, env) {
+  await requireUid(request, env);
+  if (!igdbConfigured(env)) return json({ configured: false, results: [] }, 200, env);
+  let input = {};
+  try { input = await request.json(); } catch (e) { /* treated as an empty search */ }
+  const term = igdbTerm(input.name);
+  if (!term) return json({ configured: true, results: [] }, 200, env);
+
+  const platforms = IGDB_PLATFORMS[input.console] || null;
+  const base = `search "${term}"; fields name,first_release_date,cover.image_id; where cover != null`;
+  let games = await igdbGames(env, base + (platforms ? ` & platforms = (${platforms.join(",")})` : "") + "; limit 12;");
+  // Nothing listed for that console — a hack filed under its base game, say —
+  // so look across every platform rather than come back empty.
+  let anyPlatform = false;
+  if (!games.length && platforms) {
+    games = await igdbGames(env, base + "; limit 12;");
+    anyPlatform = true;
+  }
+  const results = games
+    .filter((g) => g.cover && g.cover.image_id)
+    .map((g) => ({
+      id: g.cover.image_id,
+      title: g.name,
+      year: g.first_release_date ? new Date(g.first_release_date * 1000).getUTCFullYear() : null,
+      thumb: igdbImage("cover_big", g.cover.image_id),
+    }));
+  return json({ configured: true, anyPlatform, results }, 200, env);
+}
+
+// The chosen cover's bytes, at IGDB's fixed "cover_big_2x" size, passed
+// through so the page can copy it into the user's Drive.
+async function handleCoverImage(request, env) {
+  await requireUid(request, env);
+  let input = {};
+  try { input = await request.json(); } catch (e) { /* falls to bad_request */ }
+  const id = String(input.id || "");
+  if (!/^[a-z0-9]{4,40}$/i.test(id)) return json({ error: "bad_request" }, 400, env);
+  const r = await fetch(igdbImage("cover_big_2x", id));
+  if (!r.ok) return json({ error: "not_found" }, 404, env);
+  return new Response(r.body, {
+    status: 200,
+    headers: {
+      "Content-Type": r.headers.get("Content-Type") || "image/jpeg",
+      "Cache-Control": "private, max-age=86400",
+      ...corsHeaders(env),
+    },
+  });
+}
+
 /* ------------------------------------------------------------------ entry */
 
 export default {
@@ -273,8 +403,14 @@ export default {
       if (url.pathname === "/unlink" && request.method === "POST") {
         return await handleUnlink(request, env);
       }
+      if (url.pathname === "/covers/search" && request.method === "POST") {
+        return await handleCoverSearch(request, env);
+      }
+      if (url.pathname === "/covers/image" && request.method === "POST") {
+        return await handleCoverImage(request, env);
+      }
       if (url.pathname === "/health") {
-        return json({ ok: true, linked: "n/a" }, 200, env);
+        return json({ ok: true, linked: "n/a", covers: igdbConfigured(env) }, 200, env);
       }
       return json({ error: "not_found" }, 404, env);
     } catch (e) {

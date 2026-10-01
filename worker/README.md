@@ -159,6 +159,45 @@ it's active.
 | `You need to register a workers.dev subdomain` | Step 2 — the account hasn't got one yet |
 | Everything 401s | `FIREBASE_PROJECT_ID` in `wrangler.toml` doesn't match the project in `index.html` |
 
+## Cover art from IGDB (optional)
+
+The same Worker can search **IGDB** for box art — the database Backloggd and
+most game trackers use. Every IGDB cover comes back at the same size, and IGDB
+has Switch, which the libretro collection doesn't. The site and the Windows app
+ask here first and fall back to libretro when IGDB isn't set up.
+
+IGDB's API needs a Twitch app's client secret, which is why it goes through the
+Worker rather than the browser.
+
+1. Go to <https://dev.twitch.tv/console/apps> (Twitch requires two-factor
+   authentication on the account) → **Register Your Application**:
+   - Name: anything, e.g. `Save Station Covers`
+   - OAuth Redirect URL: `http://localhost`
+   - Category: **Website Integration**
+   - Client type: **Confidential**
+2. Open the app, copy the **Client ID**, then **New Secret** and copy that.
+3. Give both to the Worker — from a terminal in this folder:
+
+   ```bash
+   wrangler secret put IGDB_CLIENT_ID
+   wrangler secret put IGDB_CLIENT_SECRET
+   ```
+
+   or in the dashboard: **Workers & Pages → save-station-drive → Settings →
+   Variables and Secrets → Add**, type **Secret**, for each.
+
+`/health` then reports `"covers": true`. Both routes need the same Firebase ID
+token as everything else:
+
+| Route | Body | Answers |
+|---|---|---|
+| `POST /covers/search` | `{ name, console }` | `{ configured, anyPlatform, results: [{ id, title, year, thumb }] }` |
+| `POST /covers/image` | `{ id }` | the cover at IGDB's `cover_big_2x` size (528 × 748) |
+
+The Twitch app token is kept in the `TOKENS` namespace under `igdb:token` and
+renewed on its own. `node test-covers.mjs` runs these routes offline against
+stand-ins for Twitch, IGDB and Google.
+
 ## Turning it off
 
 Set `WORKER_URL = ""` in `index.html` and push. The site drops back to the
