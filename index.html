@@ -42,7 +42,7 @@
      green is "safe in Drive". Nothing else gets colour except
      the consoles' own. Follows the device's light/dark setting.
      ========================================================== */
-  :root, .hh {
+  :root {
     color-scheme: dark;
     --font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
     --font-display: "Segoe UI Variable Display", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -593,10 +593,6 @@
   .view-toggle button { height: 26px; padding: 0 10px; font-size: 12.5px; font-weight: 500; border-radius: 6px; background: transparent; color: var(--muted); border: 0; gap: 6px; }
   .view-toggle button:hover { color: var(--text); }
   .view-toggle button.on { background: var(--panel-3); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, .25); }
-  .view-toggle .vt-beta {
-    font-style: normal; font-size: 9.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
-    padding: 1px 5px; border-radius: 5px; background: var(--accent-soft); color: var(--accent-text);
-  }
 
   /* ---- List: a row a game, the same columns as the Windows app's list. ---- */
   .game-table { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--panel); }
@@ -639,238 +635,10 @@
     .gt-n { display: none; }
   }
 
-  /* ---- Handheld (beta): the library as a dual-screen launcher ----
-
-     After the 3DS-style front ends on Android handhelds like the AYN Thor:
-     the game you're on, large, on the top screen; every game as a rounded
-     tile on the bottom one, with a dock of consoles under them. It's a
-     device, so it stays dark whatever the page's theme. On a short, wide
-     screen (a handheld's own top screen, a phone on its side) the two
-     screens sit side by side instead. */
-  .hh {
-    position: relative; margin: 0 auto; outline: none;
-    width: min(100%, 680px, max(340px, calc((100vh - 200px) / 1.44)));
-    width: min(100%, 680px, max(340px, calc((100svh - 200px) / 1.44)));
-    display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 28px;
-    background: linear-gradient(180deg, #1c1b19, #121110);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), 0 0 0 1px #050505, 0 30px 60px rgba(0, 0, 0, .3);
-    color: var(--text); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
-  }
-  .hh:focus-visible { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), 0 0 0 1px #050505, 0 0 0 3px var(--accent-line), 0 30px 60px rgba(0, 0, 0, .3); }
-  .hh-screen {
-    position: relative; overflow: hidden; border-radius: 14px; background: #0b0b0a;
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, .06), inset 0 0 0 1px rgba(0, 0, 0, .6);
-  }
-  /* a little glass on each screen */
-  .hh-screen::before {
-    content: ""; position: absolute; inset: 0; z-index: 5; pointer-events: none; border-radius: inherit;
-    background: linear-gradient(155deg, rgba(255, 255, 255, .055), transparent 38%);
-  }
-  .hh-hinge {
-    flex-shrink: 0; height: 8px; margin: 0 22%; border-radius: 4px;
-    background: linear-gradient(#080807, #262521); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05);
-  }
-
-  /* top screen */
-  .hh-top {
-    aspect-ratio: 16 / 9; container: hhtop / size;
-    background: radial-gradient(circle at 26% 46%, color-mix(in srgb, var(--tint, #3a3935) 55%, #0b0b0a), #0b0b0a 72%);
-  }
-  .hh-bg {
-    position: absolute; inset: -12%; opacity: 0; transition: opacity .45s ease;
-    background: var(--cover, none) center / cover no-repeat;
-    filter: blur(26px) saturate(1.4) brightness(.55);
-  }
-  .hh-bg.on { opacity: 1; }
-  .hh-top::after {
-    content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
-    background: linear-gradient(90deg, rgba(8, 8, 7, .5), rgba(8, 8, 7, .08) 62%), linear-gradient(0deg, rgba(8, 8, 7, .6), transparent 40%);
-  }
-  .hh-status {
-    position: absolute; z-index: 3; top: 0; left: 0; right: 0; height: 36px; padding: 0 10px 0 14px;
-    display: flex; align-items: center; gap: 10px;
-    font-size: 12.5px; font-weight: 600; color: rgba(255, 255, 255, .9);
-    background: linear-gradient(rgba(0, 0, 0, .5), transparent);
-  }
-  .hh-brand { display: flex; align-items: center; gap: 7px; letter-spacing: -.01em; }
-  .hh-brand svg { display: block; }
-  .hh-sp { flex: 1; }
-  .hh-clock, .hh-batt { font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .hh-batt { display: inline-flex; align-items: center; gap: 5px; }
-  .hh-date { color: rgba(255, 255, 255, .62); font-weight: 500; white-space: nowrap; }
-  .hh-iconbtn {
-    width: 28px; height: 28px; padding: 0; border-radius: 8px; border: 0;
-    background: rgba(255, 255, 255, .1); color: inherit;
-  }
-  .hh-iconbtn:hover { background: rgba(255, 255, 255, .18); }
-  .hh-clock + .hh-iconbtn { margin-left: 4px; }
-  .hh-iconbtn .ico { width: 15px; height: 15px; vertical-align: 0; }
-  .hh-hero {
-    position: absolute; z-index: 2; left: 0; right: 0; top: 40px; bottom: 30px;
-    display: flex; align-items: center; gap: 5cqw; padding: 1cqw 6cqw 1cqw 5cqw;
-  }
-  .hh-art {
-    height: 100%; flex-shrink: 0; border-radius: 1.6cqw; --console: #3a3935;
-    box-shadow: 0 14px 30px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 255, 255, .12);
-  }
-  .hh-art .no-cover-label {
-    background: linear-gradient(160deg, color-mix(in srgb, var(--console) 55%, #141412), #141412);
-  }
-  .hh-art .no-cover-label svg { width: 34%; height: auto; }
-  .hh-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1.6cqw; }
-  .hh-con {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: max(11px, 1.7cqw); font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
-    color: rgba(255, 255, 255, .78);
-  }
-  .hh-title {
-    font: 600 clamp(18px, 5.4cqw, 40px)/1.1 var(--font-display); letter-spacing: -.02em; color: #fff;
-    text-shadow: 0 2px 14px rgba(0, 0, 0, .45); word-break: break-word;
-    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-  }
-  .hh-facts {
-    display: flex; flex-wrap: wrap; gap: .6cqw 2.2cqw;
-    font-size: clamp(11.5px, 2cqw, 14px); color: rgba(255, 255, 255, .74);
-  }
-  .hh-facts span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-  .hh-facts .ico { width: 1.15em; height: 1.15em; vertical-align: 0; opacity: .8; }
-  .hh-info.hh-in { animation: hhIn .32s var(--ease) both; }
-  @keyframes hhIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
-  .hh-foot {
-    position: absolute; z-index: 3; left: 0; right: 0; bottom: 0; height: 30px; padding: 0 14px;
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    font-size: 11.5px; color: rgba(255, 255, 255, .62);
-  }
-  .hh-pos { flex-shrink: 0; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .hh-hints { display: flex; justify-content: flex-end; gap: 14px; min-width: 0; white-space: nowrap; overflow: hidden; }
-  @container hhtop (max-width: 460px) {
-    .hh-hints span:nth-child(n+2) { display: none; }
-    .hh-date { display: none; }
-  }
-  /* A top screen taller than it is wide (side by side, on a 16:9 monitor):
-     the cover above the name instead of beside it. */
-  @container hhtop (max-aspect-ratio: 5 / 4) {
-    .hh-hero { flex-direction: column; align-items: flex-start; justify-content: center; gap: 4cqh; padding: 2cqh 7cqw; }
-    .hh-art { height: 50%; }
-    .hh-info { flex: 0 0 auto; width: 100%; gap: 2.4cqw; }
-    .hh-title { font-size: clamp(18px, 7.5cqw, 40px); }
-    .hh-con { font-size: max(11px, 2.4cqw); }
-    .hh-facts { font-size: clamp(11.5px, 3cqw, 14.5px); }
-  }
-  .hh-hints span { display: inline-flex; align-items: center; gap: 5px; }
-  .hh-key {
-    display: inline-grid; place-items: center; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px;
-    font-size: 10px; font-weight: 800; font-style: normal; color: #fff; background: rgba(255, 255, 255, .18);
-  }
-
-  /* bottom screen */
-  .hh-bottom {
-    aspect-ratio: 31 / 27; display: flex; flex-direction: column; container-type: inline-size;
-    background:
-      radial-gradient(circle at 1px 1px, rgba(255, 255, 255, .05) 1px, transparent 1.6px) 0 0 / 18px 18px,
-      radial-gradient(120% 80% at 50% 0%, #262521, #100f0e 75%);
-  }
-  .hh-scroll {
-    position: relative; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
-    padding: 20px 20px 12px; scrollbar-width: none;
-  }
-  .hh-scroll::-webkit-scrollbar { display: none; }
-  .hh-grid { display: grid; grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr)); gap: 14px; }
-  .hh-tile {
-    position: relative; aspect-ratio: 1; border-radius: 24%; cursor: pointer; background: var(--tint);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, .45), 0 0 0 1px rgba(255, 255, 255, .07);
-    transition: transform .16s var(--ease), box-shadow .16s var(--ease);
-  }
-  .hh-face {
-    position: absolute; inset: 0; border-radius: inherit; overflow: hidden;
-    background: linear-gradient(150deg, color-mix(in srgb, var(--tint) 82%, #fff), color-mix(in srgb, var(--tint) 58%, #000));
-  }
-  .hh-tile.has-art .hh-face { background: var(--cover) center 22% / cover no-repeat, #141412; }
-  .hh-face::after {
-    content: ""; position: absolute; inset: 0; border-radius: inherit;
-    background: linear-gradient(165deg, rgba(255, 255, 255, .24), rgba(255, 255, 255, 0) 44%);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14);
-  }
-  .hh-nc {
-    position: absolute; inset: 0; padding: 10%;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7%;
-    text-align: center; color: #fff; font: 700 clamp(8px, 1.9cqw, 11px)/1.15 var(--font);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, .45);
-  }
-  .hh-nc svg { width: 40%; height: auto; }
-  .hh-nc span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
-  .hh-tile.has-art .hh-nc { display: none; }
-  .hh-tile:not(.sel):hover { transform: translateY(-2px); }
-  .hh-tile.sel {
-    z-index: 2; transform: scale(1.1);
-    box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--accent), 0 0 24px 6px rgba(255, 160, 51, .55), 0 10px 22px rgba(0, 0, 0, .5);
-    animation: hhGlow 1.8s ease-in-out infinite;
-  }
-  @keyframes hhGlow {
-    50% { box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--accent), 0 0 34px 12px rgba(255, 160, 51, .3), 0 10px 22px rgba(0, 0, 0, .5); }
-  }
-  .hh-tile.hh-launch { animation: hhLaunch .2s ease-in forwards; }
-  @keyframes hhLaunch { to { transform: scale(1.3); opacity: 0; filter: brightness(1.7); } }
-  .hh-pinned {
-    position: absolute; top: -5px; right: -5px; z-index: 1; width: 20px; height: 20px; border-radius: 50%;
-    display: grid; place-items: center; background: var(--accent); color: var(--accent-ink);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, .45);
-  }
-  .hh-pinned .ico { width: 11px; height: 11px; vertical-align: 0; stroke-width: 2.4; }
-  .hh-dock { flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 6px 12px 12px; min-width: 0; }
-  .hh-dock-in {
-    display: flex; align-items: center; gap: 4px; padding: 5px; border-radius: 18px; min-width: 0; max-width: 100%;
-    background: rgba(255, 255, 255, .07); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07);
-    overflow-x: auto; scrollbar-width: none;
-  }
-  .hh-dock-in::-webkit-scrollbar { display: none; }
-  .hh-dock button {
-    position: relative; flex-shrink: 0; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 13px;
-    background: transparent; color: rgba(255, 255, 255, .82);
-  }
-  .hh-dock button:hover { background: rgba(255, 255, 255, .09); }
-  .hh-dock button.on { background: rgba(255, 255, 255, .14); }
-  .hh-dock button.on::after {
-    content: ""; position: absolute; left: 50%; bottom: 1px; width: 14px; height: 3px; margin-left: -7px; border-radius: 2px;
-    background: var(--accent); box-shadow: 0 0 8px var(--accent);
-  }
-  .hh-dock button .ico { width: 19px; height: 19px; vertical-align: 0; }
-  .hh-dock button svg:not(.ico) { display: block; }
-  .hh-dock .hh-shoulder {
-    width: 36px; height: 24px; border-radius: 9px 9px 6px 6px;
-    font-size: 11px; font-weight: 800; color: rgba(255, 255, 255, .72); background: rgba(255, 255, 255, .08);
-  }
-  .hh-dock .hh-shoulder:hover { background: rgba(255, 255, 255, .16); color: #fff; }
-  .hh-empty { padding: 30px 10px; text-align: center; font-size: 13px; color: rgba(255, 255, 255, .6); grid-column: 1 / -1; }
-
-  /* A wide screen that isn't tall enough to stack them (a laptop, a monitor,
-     a handheld's own top screen, a phone on its side): side by side. */
-  @media (min-aspect-ratio: 4 / 3) and (max-height: 1040px) and (min-width: 700px) {
-    .hh {
-      flex-direction: row; width: 100%; max-width: none; padding: 12px; gap: 12px; border-radius: 26px;
-      height: max(320px, min(calc(100vh - 140px), 760px));
-      height: max(320px, min(calc(100svh - 140px), 760px));
-    }
-    .hh-top { flex: 1.35 1 0; min-width: 0; aspect-ratio: auto; }
-    .hh-bottom { flex: 1 1 0; min-width: 0; aspect-ratio: auto; }
-    .hh-hinge { width: 7px; height: auto; margin: 22% 0; }
-    .hh-scroll { padding: 18px 18px 10px; }
-  }
   @media (max-width: 620px) {
-    .hh { padding: 10px; gap: 10px; border-radius: 22px; }
-    .hh-scroll { padding: 16px 14px 10px; }
-    .hh-grid { gap: 12px; }
-    .hh-date, .hh-brand span { display: none; }
-    .hh-dock { gap: 6px; padding: 4px 8px 10px; }
-    .hh-dock .hh-shoulder { width: 30px; }
     .gt-row { grid-template-columns: 30px minmax(0, 1fr) auto 30px; gap: 12px; padding: 8px 8px 8px 12px; }
     .gt-head, .gt-con, .gt-n, .gt-from { display: none; }
     .gt-when { font-size: 12.5px; }
-    .view-toggle .vt-beta { display: none; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .hh-tile.sel, .hh-info.hh-in, .hh-tile.hh-launch { animation: none; }
-    .hh-bg { transition: none; }
   }
 
   /* Changing a game's console: the button beside its pill, and the picker. */
@@ -1448,7 +1216,7 @@
     <div class="section-title">
       <h3 id="gamesTitle">Your games</h3>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <!-- Grid, List or Handheld. Remembered per browser. -->
+        <!-- Grid or List, as in the Windows app. Remembered per browser. -->
         <div class="view-toggle" id="viewToggle" role="group" aria-label="Library view">
           <button type="button" data-mode="grid" title="Grid">
             <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor"
@@ -1459,11 +1227,6 @@
             <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor"
               d="M1.5 2.25h2.5v2.5H1.5zM5.75 2.75h8.75v1.5H5.75zM1.5 6.75h2.5v2.5H1.5zM5.75 7.25h8.75v1.5H5.75zM1.5 11.25h2.5v2.5H1.5zM5.75 11.75h8.75v1.5H5.75z"/></svg>
             <span>List</span>
-          </button>
-          <button type="button" data-mode="handheld" title="Handheld (beta)">
-            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd"
-              d="M2.75 1h10.5a1.25 1.25 0 0 1 1.25 1.25V7H1.5V2.25A1.25 1.25 0 0 1 2.75 1zM3.5 2.5v3h9v-3zM1.5 8.5h13v5.25A1.25 1.25 0 0 1 13.25 15H2.75a1.25 1.25 0 0 1-1.25-1.25zM5 10v3.5h6V10z"/></svg>
-            <span>Handheld</span><i class="vt-beta">Beta</i>
           </button>
         </div>
         <button class="btn-ghost btn-sm hidden" id="clearFilterBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> All consoles</button>
@@ -1564,7 +1327,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-10-02d";
+const BUILD = "2026-10-02e";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -4852,7 +4615,6 @@ function renderGames() {
   const c = $("gamesContainer");
   const games = activeFilter === "all" ? allGames : allGames.filter((g) => g.consoleId === activeFilter);
   $("sbGameCount").textContent = allGames.length || "";
-  hhOn = libraryView() === "handheld";
 
   // The heading carries the active filter, since the chips row that used to
   // say so has moved into the sidebar.
@@ -4871,7 +4633,6 @@ function renderGames() {
   syncViewToggle();
   const view = libraryView();
   if (view === "list") { renderList(c, games); return; }
-  if (view === "handheld") { renderHandheld(c, games); return; }
 
   c.innerHTML = '<div class="games-grid">' + games.map((g) => {
     const latest = g.saves[0];
@@ -4914,19 +4675,13 @@ function renderGames() {
 }
 
 /* ============================================================
-   Library views — Grid, List, and Handheld (beta)
-
-   Grid and List are the two the Windows app has. Handheld is a
-   test: the library as a dual-screen launcher, after the 3DS-style
-   front ends on Android handhelds — the game you're on large on
-   the top screen, every game a rounded tile on the bottom one, a
-   dock of consoles under them. It answers a d-pad or gamepad (the
-   Gamepad API), the keyboard, and touch.
+   Library views — Grid and List, the two the Windows app has
    ============================================================ */
-const LIBRARY_VIEWS = ["grid", "list", "handheld"];
+const LIBRARY_VIEWS = ["grid", "list"];
 
 function libraryView() {
-  // "shelf" was a view once; anyone who left it on comes back to the grid.
+  // "shelf" and "handheld" were views once; anyone who left one on comes
+  // back to the grid.
   try {
     const v = localStorage.getItem("ssw_view_mode");
     return LIBRARY_VIEWS.indexOf(v) >= 0 ? v : "grid";
@@ -4988,412 +4743,6 @@ function renderList(c, games) {
   });
   c.querySelectorAll(".gt-cover[data-cover]").forEach((el) => showCoverIn(el, el.dataset.cover));
 }
-
-/* ---- Handheld (beta) ---- */
-let hhOn = false;              // is the library in the Handheld view right now
-let hhGames = [];
-let hhIndex = 0;
-let hhSelFid = null;           // the game the cursor's on, kept across redraws
-let hhArtToken = 0;            // so a slow cover can't land on the game you've moved past
-let hhBgFront = 0;             // which of the top screen's two backdrops is showing
-let hhOpening = false;
-let hhPadSeen = false;         // show controller hints once a controller has spoken
-let hhClockTimer = 0;
-let hhLast = { cmd: "", at: 0, src: "" };
-
-const HH_ALL_ICON = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1"/>' +
-  '<rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>';
-const HH_FULL_ICON = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/>' +
-  '<path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
-
-// The consoles in the dock: every one you have a game for, in the usual order.
-function hhDockConsoles() {
-  return CONSOLES.filter((con) => allGames.some((g) => g.consoleId === con.id));
-}
-
-function renderHandheld(c, games) {
-  hhGames = games;
-  hhOpening = false;
-  const at = games.findIndex((g) => g.folder.id === hhSelFid);
-  hhIndex = at >= 0 ? at : 0;
-
-  const dock =
-    '<button type="button" data-hh-filter="all" title="All games"' + (activeFilter === "all" ? ' class="on"' : "") + ">" + HH_ALL_ICON + "</button>" +
-    hhDockConsoles().map((con) =>
-      '<button type="button" data-hh-filter="' + con.id + '" title="' + escapeAttr(con.label) + '"' +
-        (activeFilter === con.id ? ' class="on"' : "") + ">" + consoleIcon(con.id, 26, 7) + "</button>").join("");
-
-  c.innerHTML =
-    '<div class="hh" tabindex="0" role="application" aria-label="Your games. Arrow keys move, Enter opens.">' +
-      '<div class="hh-screen hh-top">' +
-        '<div class="hh-bg"></div><div class="hh-bg"></div>' +
-        '<div class="hh-status">' +
-          '<span class="hh-brand">' + logoSvg(18, "hh") + "<span>Save Station</span></span>" +
-          '<span class="hh-sp"></span>' +
-          '<span class="hh-batt hidden"></span>' +
-          '<span class="hh-date"></span><span class="hh-clock"></span>' +
-          '<button type="button" class="hh-iconbtn" data-hh-act="add" title="Add game">' + ico("plus") + "</button>" +
-          '<button type="button" class="hh-iconbtn" data-hh-act="settings" title="Settings">' + ico("settings") + "</button>" +
-          (document.fullscreenEnabled
-            ? '<button type="button" class="hh-iconbtn" data-hh-act="full" title="Full screen">' + HH_FULL_ICON + "</button>" : "") +
-        "</div>" +
-        '<div class="hh-hero">' +
-          '<div class="hh-art cover-frame"><span class="no-cover-label"></span></div>' +
-          '<div class="hh-info"><div class="hh-con"></div><div class="hh-title"></div><div class="hh-facts"></div></div>' +
-        "</div>" +
-        '<div class="hh-foot"><span class="hh-pos"></span><span class="hh-hints"></span></div>' +
-      "</div>" +
-      '<div class="hh-hinge" aria-hidden="true"></div>' +
-      '<div class="hh-screen hh-bottom">' +
-        '<div class="hh-scroll"><div class="hh-grid" role="listbox" aria-label="Games">' +
-          games.map((g, i) => {
-            const con = consoleOf(g.consoleId);
-            return '<div class="hh-tile" role="option" id="hh-t' + i + '" data-i="' + i + '" aria-selected="false"' +
-                ' aria-label="' + escapeAttr(g.folder.name) + '" style="--tint:' + (con ? con.color : "#3a3935") + '"' +
-                (g.cover ? ' data-cover="' + escapeAttr(g.cover.id) + '"' : "") + ">" +
-              '<span class="hh-face"><span class="hh-nc">' + consoleIcon(g.consoleId, 30, 8) +
-                "<span>" + escapeHtml(g.folder.name) + "</span></span></span>" +
-              (isPinned(g.folder.id) ? '<span class="hh-pinned" title="Pinned">' + ico("pin") + "</span>" : "") +
-            "</div>";
-          }).join("") +
-        "</div></div>" +
-        '<div class="hh-dock">' +
-          '<button type="button" class="hh-shoulder" data-hh-act="prev" title="Previous console (L)">L</button>' +
-          '<div class="hh-dock-in">' + dock + "</div>" +
-          '<button type="button" class="hh-shoulder" data-hh-act="next" title="Next console (R)">R</button>' +
-        "</div>" +
-      "</div>" +
-    "</div>";
-
-  const hh = c.querySelector(".hh");
-  hh.querySelectorAll(".hh-tile[data-cover]").forEach((t) => {
-    getCoverUrl(t.dataset.cover).then((url) => {
-      t.style.setProperty("--cover", "url('" + url + "')");
-      t.classList.add("has-art");
-    }).catch(() => {});
-  });
-  wireHandheld(hh);
-  fitHandheldGrid(hh);
-  if (hhResize) { hhResize.disconnect(); hhResize.observe(hh.querySelector(".hh-scroll")); }
-  hhSelect(hh, hhIndex, true);
-  hhHints(hh);
-  startHandheldClock();
-  watchGamepads();
-  // Take the keys, unless you're busy with something else on the page.
-  const ae = document.activeElement;
-  if (currentNav === "games" && $("modalBack").classList.contains("hidden") &&
-      (!ae || ae === document.body || ae.closest("#viewToggle"))) {
-    try { hh.focus({ preventScroll: true }); } catch (e) {}
-  }
-}
-
-function wireHandheld(hh) {
-  hh.querySelectorAll(".hh-tile").forEach((t) => {
-    // Tap to pick a game, tap it again to open it — the way the 3DS does.
-    t.onclick = () => {
-      const i = +t.dataset.i;
-      if (i === hhIndex) hhOpen(hh);
-      else hhSelect(hh, i);
-      try { hh.focus({ preventScroll: true }); } catch (e) {}
-    };
-  });
-  hh.querySelectorAll("[data-hh-filter]").forEach((b) => {
-    b.onclick = () => hhFilter(b.dataset.hhFilter);
-  });
-  hh.querySelectorAll("[data-hh-act]").forEach((b) => {
-    b.onclick = () => {
-      const act = b.dataset.hhAct;
-      if (act === "add") openNewGamePanel();
-      else if (act === "settings") navigate("settings");
-      else if (act === "full") hhToggleFullscreen();
-      else if (act === "prev") hhCycleFilter(-1);
-      else if (act === "next") hhCycleFilter(1);
-    };
-  });
-  hh.addEventListener("keydown", (e) => {
-    // A dock button keeps its own Enter and Space.
-    if ((e.key === "Enter" || e.key === " ") && e.target !== hh && e.target.closest("button")) return;
-    const cmd = {
-      ArrowLeft: "left", ArrowRight: "right", ArrowUp: "up", ArrowDown: "down",
-      Home: "first", End: "last", Enter: "open", " ": "open",
-      q: "prev", Q: "prev", e: "next", E: "next", PageUp: "prev", PageDown: "next",
-    }[e.key];
-    if (!cmd || e.altKey || e.ctrlKey || e.metaKey) return;
-    e.preventDefault();
-    hhCommand(cmd, "key");
-  });
-}
-
-const hhResize = typeof ResizeObserver === "function" ? new ResizeObserver(() => {
-  const hh = document.querySelector("#gamesContainer .hh");
-  if (hh) fitHandheldGrid(hh);
-}) : null;
-
-// Columns are worked out here rather than left to the grid, so up and down
-// know how far a row is.
-function fitHandheldGrid(hh) {
-  const grid = hh.querySelector(".hh-grid");
-  const w = grid.clientWidth;
-  if (!w) return;
-  const gap = parseFloat(getComputedStyle(grid).columnGap) || 14;
-  const cols = Math.max(3, Math.min(8, Math.floor((w + gap) / (76 + gap))));
-  if (hhCols(hh) !== cols) grid.style.setProperty("--cols", cols);
-}
-
-function hhCols(hh) {
-  return +hh.querySelector(".hh-grid").style.getPropertyValue("--cols") || 5;
-}
-
-function hhSelect(hh, i, instant) {
-  const n = hhGames.length;
-  if (!n) return;
-  i = Math.max(0, Math.min(n - 1, i));
-  if (i === hhIndex && !instant) return;
-  const prev = hh.querySelector(".hh-tile.sel");
-  if (prev) { prev.classList.remove("sel"); prev.setAttribute("aria-selected", "false"); }
-  const tile = hh.querySelector('.hh-tile[data-i="' + i + '"]');
-  if (!tile) return;
-  hhIndex = i;
-  const g = hhGames[i];
-  hhSelFid = g.folder.id;
-  tile.classList.add("sel");
-  tile.setAttribute("aria-selected", "true");
-  hh.setAttribute("aria-activedescendant", tile.id);
-
-  // Keep the tile on the bottom screen, without scrolling the page under it.
-  const scroller = hh.querySelector(".hh-scroll");
-  const pad = 18;
-  const top = tile.offsetTop - pad, bottom = tile.offsetTop + tile.offsetHeight + pad;
-  const behavior = instant ? "auto" : "smooth";
-  if (top < scroller.scrollTop) scroller.scrollTo({ top, behavior });
-  else if (bottom > scroller.scrollTop + scroller.clientHeight) scroller.scrollTo({ top: bottom - scroller.clientHeight, behavior });
-
-  hhShowTop(hh, g, i);
-}
-
-// The top screen: the game you're on, over a blur of its own cover.
-function hhShowTop(hh, g, i) {
-  const con = consoleOf(g.consoleId);
-  const latest = g.saves[0];
-  const p = latest ? (latest.appProperties || {}) : {};
-  hh.querySelector(".hh-top").style.setProperty("--tint", con ? con.color : "#3a3935");
-  hh.querySelector(".hh-con").innerHTML = con
-    ? consoleIcon(con.id, 18, 5) + "<span>" + escapeHtml(con.label) + "</span>"
-    : "<span>No console set</span>";
-  hh.querySelector(".hh-title").textContent = g.folder.name;
-  const nSlots = (g.slots || []).length;
-  const facts = [];
-  if (latest) {
-    facts.push(ico("clock") + "Backed up " + escapeHtml(relTime(latest.createdTime)));
-    facts.push(ico("history") + g.saves.length + " backup" + (g.saves.length === 1 ? "" : "s") +
-               (nSlots > 1 ? " · " + nSlots + " slots" : ""));
-    if (p.device) facts.push(ico("monitor") + "From " + escapeHtml(p.device));
-  } else {
-    facts.push(ico("inbox") + "No backups yet");
-  }
-  if (isPinned(g.folder.id)) facts.push(ico("pin") + "Pinned");
-  hh.querySelector(".hh-facts").innerHTML = facts.map((f) => "<span>" + f + "</span>").join("");
-  hh.querySelector(".hh-pos").textContent = (i + 1) + " / " + hhGames.length;
-  const info = hh.querySelector(".hh-info");
-  info.classList.remove("hh-in");
-  void info.offsetWidth;                         // restart the slide-in
-  info.classList.add("hh-in");
-
-  const art = hh.querySelector(".hh-art");
-  const bgs = hh.querySelectorAll(".hh-bg");
-  const mine = ++hhArtToken;
-  art.style.setProperty("--console", con ? con.color : "#3a3935");
-  art.querySelector(".no-cover-label").innerHTML = consoleIcon(g.consoleId, 40, 10);
-  art.classList.remove("has-art");
-  if (!g.cover) {
-    art.style.removeProperty("--cover");
-    bgs.forEach((b) => b.classList.remove("on"));
-    return;
-  }
-  getCoverUrl(g.cover.id).then((url) => {
-    if (mine !== hhArtToken || !art.isConnected) return;
-    const v = "url('" + url + "')";
-    art.style.setProperty("--cover", v);
-    art.classList.add("has-art");
-    // Two backdrops, so one cover fades into the next instead of snapping.
-    hhBgFront = 1 - hhBgFront;
-    bgs[hhBgFront].style.setProperty("--cover", v);
-    bgs[hhBgFront].classList.add("on");
-    bgs[1 - hhBgFront].classList.remove("on");
-  }).catch(() => {});
-}
-
-// What the buttons do, in the words of whatever's driving it.
-function hhHints(hh) {
-  const el = hh.querySelector(".hh-hints");
-  if (!el) return;
-  const k = (s) => '<i class="hh-key">' + s + "</i>";
-  if (hhPadSeen) {
-    el.innerHTML = "<span>" + k("A") + "Open</span><span>" + k("Y") + "Pin</span><span>" + k("L") + k("R") + "Console</span>";
-  } else if (window.matchMedia("(hover: none)").matches) {
-    el.innerHTML = "<span>Tap a game, then tap it again to open</span>";
-  } else {
-    el.innerHTML = "<span>" + k("←") + k("→") + "Move</span><span>" + k("Enter") + "Open</span><span>" +
-      k("Q") + k("E") + "Console</span>";
-  }
-}
-
-function hhFilter(id) {
-  if (activeFilter === id) return;
-  activeFilter = id;
-  renderGames();
-}
-
-function hhCycleFilter(step) {
-  const ids = ["all"].concat(hhDockConsoles().map((con) => con.id));
-  const at = Math.max(0, ids.indexOf(activeFilter));
-  hhFilter(ids[(at + step + ids.length) % ids.length]);
-}
-
-function hhOpen(hh) {
-  const g = hhGames[hhIndex];
-  if (!g || hhOpening) return;
-  hhOpening = true;
-  const tile = hh.querySelector(".hh-tile.sel");
-  const go = () => {
-    openHistory(g.folder.id, g.folder.name, g.consoleId || null);
-    // The launcher's hidden now; put the tile back for when you come back to it.
-    setTimeout(() => { if (tile) tile.classList.remove("hh-launch"); hhOpening = false; }, 60);
-  };
-  if (tile && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    tile.classList.add("hh-launch");
-    setTimeout(go, 170);
-  } else {
-    go();
-  }
-}
-
-// The whole page, not just the launcher, so opening a game stays full screen too.
-function hhToggleFullscreen() {
-  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-  else document.documentElement.requestFullscreen({ navigationUI: "hide" }).catch(() => {});
-}
-
-function hhCommand(cmd, src) {
-  // A d-pad can arrive both as a gamepad and as arrow keys; take it once.
-  const now = performance.now();
-  if (hhLast.cmd === cmd && hhLast.src !== src && now - hhLast.at < 200) return;
-  hhLast = { cmd, at: now, src };
-  if (!hhOn || !$("modalBack").classList.contains("hidden")) return;
-
-  // On a game's page, B is the way back to the launcher. Nothing else is ours there.
-  if (currentNav === "history") {
-    if (cmd === "back") { navigate("games"); renderGames(); }
-    return;
-  }
-  if (currentNav !== "games") return;
-  const hh = document.querySelector("#gamesContainer .hh");
-  if (!hh) return;
-  const n = hhGames.length, cols = hhCols(hh);
-  const row = Math.floor(hhIndex / cols), lastRow = Math.floor((n - 1) / cols);
-  switch (cmd) {
-    case "left": hhSelect(hh, hhIndex - 1); break;
-    case "right": hhSelect(hh, hhIndex + 1); break;
-    case "up": if (row > 0) hhSelect(hh, hhIndex - cols); break;
-    case "down": if (row < lastRow) hhSelect(hh, Math.min(n - 1, hhIndex + cols)); break;
-    case "first": hhSelect(hh, 0); break;
-    case "last": hhSelect(hh, n - 1); break;
-    case "open": hhOpen(hh); break;
-    case "pin": if (hhGames[hhIndex]) togglePin(hhGames[hhIndex].folder.id, hhGames[hhIndex].folder.name); break;
-    case "prev": hhCycleFilter(-1); break;
-    case "next": hhCycleFilter(1); break;
-  }
-}
-
-function startHandheldClock() {
-  const tick = () => {
-    const hh = document.querySelector("#gamesContainer .hh");
-    if (!hh) { clearInterval(hhClockTimer); hhClockTimer = 0; return; }
-    const now = new Date();
-    hh.querySelector(".hh-clock").textContent = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-    hh.querySelector(".hh-date").textContent = now.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
-  };
-  clearInterval(hhClockTimer);
-  tick();
-  hhClockTimer = setInterval(tick, 15000);
-  // The battery, where the browser says (Chrome on Android does). A desktop
-  // with no battery reports itself full and charging forever; that's left off.
-  if (navigator.getBattery) {
-    navigator.getBattery().then((b) => {
-      const el = document.querySelector("#gamesContainer .hh .hh-batt");
-      if (!el || (b.charging && b.level >= 1 && !b.chargingTime)) return;
-      const fill = b.charging ? "#62cf8d" : b.level <= .2 ? "#f37570" : "currentColor";
-      el.innerHTML = '<svg viewBox="0 0 26 14" width="22" height="12" aria-hidden="true">' +
-        '<rect x="1" y="1" width="21" height="12" rx="3" fill="none" stroke="currentColor" stroke-opacity=".7" stroke-width="1.5"/>' +
-        '<rect x="23" y="4.5" width="2" height="5" rx="1" fill="currentColor" opacity=".7"/>' +
-        '<rect x="3" y="3" width="' + Math.max(1.5, 17 * b.level).toFixed(1) + '" height="8" rx="1.5" fill="' + fill + '"/></svg>' +
-        Math.round(b.level * 100) + "%";
-      el.classList.remove("hidden");
-    }).catch(() => {});
-  }
-}
-
-/* Controllers. The Gamepad API is polled once a frame, only while a pad is
-   connected and the library is in the Handheld view. The d-pad and left stick
-   move (holding repeats), A opens, B goes back from a game, Y pins, and the
-   shoulder buttons step through the consoles. Positions, not letters: A is
-   the bottom face button and B the right one, as on the standard mapping. */
-const HH_PAD_BUTTONS = { 0: "open", 1: "back", 3: "pin", 4: "prev", 5: "next" };
-let hhPadLoop = 0;
-let hhPadHeld = {};            // what was down last frame
-let hhPadNext = {};            // when a held direction next repeats
-
-function watchGamepads() {
-  if (hhPadLoop || !hhOn || !navigator.getGamepads) return;
-  if (!Array.from(navigator.getGamepads() || []).some(Boolean)) return;
-  hhPadLoop = requestAnimationFrame(hhPadFrame);
-}
-
-function hhPadFrame(t) {
-  hhPadLoop = 0;
-  const pad = Array.from(navigator.getGamepads() || []).filter(Boolean)
-    .sort((a, b) => (b.mapping === "standard") - (a.mapping === "standard"))[0];
-  if (!pad || !hhOn) { hhPadHeld = {}; return; }
-  const down = (i) => !!(pad.buttons[i] && pad.buttons[i].pressed);
-  const ax = pad.axes[0] || 0, ay = pad.axes[1] || 0;
-  const now = {
-    up: down(12) || ay < -.6, down: down(13) || ay > .6,
-    left: down(14) || ax < -.6, right: down(15) || ax > .6,
-  };
-  Object.keys(HH_PAD_BUTTONS).forEach((i) => { now["b" + i] = down(+i); });
-  // Not while you're typing in a box on the page, nor while another window
-  // has focus: a controller you're playing an emulator with mustn't be
-  // driving the library behind it.
-  const typing = document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
-  const idle = typing || !document.hasFocus();
-  const fire = (cmd) => {
-    if (idle) return;
-    if (!hhPadSeen) {
-      hhPadSeen = true;
-      const hh = document.querySelector("#gamesContainer .hh");
-      if (hh) hhHints(hh);
-    }
-    hhCommand(cmd, "pad");
-  };
-  ["up", "down", "left", "right"].forEach((d) => {
-    if (!now[d]) return;
-    if (!hhPadHeld[d]) { fire(d); hhPadNext[d] = t + 380; }
-    else if (t >= hhPadNext[d]) { fire(d); hhPadNext[d] = t + 110; }
-  });
-  Object.keys(HH_PAD_BUTTONS).forEach((i) => {
-    if (now["b" + i] && !hhPadHeld["b" + i]) fire(HH_PAD_BUTTONS[i]);
-  });
-  hhPadHeld = now;
-  hhPadLoop = requestAnimationFrame(hhPadFrame);
-}
-
-// Browsers only reveal a controller once a button on it is pressed.
-window.addEventListener("gamepadconnected", () => {
-  hhPadSeen = true;
-  const hh = document.querySelector("#gamesContainer .hh");
-  if (hh) hhHints(hh);
-  watchGamepads();
-});
 
 let currentHistory = { folderId: null, name: null, saves: [], console: null, slots: [] };
 

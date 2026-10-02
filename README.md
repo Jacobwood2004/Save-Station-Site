@@ -284,28 +284,14 @@ Every cover sits in the same case-shaped frame and is shown **whole**: a square
 over a soft blur of their own art. A game with no cover is plain gray and says
 so.
 
-## Three ways to see your library
+## Two ways to see your library
 
-Above your library, next to Refresh, is a switch between three views. Whichever
-you pick is remembered on that device.
+Above your library, next to Refresh, is a switch between two views — the same two the
+Windows app has. Whichever you pick is remembered on that device.
 
 - **Grid** — the covers, large, with each game's console and its last backup.
 - **List** — one row a game: its console, how many backups it has, when the
-  last one was made and which device made it. The same columns as the Windows
-  app's list.
-- **Handheld** *(beta)* — the library as a dual-screen launcher, after the
-  3DS-style front ends on Android handhelds like the AYN Thor. The game you're
-  on fills the top screen over a blur of its own cover, with its console, its
-  last backup and where it came from. Every game is a rounded tile on the
-  bottom screen, with a dock of your consoles underneath. On a short, wide
-  screen — a handheld's own top screen, or a phone on its side — the two
-  screens sit side by side.
-
-  Tap a tile to pick it and tap it again to open it, or use a controller: the
-  d-pad or left stick moves, **A** opens, **B** goes back from a game, **Y**
-  pins, and **L** / **R** step through your consoles. On a keyboard, the arrow
-  keys move, Enter opens, and Q / E switch console. The full-screen button in its top corner
-  makes the whole page full screen.
+  last one was made and which device made it.
 
 ## The console a game is filed under
 
