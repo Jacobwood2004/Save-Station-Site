@@ -278,9 +278,39 @@
   }
   .sb-toggle:hover { color: var(--text); background: var(--hover); }
   .sb-toggle #sbToggleIcon { width: 20px; display: grid; place-items: center; }
-  .sb-user { display: flex; align-items: center; gap: 10px; padding: 8px 10px; overflow: hidden; }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
   .sb-user img { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; }
-  .sb-user .sb-who { min-width: 0; }
+  .sb-user .sb-who { flex: 1; min-width: 0; }
+
+  /* Lifetime saves: a yellow floppy and a count beside your name. Hover it and
+     it lights up, with the full number in a bubble above. */
+  .lifetime {
+    position: relative; flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;
+    height: 24px; padding: 0 7px 0 5px; border-radius: 999px; cursor: default;
+    background: rgba(255, 160, 51, .1); color: var(--accent-text);
+    font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums;
+    transition: background .15s ease, box-shadow .15s ease;
+  }
+  .lifetime-disk { width: 15px; height: 15px; display: block; transition: filter .15s ease, transform .15s var(--ease); }
+  .lifetime:hover { background: rgba(255, 160, 51, .18); box-shadow: 0 0 0 1px rgba(255, 160, 51, .35), 0 0 14px rgba(255, 160, 51, .35); }
+  .lifetime:hover .lifetime-disk { filter: drop-shadow(0 0 4px rgba(255, 160, 51, .95)); transform: scale(1.08); }
+  .lifetime-tip {
+    position: absolute; bottom: calc(100% + 10px); right: -8px; z-index: 5;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
+    padding: 7px 11px 8px; border-radius: 10px; white-space: nowrap; pointer-events: none;
+    background: var(--panel-3); border: 1px solid var(--border-2); box-shadow: var(--shadow-pop);
+    color: var(--text); text-align: left;
+    opacity: 0; transform: translateY(4px); transition: opacity .14s ease, transform .14s var(--ease);
+  }
+  .lifetime-tip span { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .lifetime-tip b { font: 700 18px/1.1 var(--font-display); color: var(--accent-text); font-variant-numeric: tabular-nums; }
+  .lifetime-tip::after {
+    content: ""; position: absolute; top: 100%; right: 29px; margin-top: -5px;
+    width: 9px; height: 9px; transform: rotate(45deg);
+    background: var(--panel-3); border-right: 1px solid var(--border-2); border-bottom: 1px solid var(--border-2);
+  }
+  .lifetime:hover .lifetime-tip { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .lifetime-disk, .lifetime-tip { transition: none; } }
   .sb-user .sb-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sb-user .sb-mail { font-size: 11.5px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -289,6 +319,7 @@
   .sidebar.collapsed .sb-sec,
   .sidebar.collapsed .sb-count,
   .sidebar.collapsed .sb-who,
+  .sidebar.collapsed .lifetime,
   .sidebar.collapsed .sb-pin { display: none; }
   .sidebar.collapsed .sb-item, .sidebar.collapsed .sb-toggle { justify-content: center; padding: 0; }
   .sidebar.collapsed .sb-head { justify-content: center; padding: 16px 0 12px; }
@@ -894,7 +925,7 @@
     main#app, body.sb-collapsed main#app { margin-left: 68px; }
     .sidebar .sb-title, .sidebar .sb-label, .sidebar .sb-sec,
     .sidebar .sb-count, .sidebar .sb-who, .sidebar .sb-empty,
-    .sidebar .sb-pin { display: none; }
+    .sidebar .sb-pin, .sidebar .lifetime { display: none; }
     .sidebar .sb-item { justify-content: center; padding: 0; }
     .sidebar .sb-head { justify-content: center; padding: 16px 0 12px; }
     .sidebar .sb-user { justify-content: center; padding: 8px 0; }
@@ -908,6 +939,7 @@
     body.sb-open .sidebar { transform: none; box-shadow: 0 0 40px rgba(0, 0, 0, .55); }
     .sidebar .sb-title, .sidebar .sb-label, .sidebar .sb-sec,
     .sidebar .sb-count, .sidebar .sb-who, .sidebar .sb-pin { display: revert; }
+    .sidebar .lifetime { display: inline-flex; }
     .sidebar .sb-item { justify-content: flex-start; padding: 0 10px; }
     .sidebar .sb-item.sb-add { justify-content: center; }
     .sidebar .sb-head { justify-content: flex-start; padding: 16px 16px 12px; }
@@ -999,6 +1031,11 @@
         <div class="sb-name" id="userName"></div>
         <div class="sb-mail" id="sbUserMail"></div>
       </div>
+      <span class="lifetime hidden" id="lifetimeChip" role="img" aria-label="Lifetime saves">
+        <svg class="lifetime-disk" viewBox="0 0 40 40" aria-hidden="true"><path d="M4 0h28l8 8v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4Z" fill="#ffa033"/><rect x="10" y="0" width="18" height="12" rx="1.5" fill="#2b2a26"/><rect x="20" y="2.5" width="4.5" height="7" rx="1" fill="#ffa033"/><rect x="6" y="19" width="28" height="17" rx="2" fill="#faf8f3"/></svg>
+        <span class="lifetime-n" id="lifetimeN"></span>
+        <span class="lifetime-tip" aria-hidden="true"><span>Lifetime saves</span><b id="lifetimeFull"></b></span>
+      </span>
     </div>
     <button class="sb-item" id="signOutBtn" title="Sign out">
       <span class="sb-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg></span><span class="sb-label">Sign out</span>
@@ -1414,7 +1451,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-10-02f";
+const BUILD = "2026-10-02g";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -3077,6 +3114,60 @@ async function saveProfile(p) {
 }
 
 /* ============================================================
+   Lifetime saves — every backup this account has ever made.
+   It's kept in station.json and only goes up: deleting a backup
+   never takes it back down. Each upload from here or the Windows
+   app adds one; uploads from somewhere that doesn't count them
+   (the 3DS, Checkpoint) are caught up the next time Drive holds
+   more backups than it says. Both go through one queue, so an
+   upload can't be counted twice.
+   ============================================================ */
+let lifetimeJob = Promise.resolve();
+let uploadsInFlight = 0;
+
+function lifetimeOf(p) { return Math.max(0, Math.floor(Number(p && p.lifetimeSaves) || 0)); }
+function liveBackupCount() { return allGames.reduce((n, g) => n + g.saves.length, 0); }
+
+function queueLifetime(job) {
+  lifetimeJob = lifetimeJob.then(job)
+    .catch((e) => console.warn("Couldn't keep the lifetime count", e))
+    .then(renderLifetime);
+  return lifetimeJob;
+}
+
+// Re-read station.json first, so a count the app raised a minute ago isn't
+// written back over.
+async function changeLifetime(next) {
+  const fresh = (await loadProfile()) || profile;
+  if (!fresh) return;
+  const n = next(lifetimeOf(fresh));
+  if (n !== lifetimeOf(fresh)) { fresh.lifetimeSaves = n; profile = await saveProfile(fresh); }
+  else profile = fresh;
+}
+
+function countBackup() { return queueLifetime(() => changeLifetime((n) => n + 1)); }
+
+// Not while an upload's in flight: that one's counted when it finishes.
+function catchUpLifetime() {
+  const live = liveBackupCount();
+  if (uploadsInFlight || !profile || live <= lifetimeOf(profile)) return;
+  queueLifetime(() => changeLifetime((n) => Math.max(n, live)));
+}
+
+function renderLifetime() {
+  const chip = $("lifetimeChip");
+  if (!profile) { chip.classList.add("hidden"); return; }
+  // Never fewer than are in Drive now, even before the stored count catches up.
+  const n = Math.max(lifetimeOf(profile), liveBackupCount());
+  const full = n.toLocaleString();
+  $("lifetimeN").textContent = n < 1000 ? String(n)
+    : n < 100000 ? (n / 1000).toFixed(n < 10000 ? 1 : 0).replace(/\.0$/, "") + "k" : "99k+";
+  $("lifetimeFull").textContent = full;
+  chip.setAttribute("aria-label", "Lifetime saves: " + full);
+  chip.classList.remove("hidden");
+}
+
+/* ============================================================
    Onboarding — "which consoles do you plan to keep saves for?"
    ============================================================ */
 function startOnboarding(mode) {
@@ -4228,6 +4319,17 @@ async function uploadSave(folderId, filename, fileBlob, appProperties) {
    slot tagging, same hash, same naming. Anything that diverges here shows up
    later as a game whose history half-works. */
 async function uploadToSlot(opts) {
+  uploadsInFlight++;
+  try {
+    const res = await uploadToSlotNow(opts);
+    countBackup();
+    return res;
+  } finally {
+    uploadsInFlight--;
+  }
+}
+
+async function uploadToSlotNow(opts) {
   const device = opts.device || localStorage.getItem("ssw_device_name") || getDeviceName();
   const slot = opts.slot || { id: DEFAULT_SLOT.id, name: DEFAULT_SLOT.name };
   const props = {
@@ -4733,6 +4835,8 @@ async function loadGames() {
     pruneStalePins();
     pruneStaleSlots();
     renderSidebar();
+    renderLifetime();
+    catchUpLifetime();
     renderGames();
     announceGames();
   } catch (e) {
