@@ -91,26 +91,54 @@ logged out.
 
 ### Signing in on a phone or iPad by QR code
 
-Typing a Google password on a phone is miserable, so a computer that's already
-signed in can hand its session over:
+Typing a password on a phone is miserable, so a computer that's already signed
+in can sign the phone in for you:
 
-1. On the computer: **Settings → Sign in on another device → Show QR code**.
+1. On the computer: **Settings → Other devices → Show QR code**.
 2. On the phone or iPad: open the **Camera app** and point it at the code (or tap
    **Scan a QR code from a signed-in device** on the sign-in screen — that option
    only appears on phones and iPads).
-3. The phone lands on Save Station already signed in, and quietly picks up a
-   session of its own so it stays signed in afterwards.
+3. The phone lands on Save Station signed into **your account**, the same as if
+   you'd typed the password: it stays signed in, and everything on the Account
+   page (password reset included) works there.
 
-**The code is a live sign-in — treat it like a password.** It's only valid for
-**two minutes**, the countdown is on screen, and it's wiped from the page the
+The code carries a **one-time pairing code** from the Drive broker (the Worker),
+not your password or your session. The phone hands it back to the Worker, which
+answers with a Firebase sign-in for your account and forgets the code. That
+needs the Worker's `FIREBASE_SERVICE_ACCOUNT` secret — see
+[worker/README.md](worker/README.md#qr-sign-in). Without it, the site falls back to
+the old kind of code, which lends the phone the computer's Drive session for an
+hour and no account behind it.
+
+**Still treat the code like a password.** It's valid for **two minutes** and
+works **once**; the countdown is on screen, and it's wiped from the page the
 moment you hide it or the timer runs out. Don't screenshot it, share it, or show
-it on a stream. If one leaks, hit **Sign out** on the computer: that revokes the
-token and the code dies with it.
+it on a stream.
 
-The sign-in travels in the URL's `#fragment`, which browsers never send to any
-server, and it's stripped from the address bar the instant the phone reads it.
-The QR code itself is generated on your own machine — the page loads no
-third-party scripts, so your session never leaves this origin.
+It travels in the URL's `#fragment`, which browsers never send to any server,
+and it's stripped from the address bar the instant the phone reads it. The QR
+code itself is drawn on your own machine.
+
+### The password-reset email
+
+Firebase sends it, and out of the box it's plain text from
+"save-station-fd3a9". To make it look like the rest of Save Station, and have its
+link open a Save Station page for choosing the new password:
+
+1. Firebase console → ⚙ **Project settings → General** → **Public-facing name**:
+   `Save Station`.
+2. **Authentication → Templates → Password reset** → ✏️ edit:
+   - **Sender name**: `Save Station`
+   - **Subject**: `Reset your Save Station password`
+   - **Message**: replace it all with the contents of
+     [`emails/password-reset.html`](emails/password-reset.html).
+   - **Save**.
+3. Still on Templates, **Customize action URL** (under the template) →
+   `https://jacobwood2004.github.io/Save-Station-Site/` → **Save**.
+
+Step 3 sends every link in Firebase's emails to the site, which handles them
+itself: **choose a new password** (with a strength meter, and a fresh link
+offered if the old one ran out), plus confirming or undoing an email change.
 
 ---
 

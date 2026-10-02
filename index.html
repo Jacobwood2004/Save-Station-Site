@@ -25,6 +25,11 @@
       onAuthStateChanged: auth.onAuthStateChanged,
       updateProfile: auth.updateProfile,
       sendPasswordResetEmail: auth.sendPasswordResetEmail,
+      signInWithCustomToken: auth.signInWithCustomToken,
+      verifyPasswordResetCode: auth.verifyPasswordResetCode,
+      confirmPasswordReset: auth.confirmPasswordReset,
+      checkActionCode: auth.checkActionCode,
+      applyActionCode: auth.applyActionCode,
       setPersistence: auth.setPersistence,
       browserLocalPersistence: auth.browserLocalPersistence,
     };
@@ -425,6 +430,16 @@
   .linklike:hover { text-decoration: underline; }
   #forgotBtn { display: flex; margin: 8px auto 0; }
   .pw-hint { font-size: 12px; color: var(--faint); margin-top: 6px; }
+
+  /* Choosing a new password, from an email link */
+  #actForm, #actResend { text-align: left; }
+  #actForm .field, #actResend .field { margin-bottom: 14px; }
+  #actForm input, #actResend input { height: 40px; font-size: 14.5px; width: 100%; }
+  #actSubmit, #actResendBtn, #actDone { width: 100%; height: 44px; font-size: 15px; margin-top: 4px; border-radius: 12px; }
+  .pw-meter { height: 4px; margin-top: 8px; border-radius: 2px; background: var(--bg-sunk); overflow: hidden; }
+  .pw-meter i { display: block; height: 100%; width: 0; border-radius: 2px; background: var(--danger); transition: width .2s ease, background .2s ease; }
+  .pw-meter i.ok { background: var(--accent); }
+  .pw-meter i.good { background: var(--ok); }
 
   /* Link-your-Drive step */
   .steps { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 0 0 24px; font-size: 12.5px; font-weight: 600; color: var(--faint); }
@@ -1109,6 +1124,42 @@
  </div>
 </div>
 
+<!-- EMAIL LINKS — where the links in Save Station's emails land. Firebase's
+     action URL points at this page, so choosing a new password happens here
+     rather than on Firebase's plain one. -->
+<div class="gate hidden" id="actionGate">
+  <div class="gate-card">
+    <div class="biglogo" data-logo="48"></div>
+    <h2 id="actTitle">Checking your link…</h2>
+    <p id="actBlurb"></p>
+    <div class="auth-error hidden" id="actError"></div>
+    <form id="actForm" class="hidden" autocomplete="on">
+      <input type="email" id="actEmail" autocomplete="username" class="hidden" tabindex="-1" aria-hidden="true">
+      <div class="field">
+        <label for="actPw">New password</label>
+        <input type="password" id="actPw" autocomplete="new-password" required>
+        <div class="pw-meter" aria-hidden="true"><i id="actMeter"></i></div>
+        <div class="pw-hint" id="actPwHint">At least 8 characters.</div>
+      </div>
+      <div class="field">
+        <label for="actPw2">Type it again</label>
+        <input type="password" id="actPw2" autocomplete="new-password" required>
+      </div>
+      <button class="btn-primary" id="actSubmit" type="submit">Save new password</button>
+    </form>
+    <form id="actResend" class="hidden">
+      <div class="field">
+        <label for="actResendEmail">Your email</label>
+        <input type="email" id="actResendEmail" autocomplete="username" placeholder="you@example.com" required>
+      </div>
+      <button class="btn-primary" id="actResendBtn" type="submit">Send me a new link</button>
+    </form>
+    <button class="btn-primary hidden" id="actDone" type="button">Log in</button>
+    <div class="gate-restoring" id="actWorking"><span class="spinner"></span> One moment…</div>
+    <div class="build-tag" data-build></div>
+  </div>
+</div>
+
 <!-- LINK GATE — connect Google Drive (required; this is where saves live) -->
 <div class="gate hidden" id="linkGate">
   <div class="gate-card">
@@ -1451,7 +1502,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-10-02g";
+const BUILD = "2026-10-02h";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -1687,6 +1738,16 @@ window.addEventListener("load", () => {
     toast(why, "err", 8000);
   }
 
+  // A link from one of our emails (choosing a new password)? That's all this
+  // visit is for.
+  const emailAction = readEmailAction();
+  if (emailAction) {
+    runEmailAction(emailAction);
+    return;
+  }
+  const prefill = sessionStorage.getItem("ssw_prefill_email");
+  if (prefill) { $("authEmail").value = prefill; sessionStorage.removeItem("ssw_prefill_email"); }
+
   const handoff = readHandoff();
   if (handoff && handoff.expired) {
     toast("That QR code has expired — show a fresh one on your computer.", "err", 6000);
@@ -1700,7 +1761,20 @@ window.addEventListener("load", () => {
 
   wireEvents();
 
-  // A scanned code hands over a Drive session; use it and skip the login screen.
+  // A scanned code from a signed-in computer: trade it with the Worker for a
+  // sign-in to the same account, then carry on as any signed-in visit would.
+  if (handoff && handoff.code) {
+    $("gateRestoring").classList.remove("hidden");
+    $("authForm").classList.add("hidden");
+    $("authTabs").classList.add("hidden");
+    $("forgotBtn").classList.add("hidden");
+    claimQrSignIn(handoff.code).then(
+      (token) => startFirebase(token),
+      (e) => { toast(e.message, "err", 8000); startFirebase(); });
+    return;
+  }
+
+  // An older code hands over a Drive session; use it and skip the login screen.
   if (handoff && !handoff.expired) {
     linkedViaQr = true;
     $("gateRestoring").classList.remove("hidden");
@@ -1744,7 +1818,9 @@ function showConfigWarning(msg) {
   $("forgotBtn").classList.add("hidden");
 }
 
-async function startFirebase() {
+// Firebase, ready to use. False (with the reason on screen) if it can't start.
+async function initFirebase() {
+  if (fbAuth) return true;
   if (!window.__fb && !window.__fbError) {
     await new Promise((res) => {
       if (window.__fb || window.__fbError) return res();
@@ -1753,7 +1829,7 @@ async function startFirebase() {
     });
   }
   const problem = configProblem();
-  if (problem) { showConfigWarning(problem); return; }
+  if (problem) { showConfigWarning(problem); return false; }
 
   try {
     const app = __fb.initializeApp(FIREBASE_CONFIG);
@@ -1761,8 +1837,25 @@ async function startFirebase() {
     // Keep people signed in across visits and tabs.
     await __fb.setPersistence(fbAuth, __fb.browserLocalPersistence);
   } catch (e) {
+    fbAuth = null;
     showConfigWarning("Firebase wouldn't start (" + escapeHtml(e.message) + ").");
-    return;
+    return false;
+  }
+  return true;
+}
+
+async function startFirebase(customToken) {
+  if (!(await initFirebase())) return;
+
+  // Signed in by a scanned code: become that account before anything below
+  // looks at who's signed in. It's an ordinary sign-in from then on.
+  if (customToken) {
+    try {
+      await __fb.signInWithCustomToken(fbAuth, customToken);
+      toast("Signed in from your computer ✔", "ok");
+    } catch (e) {
+      toast("Couldn't sign in with that code (" + ((e && e.code) || (e && e.message) || e) + ").", "err", 8000);
+    }
   }
 
   __fb.onAuthStateChanged(fbAuth, (user) => {
@@ -5268,12 +5361,165 @@ function renderHistory() {
 }
 
 /* ============================================================
-   QR sign-in — hand this browser's session to a phone or iPad.
+   Email links — where the links in our emails land.
 
-   There's no server to pair through, so the code carries the
-   sign-in itself. Two things keep that honest: it lives in the
-   URL *fragment* (never sent to any server, stripped from the
-   address bar on arrival), and it dies after QR_TTL seconds.
+   Firebase's action URL points here (Authentication → Templates
+   → Customize action URL), so a password reset happens on a Save
+   Station page instead of Firebase's plain one. The link brings
+   ?mode=…&oobCode=…, and the code works once.
+   ============================================================ */
+function readEmailAction() {
+  const q = new URLSearchParams(location.search);
+  const mode = q.get("mode"), code = q.get("oobCode");
+  return mode && code ? { mode, code } : null;
+}
+
+function actShow(id, on) { $(id).classList.toggle("hidden", !on); }
+function actError(msg) { const el = $("actError"); el.textContent = msg; actShow("actError", !!msg); }
+
+// A link that's spent or too old: say so, and offer a fresh one.
+function actLinkDead(title, blurb) {
+  $("actTitle").textContent = title;
+  $("actBlurb").textContent = blurb;
+  actShow("actWorking", false);
+  actShow("actForm", false);
+  actShow("actResend", true);
+}
+
+// Back to the ordinary page, with the email filled in on the login form.
+function leaveEmailAction(email) {
+  if (email) sessionStorage.setItem("ssw_prefill_email", email);
+  location.replace(location.pathname);
+}
+
+function passwordStrength(pw) {
+  let n = 0;
+  if (pw.length >= 8) n++;
+  if (pw.length >= 12) n++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) n++;
+  if (/\d/.test(pw)) n++;
+  if (/[^A-Za-z0-9]/.test(pw)) n++;
+  return n;     // 0-5
+}
+
+async function runEmailAction(a) {
+  // The code comes out of the address bar now: it's spent once used, and a
+  // reload shouldn't try it again.
+  try { history.replaceState(null, "", location.pathname); } catch (e) {}
+  $("gate").classList.add("hidden");
+  actShow("actionGate", true);
+  $("actDone").onclick = () => leaveEmailAction("");
+  $("actResend").onsubmit = async (ev) => {
+    ev.preventDefault();
+    const email = $("actResendEmail").value.trim();
+    if (!email || !fbAuth) return;
+    $("actResendBtn").disabled = true;
+    try {
+      await __fb.sendPasswordResetEmail(fbAuth, email);
+      actError("");
+      $("actTitle").textContent = "Check your inbox";
+      $("actBlurb").textContent = "A new link is on its way to " + email + ". It works once, for an hour.";
+      actShow("actResend", false);
+    } catch (e) {
+      actError(e && e.code === "auth/invalid-email" ? "That doesn't look like an email address." : "Couldn't send it. Try again in a minute.");
+    } finally {
+      $("actResendBtn").disabled = false;
+    }
+  };
+
+  if (!(await initFirebase())) {
+    actShow("actWorking", false);
+    $("actTitle").textContent = "Couldn't load sign-in";
+    $("actBlurb").textContent = "Check your connection, then open the link from your email again.";
+    return;
+  }
+
+  if (a.mode === "resetPassword") {
+    let email;
+    try {
+      email = await __fb.verifyPasswordResetCode(fbAuth, a.code);
+    } catch (e) {
+      return actLinkDead("This link has run out",
+        "Reset links work once, for an hour. Put in your email and we'll send a fresh one.");
+    }
+    $("actTitle").textContent = "Choose a new password";
+    $("actBlurb").innerHTML = "For <b>" + escapeHtml(email) + "</b>. Your saves stay exactly where they are; this only changes how you sign in.";
+    $("actEmail").value = email;
+    $("actResendEmail").value = email;
+    actShow("actWorking", false);
+    actShow("actForm", true);
+    $("actPw").focus();
+    $("actPw").oninput = () => {
+      const pw = $("actPw").value, n = passwordStrength(pw), m = $("actMeter");
+      m.style.width = (pw ? Math.max(12, n * 20) : 0) + "%";
+      m.className = pw.length < 8 ? "" : n >= 4 ? "good" : "ok";
+      $("actPwHint").textContent = !pw || pw.length >= 8
+        ? (n >= 4 ? "Strong." : pw ? "Good. Longer, or a mix of letters, numbers and symbols, is stronger." : "At least 8 characters.")
+        : (8 - pw.length) + " more character" + (8 - pw.length === 1 ? "" : "s") + ".";
+    };
+    $("actForm").onsubmit = async (ev) => {
+      ev.preventDefault();
+      const pw = $("actPw").value;
+      if (pw.length < 8) return actError("Pick a password of at least 8 characters.");
+      if (pw !== $("actPw2").value) return actError("Those two passwords don't match.");
+      actError("");
+      const btn = $("actSubmit");
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Saving…';
+      try {
+        await __fb.confirmPasswordReset(fbAuth, a.code, pw);
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = "Save new password";
+        if (e && (e.code === "auth/expired-action-code" || e.code === "auth/invalid-action-code")) {
+          return actLinkDead("This link has run out", "It ran out while you were typing. Put in your email and we'll send a fresh one.");
+        }
+        return actError(e && e.code === "auth/weak-password" ? "That password's too easy to guess. Try a longer one." : "Couldn't save it. Try again in a minute.");
+      }
+      actShow("actForm", false);
+      $("actTitle").textContent = "Password changed ✔";
+      $("actBlurb").textContent = "You're all set. Log in with your new password here, in the Windows app, or on your phone.";
+      $("actDone").onclick = () => leaveEmailAction(email);
+      actShow("actDone", true);
+    };
+    return;
+  }
+
+  if (a.mode === "verifyEmail" || a.mode === "recoverEmail") {
+    try {
+      await __fb.applyActionCode(fbAuth, a.code);
+    } catch (e) {
+      return actLinkDead("This link has run out", "It's already been used, or it's too old. Nothing changed.");
+    }
+    actShow("actWorking", false);
+    $("actTitle").textContent = a.mode === "verifyEmail" ? "Email confirmed ✔" : "Email change undone ✔";
+    $("actBlurb").textContent = a.mode === "verifyEmail"
+      ? "Thanks. That's your Save Station account's email confirmed."
+      : "Your account's email is back to what it was. If you didn't ask for the change, reset your password too.";
+    actShow("actDone", true);
+    return;
+  }
+
+  actShow("actWorking", false);
+  $("actTitle").textContent = "That link isn't one we know";
+  $("actBlurb").textContent = "Open Save Station and try again from there.";
+  actShow("actDone", true);
+}
+
+/* ============================================================
+   QR sign-in — sign a phone or iPad into this account.
+
+   The code carries a one-time pairing code from the Worker. The
+   phone hands it back and gets a sign-in to the same account, so
+   it's signed in for good, like any other device (#ss=2).
+
+   A Worker without the service-account key can't do that, and
+   then the code carries this tab's Drive session instead (#ss=1):
+   an hour of Drive and no account behind it.
+
+   Either way it lives in the URL *fragment* (never sent to any
+   server, stripped from the address bar on arrival), and dies
+   after QR_TTL seconds.
    ============================================================ */
 const QR_TTL = 120;          // seconds a displayed code stays valid
 let qrTimer = null;
@@ -5292,19 +5538,63 @@ function isHandheld() {
 // insist on real headroom rather than a few seconds.
 const QR_MIN_TOKEN_LIFE = 300;   // 5 minutes
 
+// The build goes in the query string, not the fragment, and that's the
+// point: a phone opening the same URL with a different #hash reuses whatever
+// it already had cached, and a scanned code would hand a fix to a device
+// still running the version that needed it. A changed query is a different
+// document, so the scan always fetches the current page.
+function handoffBase() {
+  return location.origin + location.pathname + "?v=" + encodeURIComponent(BUILD);
+}
+
+// A code that signs the phone into this account. Null when the Worker can't
+// make one (no service-account key), so the caller falls back to lending the
+// Drive session; throws when it should have worked and didn't.
+async function accountHandoff() {
+  if (!workerEnabled() || !fbUser) return null;
+  const idt = await firebaseIdToken();
+  if (!idt) return null;
+  const r = await fetch(workerPath("/qr/start"), { method: "POST", headers: { Authorization: "Bearer " + idt } });
+  if (r.status === 501) return null;
+  if (!r.ok) throw new Error("the sign-in service said " + r.status);
+  const d = await r.json();
+  const exp = Math.floor(Date.now() / 1000) + (d.expires_in || QR_TTL);
+  return { url: handoffBase() + "#ss=2~" + exp + "~" + d.code, expiresAt: exp };
+}
+
+// On the phone: trade the scanned code for a Firebase sign-in token. A code
+// filed a moment ago can take a second or two to reach every Cloudflare
+// location, so "no such code" is tried again briefly before it's believed.
+async function claimQrSignIn(code) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    let r;
+    try {
+      r = await fetch(workerPath("/qr/claim"), {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code }),
+      });
+    } catch (e) {
+      throw new Error("Couldn't reach the sign-in service. Check your connection and scan again.");
+    }
+    if (r.ok) {
+      const d = await r.json();
+      if (d.token) return d.token;
+      break;
+    }
+    if (r.status !== 410) break;
+    if (attempt < 2) await new Promise((res) => setTimeout(res, 1500));
+    else throw new Error("That QR code was already used or has run out. Show a fresh one on your computer.");
+  }
+  throw new Error("Couldn't sign in with that code. Show a fresh one on your computer and scan again.");
+}
+
+// The older kind: this tab's Drive session itself.
 function handoffUrl() {
   const now = Math.floor(Date.now() / 1000);
   const tokExp = tokenExpiresAt || (now + 3600);
   const qrExp = Math.min(now + QR_TTL, tokExp);
   if (tokExp - now < QR_MIN_TOKEN_LIFE) return null;  // caller refreshes first
   return {
-    // The build goes in the query string, not the fragment, and that's the
-    // point: a phone opening the same URL with a different #hash reuses
-    // whatever it already had cached, and a scanned code would hand a fix to a
-    // device still running the version that needed it. A changed query is a
-    // different document, so the scan always fetches the current page.
-    url: location.origin + location.pathname + "?v=" + encodeURIComponent(BUILD) +
-         "#ss=1~" + qrExp + "~" + tokExp + "~" + accessToken,
+    url: handoffBase() + "#ss=1~" + qrExp + "~" + tokExp + "~" + accessToken,
     expiresAt: qrExp,
   };
 }
@@ -5317,6 +5607,10 @@ function readHandoff() {
   // address bar; neither is anyone's business after arrival.
   try { history.replaceState(null, "", location.pathname); } catch (e) {}
   const parts = h.slice(4).split("~");
+  if (parts[0] === "2" && parts.length === 3) {
+    if (Math.floor(Date.now() / 1000) > Number(parts[1])) return { expired: true };
+    return /^[0-9a-f]{48}$/.test(parts[2]) ? { code: parts[2] } : null;
+  }
   if (parts[0] !== "1" || parts.length < 4) return null;
   const qrExp = Number(parts[1]), tokExp = Number(parts[2]);
   const token = parts.slice(3).join("~");
@@ -5363,23 +5657,34 @@ async function adoptHandoff(h) {
 
 async function showQrCode() {
   if (!accessToken) { toast("Sign in first.", "err"); return; }
+  $("qrArea").classList.remove("hidden");
+  $("showQrBtn").classList.add("hidden");
+  $("qrBox").innerHTML = '<div class="qr-expired" style="width:232px;"><span class="spinner"></span><br>Making a code…</div>';
 
-  // Don't put a dying token on screen. If this tab's Google session is close to
-  // expiry, quietly get a fresh one first — otherwise the phone scans a code
-  // that Drive rejects the moment it's used.
-  let h = handoffUrl();
+  let h;
+  try {
+    h = await accountHandoff();
+  } catch (e) {
+    hideQrCode();
+    toast("Couldn't make a sign-in code: " + ((e && e.message) || e), "err", 6000);
+    return;
+  }
+  // No account sign-in to hand over, so lend this tab's Drive session. Don't
+  // put a dying token on screen: if it's close to expiry, quietly get a fresh
+  // one first, or the phone scans a code Drive rejects the moment it's used.
   if (!h) {
-    $("qrArea").classList.remove("hidden");
-    $("showQrBtn").classList.add("hidden");
-    $("qrBox").innerHTML = '<div class="qr-expired" style="width:232px;"><span class="spinner"></span><br>Refreshing…</div>';
-    const ok = await refreshDriveToken();
-    h = ok ? handoffUrl() : null;
+    h = handoffUrl();
     if (!h) {
-      hideQrCode();
-      toast("Couldn't refresh your Google session — reload the page, then try again.", "err", 6000);
-      return;
+      const ok = await refreshDriveToken();
+      h = ok ? handoffUrl() : null;
+      if (!h) {
+        hideQrCode();
+        toast("Couldn't refresh your Google session — reload the page, then try again.", "err", 6000);
+        return;
+      }
     }
   }
+  if ($("qrArea").classList.contains("hidden")) return;   // closed while we waited
   try {
     $("qrBox").innerHTML = QR.svg(h.url, 232);
   } catch (e) {
@@ -5513,7 +5818,10 @@ function wireEvents() {
   $("linkSignOutBtn").onclick = signOut;
   $("changePwBtn").onclick = async () => {
     if (!fbAuth || !fbUser || !fbUser.email) {
-      toast("No Save Station account on this device.", "err"); return;
+      toast(linkedViaQr
+        ? "This device borrowed your computer's session. Sign in here once to manage your account."
+        : "No Save Station account on this device.", "err", 6000);
+      return;
     }
     try {
       await __fb.sendPasswordResetEmail(fbAuth, fbUser.email);

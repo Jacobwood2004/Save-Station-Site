@@ -25,6 +25,9 @@
  * Stored per user: a Google refresh token. Never a save file, never anything
  * else in their Drive. The token only covers `drive.file`, so it reaches the
  * files this app created and nothing more.
+ *
+ * It also pairs devices for QR sign-in (see "QR sign-in" below), which is the
+ * one thing that needs the Firebase service-account key.
  */
 
 const JWKS_URL =
@@ -142,6 +145,94 @@ async function requireUid(request, env) {
   const m = auth.match(/^Bearer\s+(.+)$/i);
   if (!m) throw new Error("missing Authorization header");
   return await verifyFirebaseToken(m[1].trim(), env.FIREBASE_PROJECT_ID);
+}
+
+/* ------------------------------------------------------------ QR sign-in
+ *
+ * A phone scans a code on a signed-in computer and ends up signed into the
+ * same Save Station account, with a Firebase session of its own. (It used to
+ * borrow the computer's Drive token instead, which left it with Drive for an
+ * hour and no account: password reset and the rest said it wasn't signed in.)
+ *
+ *   1. The computer POSTs /qr/start with its Firebase ID token. We file a
+ *      random one-time code under its uid for QR_TTL seconds, and the code is
+ *      all the QR carries.
+ *   2. The phone POSTs /qr/claim with the code. We take it, once, and answer
+ *      with a Firebase custom token for that uid, signed with the project's
+ *      service-account key. The phone trades that for a normal session.
+ *
+ * Needs the secret FIREBASE_SERVICE_ACCOUNT: the JSON key from Firebase →
+ * Project settings → Service accounts → Generate new private key. Without it
+ * both routes answer 501 and the site falls back to lending the Drive token.
+ */
+
+const QR_TTL = 120;
+const QR_KEY = (c) => `qr:${c}`;
+const CUSTOM_TOKEN_AUD =
+  "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit";
+
+function serviceAccount(env) {
+  if (!env.FIREBASE_SERVICE_ACCOUNT) return null;
+  try {
+    const sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
+    return sa && sa.client_email && sa.private_key ? sa : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function bytesToB64url(bytes) {
+  let bin = "";
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+let signingKey = { pem: null, key: null };
+async function importPrivateKey(pem) {
+  if (signingKey.pem === pem) return signingKey.key;
+  const body = pem.replace(/-----(BEGIN|END) PRIVATE KEY-----/g, "").replace(/\s+/g, "");
+  const key = await crypto.subtle.importKey(
+    "pkcs8", b64urlToBytes(body), { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+  signingKey = { pem, key };
+  return key;
+}
+
+// A Firebase custom token: a JWT the service account signs, saying "this is
+// uid X". Firebase only takes it from someone holding the project's key.
+async function mintCustomToken(uid, sa, now) {
+  const iat = now || Math.floor(Date.now() / 1000);
+  const enc = (o) => bytesToB64url(new TextEncoder().encode(JSON.stringify(o)));
+  const input = enc({ alg: "RS256", typ: "JWT" }) + "." +
+    enc({ iss: sa.client_email, sub: sa.client_email, aud: CUSTOM_TOKEN_AUD, iat, exp: iat + 3600, uid });
+  const key = await importPrivateKey(sa.private_key);
+  const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, new TextEncoder().encode(input));
+  return input + "." + bytesToB64url(new Uint8Array(sig));
+}
+
+async function handleQrStart(request, env) {
+  if (!serviceAccount(env)) return json({ error: "qr_not_configured" }, 501, env);
+  const uid = await requireUid(request, env);
+  const code = randomToken(24);
+  await env.TOKENS.put(QR_KEY(code), uid, { expirationTtl: QR_TTL });
+  return json({ code, expires_in: QR_TTL }, 200, env);
+}
+
+async function handleQrClaim(request, env) {
+  const sa = serviceAccount(env);
+  if (!sa) return json({ error: "qr_not_configured" }, 501, env);
+  let code = "";
+  try { code = String((await request.json()).code || ""); } catch (e) { /* stays empty */ }
+  if (!/^[0-9a-f]{48}$/.test(code)) return json({ error: "bad_code" }, 400, env);
+  const uid = await env.TOKENS.get(QR_KEY(code));
+  if (!uid) return json({ error: "expired" }, 410, env);
+  await env.TOKENS.delete(QR_KEY(code));          // one phone per code
+  let token;
+  try {
+    token = await mintCustomToken(uid, sa);
+  } catch (e) {
+    return json({ error: "qr_key_invalid" }, 500, env);
+  }
+  return json({ token }, 200, env);
 }
 
 /* ----------------------------------------------------------------- routes */
@@ -403,6 +494,12 @@ export default {
       if (url.pathname === "/unlink" && request.method === "POST") {
         return await handleUnlink(request, env);
       }
+      if (url.pathname === "/qr/start" && request.method === "POST") {
+        return await handleQrStart(request, env);
+      }
+      if (url.pathname === "/qr/claim" && request.method === "POST") {
+        return await handleQrClaim(request, env);
+      }
       if (url.pathname === "/covers/search" && request.method === "POST") {
         return await handleCoverSearch(request, env);
       }
@@ -410,7 +507,7 @@ export default {
         return await handleCoverImage(request, env);
       }
       if (url.pathname === "/health") {
-        return json({ ok: true, linked: "n/a", covers: igdbConfigured(env) }, 200, env);
+        return json({ ok: true, linked: "n/a", covers: igdbConfigured(env), qr: !!serviceAccount(env) }, 200, env);
       }
       return json({ error: "not_found" }, 404, env);
     } catch (e) {
@@ -425,4 +522,4 @@ export default {
 };
 
 // Exported for the local test harness.
-export const _internals = { verifyFirebaseToken, b64urlToBytes, b64urlToString };
+export const _internals = { verifyFirebaseToken, b64urlToBytes, b64urlToString, mintCustomToken };

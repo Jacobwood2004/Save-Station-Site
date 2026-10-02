@@ -204,3 +204,38 @@ Set `WORKER_URL = ""` in `index.html` and push. The site drops back to the
 browser flow immediately. Refresh tokens stay in KV until deleted — to clear
 them out properly, have users hit **Disconnect Google Drive** first, or delete
 the KV namespace.
+
+## QR sign-in
+
+A signed-in computer shows a QR code; a phone scans it and is signed into the
+same Save Station account. The Worker pairs the two:
+
+- `POST /qr/start` (Firebase ID token required) files a random one-time code
+  under the caller's uid for two minutes. The code is all the QR carries.
+- `POST /qr/claim` `{ code }` takes the code, once, and answers with a Firebase
+  **custom token** for that uid. The phone signs in with it.
+
+Minting a custom token takes the project's **service-account key**, so this is
+one more secret:
+
+1. Firebase console → ⚙ **Project settings → Service accounts** →
+   **Generate new private key**. It downloads a `.json` file. Keep it private:
+   it can sign in as any user of the project.
+2. Store the whole file as the Worker secret `FIREBASE_SERVICE_ACCOUNT`, either
+   in the dashboard (**Workers & Pages → save-station-drive → Settings →
+   Variables and Secrets → Add → Secret**, paste the file's contents) or from
+   this folder:
+
+   ```bash
+   wrangler secret put FIREBASE_SERVICE_ACCOUNT < path/to/the-key.json
+   ```
+
+   (PowerShell: `Get-Content path	o	he-key.json -Raw | wrangler secret put FIREBASE_SERVICE_ACCOUNT`.)
+3. Delete the downloaded file once it's stored.
+
+`/health` reports `"qr": true` once it's in. Until then both routes answer 501
+and the site falls back to its older code, which lends the phone the computer's
+Drive session for an hour.
+
+`node test-qr.mjs` checks the pairing offline, with stand-in keys.
+
