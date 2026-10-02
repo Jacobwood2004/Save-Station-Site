@@ -284,72 +284,36 @@ Every cover sits in the same case-shaped frame and is shown **whole**: a square
 over a soft blur of their own art. A game with no cover is plain gray and says
 so.
 
-## The shelf
+## Three ways to see your library
 
-**Shelf**, next to Grid above your library, lays your games out the way USB
-Loader GX does: the game you're on stands at the front and the rest angle away
-on either side. Each one is a small 3D case — the cover on the front, a spine
-in the console's colour with its name up it, and a plastic edge — so a case
-turned side-on still looks like a case.
+Above your library, next to Refresh, is a switch between three views. Whichever
+you pick is remembered on that device.
 
-A case is the shape of its own cover, so the art fills it corner to corner
-instead of sitting in a frame that's the wrong shape for it. Nothing grows past
-a Wii case — that's as big as a case gets — and a cover shaped like nothing on
-earth (a screenshot, say) is held within reason rather than turned into a slab.
+- **Grid** — the covers, large, with each game's console and its last backup.
+- **List** — one row a game: its console, how many backups it has, when the
+  last one was made and which device made it. The same columns as the Windows
+  app's list.
+- **Handheld** *(beta)* — the library as a dual-screen launcher, after the
+  3DS-style front ends on Android handhelds like the AYN Thor. The game you're
+  on fills the top screen over a blur of its own cover, with its console, its
+  last backup and where it came from. Every game is a rounded tile on the
+  bottom screen, with a dock of your consoles underneath. On a short, wide
+  screen — a handheld's own top screen, or a phone on its side — the two
+  screens sit side by side.
 
-A game with no cover falls back to its console's real case, to scale: the small
-nearly square DS and 3DS one, the tall narrow Switch one, the Wii DVD case, or
-the little GBA cardboard box. Tall and short alike stand on the same shelf line.
-
-Click a case to bring it forward. Arrow keys, Home/End, the mouse wheel,
-dragging and swiping all move along it. The choice of Grid or Shelf is
-remembered.
-
-Click the front case and it **opens**: it comes off the shelf and swings open
-like a book.
-
-- **The left page** holds the game's page: its buttons, its save slots and, in
-  the desktop app, the save it's watching on this PC.
-- **The right page** has the game sitting in its tray, with your backups
-  underneath. It's a disc for Wii and Wii U, a UMD for PSP, a cartridge for
-  Game Boy and GBA, and a game card for DS, 3DS, Switch and Vita. Put the
-  pointer on a disc and it spins up, and coasts to a stop when you take it
-  away again. On a touch screen, a tap spins it.
-
-### The real cartridge or disc
-
-Where it can, the tray holds a picture of the actual thing: the DS, 3DS or
-Switch card with its printed label, or the Wii or Wii U disc — labels, ESRB
-seal, serial and all. They come from [GameTDB](https://www.gametdb.com), who
-name them by each game's product code (`ASME`, `SX4E01` …), so the game has to
-be found by name first. GameTDB's title databases are mirrored in
-`assets/gametdb/`, because gametdb.com sends no CORS headers: a browser may
-show their pictures but not read their database from another origin. Refresh
-the mirror with:
-
-```bash
-node tools/update-gametdb.js
-```
-
-A console GameTDB doesn't cover (Game Boy, GBA, PSP, Vita), or a game whose
-name isn't in their database — romhacks, mostly — keeps the drawn cart with the
-game's own cover as its label, which is what a real cart label usually is
-anyway. Each lookup is remembered for a month, misses included.
-
-The ✕, Escape or a click outside closes it again, back onto the shelf. On a
-phone the pages stack into one scroll instead of sitting side by side, and the
-case opens as a small book in the middle of the screen before they take over.
-Turn the phone on its side and it changes over, there and then. If your system
-asks for reduced motion, the case fades in rather than swinging open.
+  Tap a tile to pick it and tap it again to open it, or use a controller: the
+  d-pad or left stick moves, **A** opens, **B** goes back from a game, **Y**
+  pins, and **L** / **R** step through your consoles. On a keyboard, the arrow
+  keys move, Enter opens, and Q / E switch console. The full-screen button in its top corner
+  makes the whole page full screen.
 
 ## The console a game is filed under
 
 Next to a game's console is **Change console**. Pick another and the game moves:
 its folder and every one of its backups is re-tagged, so it moves in the
-sidebar, its case changes colour, and what's inside the case changes with it —
-a Switch game gets a game card rather than a Wii disc. The desktop app follows
-too, and starts waiting for the new console's emulator to close instead of the
-old one's.
+sidebar and takes on the new console's colour. The desktop app follows too,
+and starts waiting for the new console's emulator to close instead of the old
+one's.
 
 It's only a label. No save is downloaded, converted or uploaded again, and
 nothing in your Drive moves.
