@@ -11,8 +11,10 @@ keep_vars = true
 [vars]
 GOOGLE_CLIENT_ID = "1043116488819-uehkbdpe89r2032gim7kqigpv3e7mk6j.apps.googleusercontent.com"
 FIREBASE_PROJECT_ID = "save-station-fd3a9"
-SITE_URL = "https://jacobwood2004.github.io/Save-Station-Site/"
-SITE_ORIGIN = "https://jacobwood2004.github.io"
+SITE_URL = "https://savestation.net/"
+# Comma-separated. The old GitHub address stays while tabs opened before the
+# move are still around.
+SITE_ORIGIN = "https://savestation.net,https://jacobwood2004.github.io"
 # The Worker's own URL. Must match the redirect URI registered with Google,
 # character for character, `/callback` included.
 WORKER_ORIGIN = "https://save-station-drive.jacob-wood2038.workers.dev"

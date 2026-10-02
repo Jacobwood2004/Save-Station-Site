@@ -61,9 +61,18 @@ function randomToken(bytes) {
   return [...a].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function corsHeaders(env) {
+// SITE_ORIGIN can list more than one origin, comma-separated (the site moved
+// to its own domain, and a tab opened before the move still has the old one).
+// The header itself can only name one, so it names whichever is asking.
+function siteOrigins(env) {
+  return String(env.SITE_ORIGIN || "*").split(",").map((s) => s.trim()).filter(Boolean);
+}
+
+function corsHeaders(env, origin) {
+  const list = siteOrigins(env);
+  const allow = list.includes("*") ? "*" : list.includes(origin) ? origin : list[0];
   return {
-    "Access-Control-Allow-Origin": env.SITE_ORIGIN || "*",
+    "Access-Control-Allow-Origin": allow,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Authorization, Content-Type",
     "Access-Control-Max-Age": "86400",
@@ -495,53 +504,62 @@ async function handleCoverImage(request, env) {
 
 export default {
   async fetch(request, env) {
-    const url = new URL(request.url);
-
+    const origin = request.headers.get("Origin") || "";
     if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: corsHeaders(env) });
+      return new Response(null, { status: 204, headers: corsHeaders(env, origin) });
     }
-
-    try {
-      if (url.pathname === "/callback" && request.method === "GET") {
-        return await handleCallback(request, env);
-      }
-      if (url.pathname === "/link/start" && request.method === "POST") {
-        return await handleLinkStart(request, env);
-      }
-      if (url.pathname === "/token" && request.method === "POST") {
-        return await handleToken(request, env);
-      }
-      if (url.pathname === "/unlink" && request.method === "POST") {
-        return await handleUnlink(request, env);
-      }
-      if (url.pathname === "/qr/start" && request.method === "POST") {
-        return await handleQrStart(request, env);
-      }
-      if (url.pathname === "/qr/claim" && request.method === "POST") {
-        return await handleQrClaim(request, env);
-      }
-      if (url.pathname === "/covers/search" && request.method === "POST") {
-        return await handleCoverSearch(request, env);
-      }
-      if (url.pathname === "/covers/image" && request.method === "POST") {
-        return await handleCoverImage(request, env);
-      }
-      if (url.pathname === "/health") {
-        const qrProblem = await serviceAccountProblem(env);
-        return json(Object.assign({ ok: true, linked: "n/a", covers: igdbConfigured(env), qr: !qrProblem },
-                                  qrProblem ? { qr_problem: qrProblem } : {}), 200, env);
-      }
-      return json({ error: "not_found" }, 404, env);
-    } catch (e) {
-      // Anything thrown by requireUid is an auth failure; don't leak details
-      // beyond the reason, and never echo the token back.
-      const msg = String((e && e.message) || e);
-      const auth = /token|Authorization|signature|issuer|project|expired/i.test(msg);
-      return json({ error: auth ? "unauthorized" : "server_error", detail: msg },
-                  auth ? 401 : 500, env);
+    const res = await route(request, env);
+    // Answer whichever of the site's origins asked. (A redirect's headers
+    // can't be changed, and don't need to be.)
+    if (origin && siteOrigins(env).includes(origin)) {
+      try { res.headers.set("Access-Control-Allow-Origin", origin); } catch (e) { /* redirect */ }
     }
+    return res;
   },
 };
+
+async function route(request, env) {
+  const url = new URL(request.url);
+  try {
+    if (url.pathname === "/callback" && request.method === "GET") {
+      return await handleCallback(request, env);
+    }
+    if (url.pathname === "/link/start" && request.method === "POST") {
+      return await handleLinkStart(request, env);
+    }
+    if (url.pathname === "/token" && request.method === "POST") {
+      return await handleToken(request, env);
+    }
+    if (url.pathname === "/unlink" && request.method === "POST") {
+      return await handleUnlink(request, env);
+    }
+    if (url.pathname === "/qr/start" && request.method === "POST") {
+      return await handleQrStart(request, env);
+    }
+    if (url.pathname === "/qr/claim" && request.method === "POST") {
+      return await handleQrClaim(request, env);
+    }
+    if (url.pathname === "/covers/search" && request.method === "POST") {
+      return await handleCoverSearch(request, env);
+    }
+    if (url.pathname === "/covers/image" && request.method === "POST") {
+      return await handleCoverImage(request, env);
+    }
+    if (url.pathname === "/health") {
+      const qrProblem = await serviceAccountProblem(env);
+      return json(Object.assign({ ok: true, linked: "n/a", covers: igdbConfigured(env), qr: !qrProblem },
+                                qrProblem ? { qr_problem: qrProblem } : {}), 200, env);
+    }
+    return json({ error: "not_found" }, 404, env);
+  } catch (e) {
+    // Anything thrown by requireUid is an auth failure; don't leak details
+    // beyond the reason, and never echo the token back.
+    const msg = String((e && e.message) || e);
+    const auth = /token|Authorization|signature|issuer|project|expired/i.test(msg);
+    return json({ error: auth ? "unauthorized" : "server_error", detail: msg },
+                auth ? 401 : 500, env);
+  }
+}
 
 // Exported for the local test harness.
 export const _internals = { verifyFirebaseToken, b64urlToBytes, b64urlToString, mintCustomToken };
