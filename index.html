@@ -1557,7 +1557,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-10-02b";
+const BUILD = "2026-10-02c";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -5346,10 +5346,13 @@ function hhPadFrame(t) {
     left: down(14) || ax < -.6, right: down(15) || ax > .6,
   };
   Object.keys(HH_PAD_BUTTONS).forEach((i) => { now["b" + i] = down(+i); });
-  // Not while you're typing in a box on the page.
+  // Not while you're typing in a box on the page, nor while another window
+  // has focus: a controller you're playing an emulator with mustn't be
+  // driving the library behind it.
   const typing = document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+  const idle = typing || !document.hasFocus();
   const fire = (cmd) => {
-    if (typing) return;
+    if (idle) return;
     if (!hhPadSeen) {
       hhPadSeen = true;
       const hh = document.querySelector("#gamesContainer .hh");
