@@ -171,14 +171,33 @@ const QR_KEY = (c) => `qr:${c}`;
 const CUSTOM_TOKEN_AUD =
   "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit";
 
+// Read leniently. A key file pasted through a web form can come back with its
+// line breaks changed, which stops it being JSON, and all we need from it is
+// the email and the private key, so those are picked out directly if need be.
 function serviceAccount(env) {
-  if (!env.FIREBASE_SERVICE_ACCOUNT) return null;
+  const raw = String(env.FIREBASE_SERVICE_ACCOUNT || "").replace(/^\uFEFF/, "").trim();
+  if (!raw) return null;
   try {
-    const sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
-    return sa && sa.client_email && sa.private_key ? sa : null;
-  } catch (e) {
-    return null;
+    const sa = JSON.parse(raw);
+    if (sa && sa.client_email && sa.private_key) return sa;
+  } catch (e) { /* picked out below */ }
+  const email = (raw.match(/"client_email"\s*:\s*"([^"]+)"/) || [])[1];
+  const key = (raw.match(/-----BEGIN PRIVATE KEY-----[\s\S]+?-----END PRIVATE KEY-----/) || [])[0];
+  return email && key ? { client_email: email, private_key: key } : null;
+}
+
+// What's wrong with the secret, for /health. Never any of its contents.
+async function serviceAccountProblem(env) {
+  const raw = String(env.FIREBASE_SERVICE_ACCOUNT || "").trim();
+  if (!raw) return "missing";
+  const sa = serviceAccount(env);
+  if (!sa) {
+    if (!/client_email/.test(raw)) return "no_client_email";
+    if (!/BEGIN PRIVATE KEY/.test(raw)) return "no_private_key";
+    return "unreadable";
   }
+  try { await importPrivateKey(sa.private_key); } catch (e) { return "bad_private_key"; }
+  return null;
 }
 
 function bytesToB64url(bytes) {
@@ -190,7 +209,8 @@ function bytesToB64url(bytes) {
 let signingKey = { pem: null, key: null };
 async function importPrivateKey(pem) {
   if (signingKey.pem === pem) return signingKey.key;
-  const body = pem.replace(/-----(BEGIN|END) PRIVATE KEY-----/g, "").replace(/\s+/g, "");
+  // Line breaks may be real ones, or the two characters \n as in the JSON.
+  const body = pem.replace(/-----(BEGIN|END) PRIVATE KEY-----/g, "").replace(/\\n/g, "").replace(/\s+/g, "");
   const key = await crypto.subtle.importKey(
     "pkcs8", b64urlToBytes(body), { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
   signingKey = { pem, key };
@@ -507,7 +527,9 @@ export default {
         return await handleCoverImage(request, env);
       }
       if (url.pathname === "/health") {
-        return json({ ok: true, linked: "n/a", covers: igdbConfigured(env), qr: !!serviceAccount(env) }, 200, env);
+        const qrProblem = await serviceAccountProblem(env);
+        return json(Object.assign({ ok: true, linked: "n/a", covers: igdbConfigured(env), qr: !qrProblem },
+                                  qrProblem ? { qr_problem: qrProblem } : {}), 200, env);
       }
       return json({ error: "not_found" }, 404, env);
     } catch (e) {

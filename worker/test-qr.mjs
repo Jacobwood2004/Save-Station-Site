@@ -100,4 +100,24 @@ await test("made-up and malformed codes get nothing", async () => {
   assert.equal((await call(env, "/qr/claim", {})).status, 400);
 });
 
+await test("a key pasted with its line breaks turned real still works, and /health says what's wrong if not", async () => {
+  const health = async (e) => (await worker.fetch(new Request("https://w.example/health"), e)).json();
+  const h = await health(env);
+  assert.equal(h.qr, true);
+  assert.equal(h.qr_problem, undefined);
+  // The key's "\n"s turned into real line breaks: no longer JSON.
+  const mangled = SERVICE_ACCOUNT.replace(/\\n/g, "\n");
+  assert.throws(() => JSON.parse(mangled));
+  const e2 = Object.assign({}, env, { FIREBASE_SERVICE_ACCOUNT: mangled });
+  assert.equal((await health(e2)).qr, true);
+  const r = await call(e2, "/qr/start", {}, await idToken("user-2"));
+  const r2 = await call(e2, "/qr/claim", { code: (await r.json()).code });
+  assert.equal(r2.status, 200);
+  const problem = async (v) => (await health(Object.assign({}, env, { FIREBASE_SERVICE_ACCOUNT: v }))).qr_problem;
+  assert.equal(await problem(""), "missing");
+  assert.equal(await problem('{"client_email":"a@b"}'), "no_private_key");
+  assert.equal(await problem('{"private_key":"-----BEGIN PRIVATE KEY-----x-----END PRIVATE KEY-----"}'), "no_client_email");
+  assert.equal(await problem('{"client_email":"a@b","private_key":"-----BEGIN PRIVATE KEY-----AAAA-----END PRIVATE KEY-----"}'), "bad_private_key");
+});
+
 console.log("\n" + passed + " passed");
