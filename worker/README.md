@@ -239,3 +239,38 @@ Drive session for an hour.
 
 `node test-qr.mjs` checks the pairing offline, with stand-in keys.
 
+## Password-reset email
+
+`POST /reset` `{ email }` sends Save Station's own reset email, from
+`Save Station <noreply@savestation.net>`, subject **Save Station password
+reset**. It asks Firebase's admin API (as the service account above) for the
+reset link with `returnOobLink`, so Firebase sends nothing itself, and points
+the button at the site's reset page. An address with no account gets the same
+`{ ok: true }` and no email; one email per address a minute, ten requests per
+IP an hour.
+
+It needs a sender, either one:
+
+- **Cloudflare Email Sending** (Workers Paid plan). Onboard `savestation.net`
+  under **Email → Email Sending** (Cloudflare adds the DNS records), then add to
+  `wrangler.toml`:
+
+  ```toml
+  [[send_email]]
+  name = "EMAIL"
+  ```
+
+  and deploy.
+- **Resend** (free up to 3,000 a month). Add and verify `savestation.net` in
+  Resend, make an API key that can send, and store it:
+
+  ```bash
+  wrangler secret put RESEND_API_KEY
+  ```
+
+With neither, `/reset` answers 501 and the site and app have Firebase send its
+plain email instead. `/health` says which sender is in use (`"email"`).
+
+`node test-reset.mjs` checks it offline: Google, Firebase and both senders are
+stood in for.
+

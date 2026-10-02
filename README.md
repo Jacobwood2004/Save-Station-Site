@@ -94,7 +94,7 @@ logged out.
 Typing a password on a phone is miserable, so a computer that's already signed
 in can sign the phone in for you:
 
-1. On the computer: **Settings → Other devices → Show QR code**.
+1. On the computer, at <https://savestation.net>: **Settings → Other devices → Show QR code**.
 2. On the phone or iPad: open the **Camera app** and point it at the code (or tap
    **Scan a QR code from a signed-in device** on the sign-in screen — that option
    only appears on phones and iPads).
@@ -121,24 +121,23 @@ code itself is drawn on your own machine.
 
 ### The password-reset email
 
-Firebase sends it, and out of the box it's plain text from
-"save-station-fd3a9". To make it look like the rest of Save Station, and have its
-link open a Save Station page for choosing the new password:
+Save Station sends its own: **"Save Station password reset"**, from
+**Save Station &lt;noreply@savestation.net&gt;**, in the app's look (dark header,
+amber button). Its button opens the site's own **Choose a new password** page
+(with a strength meter, and a fresh link offered if the old one ran out).
 
-1. Firebase console → ⚙ **Project settings → General** → **Public-facing name**:
-   `Save Station`.
-2. **Authentication → Templates → Password reset** → ✏️ edit:
-   - **Sender name**: `Save Station`
-   - **Subject**: `Reset your Save Station password`
-   - **Message**: replace it all with the contents of
-     [`emails/password-reset.html`](emails/password-reset.html).
-   - **Save**.
-3. Still on Templates, **Customize action URL** (under the template) →
-   `https://jacobwood2004.github.io/Save-Station-Site/` → **Save**.
+The Worker does it: it asks Firebase's admin API for the reset link (no email
+from Firebase), then sends the email itself. The website's "Forgot your
+password?" and **Send me a password reset** buttons and the Windows app's all go
+through it. It needs one email sender set up, see
+[worker/README.md](worker/README.md#password-reset-email). Until then, and if
+sending ever fails, Firebase sends its own plain email instead, so a reset
+always goes out.
 
-Step 3 sends every link in Firebase's emails to the site, which handles them
-itself: **choose a new password** (with a strength meter, and a fresh link
-offered if the old one ran out), plus confirming or undoing an email change.
+Firebase's own template can't be edited on this project (the console says
+template updates are unavailable), which is why it's done this way.
+[`emails/password-reset.html`](emails/password-reset.html) is the same design
+with Firebase's placeholders, for if that ever changes.
 
 ---
 

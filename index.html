@@ -1502,7 +1502,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-10-02h";
+const BUILD = "2026-10-03a";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -2034,12 +2034,30 @@ async function submitAuth(ev) {
   }
 }
 
+/* Save Station's own reset email, from noreply@savestation.net, when the
+   Worker can send one; Firebase's plain one when it can't (no sender set up,
+   or it failed). Throws Firebase-style codes so friendlyAuthError reads it. */
+async function sendPasswordReset(email) {
+  if (workerEnabled()) {
+    let r = null;
+    try {
+      r = await fetch(workerPath("/reset"), {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }),
+      });
+    } catch (e) { /* unreachable: Firebase sends it instead */ }
+    if (r && r.ok) return;
+    if (r && r.status === 400) throw Object.assign(new Error("invalid email"), { code: "auth/invalid-email" });
+    if (r && r.status === 429) throw Object.assign(new Error("too many"), { code: "auth/too-many-requests" });
+  }
+  await __fb.sendPasswordResetEmail(fbAuth, email);
+}
+
 async function sendReset() {
   if (!fbAuth) return;
   const email = $("authEmail").value.trim();
   if (!email) { authError("Type your email address first, then hit reset."); return; }
   try {
-    await __fb.sendPasswordResetEmail(fbAuth, email);
+    await sendPasswordReset(email);
     authNote("Password reset sent to <b>" + escapeHtml(email) + "</b>. Check your inbox (and spam).");
   } catch (e) {
     authError(friendlyAuthError(e));
@@ -5415,7 +5433,7 @@ async function runEmailAction(a) {
     if (!email || !fbAuth) return;
     $("actResendBtn").disabled = true;
     try {
-      await __fb.sendPasswordResetEmail(fbAuth, email);
+      await sendPasswordReset(email);
       actError("");
       $("actTitle").textContent = "Check your inbox";
       $("actBlurb").textContent = "A new link is on its way to " + email + ". It works once, for an hour.";
@@ -5824,10 +5842,12 @@ function wireEvents() {
       return;
     }
     try {
-      await __fb.sendPasswordResetEmail(fbAuth, fbUser.email);
+      await sendPasswordReset(fbUser.email);
       toast("Password reset sent to " + fbUser.email + " ✔", "ok", 5000);
     } catch (e) {
-      toast("Couldn't send it: " + ((e && e.message) || e), "err", 5000);
+      toast(e && e.code === "auth/too-many-requests"
+        ? "A few too many just now. Try again in a little while."
+        : "Couldn't send it: " + ((e && e.message) || e), "err", 5000);
     }
   };
 

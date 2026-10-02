@@ -26,9 +26,12 @@
  * else in their Drive. The token only covers `drive.file`, so it reaches the
  * files this app created and nothing more.
  *
- * It also pairs devices for QR sign-in (see "QR sign-in" below), which is the
- * one thing that needs the Firebase service-account key.
+ * It also pairs devices for QR sign-in, and sends Save Station's own
+ * password-reset email; both need the Firebase service-account key (see "QR
+ * sign-in" and "Password reset" below).
  */
+
+import { resetEmail } from "./reset-email.js";
 
 const JWKS_URL =
   "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com";
@@ -228,14 +231,17 @@ async function importPrivateKey(pem) {
 
 // A Firebase custom token: a JWT the service account signs, saying "this is
 // uid X". Firebase only takes it from someone holding the project's key.
-async function mintCustomToken(uid, sa, now) {
-  const iat = now || Math.floor(Date.now() / 1000);
+async function signJwt(payload, sa) {
   const enc = (o) => bytesToB64url(new TextEncoder().encode(JSON.stringify(o)));
-  const input = enc({ alg: "RS256", typ: "JWT" }) + "." +
-    enc({ iss: sa.client_email, sub: sa.client_email, aud: CUSTOM_TOKEN_AUD, iat, exp: iat + 3600, uid });
+  const input = enc({ alg: "RS256", typ: "JWT" }) + "." + enc(payload);
   const key = await importPrivateKey(sa.private_key);
   const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, new TextEncoder().encode(input));
   return input + "." + bytesToB64url(new Uint8Array(sig));
+}
+
+async function mintCustomToken(uid, sa, now) {
+  const iat = now || Math.floor(Date.now() / 1000);
+  return signJwt({ iss: sa.client_email, sub: sa.client_email, aud: CUSTOM_TOKEN_AUD, iat, exp: iat + 3600, uid }, sa);
 }
 
 async function handleQrStart(request, env) {
@@ -262,6 +268,119 @@ async function handleQrClaim(request, env) {
     return json({ error: "qr_key_invalid" }, 500, env);
   }
   return json({ token }, 200, env);
+}
+
+/* -------------------------------------------------------- password reset
+ *
+ * Firebase can send the reset email itself, but this project's template
+ * can't be edited, so it goes out plain and from "save-station-fd3a9". So the
+ * Worker makes the reset link with Firebase's admin API (the service account
+ * again) and sends Save Station's own email, from noreply@savestation.net,
+ * through whichever sender is set up:
+ *
+ *   - Cloudflare Email Sending: the `EMAIL` send_email binding, or
+ *   - Resend: the RESEND_API_KEY secret.
+ *
+ * Without either, /reset answers 501 and the site has Firebase send its plain
+ * one, as before. The link points at the site's own reset page.
+ *
+ * Nobody learns whether an address has an account: an unknown one gets the
+ * same answer and simply no email. One email per address a minute, and ten
+ * requests per IP an hour, so it can't be used to flood someone's inbox.
+ */
+
+const RESET_FROM = { email: "noreply@savestation.net", name: "Save Station" };
+const IDT_ADMIN = "https://identitytoolkit.googleapis.com/v1/projects/";
+const RESET_PER_EMAIL = 60;           // seconds between emails to one address
+const RESET_PER_IP = 10;              // requests per IP per hour
+
+function emailSender(env) {
+  if (env.EMAIL && typeof env.EMAIL.send === "function") return "cloudflare";
+  if (env.RESEND_API_KEY) return "resend";
+  return null;
+}
+
+// An access token for Google's admin APIs, as the service account.
+let googleToken = { email: null, token: null, exp: 0 };
+async function googleAccessToken(sa) {
+  const now = Math.floor(Date.now() / 1000);
+  if (googleToken.token && googleToken.email === sa.client_email && googleToken.exp - 120 > now) return googleToken.token;
+  const assertion = await signJwt({
+    iss: sa.client_email, aud: GOOGLE_TOKEN, iat: now, exp: now + 3600,
+    scope: "https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/identitytoolkit",
+  }, sa);
+  const r = await fetch(GOOGLE_TOKEN, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion }),
+  });
+  if (!r.ok) throw new Error("google_token_" + r.status);
+  const d = await r.json();
+  googleToken = { email: sa.client_email, token: d.access_token, exp: now + (d.expires_in || 3600) };
+  return googleToken.token;
+}
+
+// Firebase's reset code for this address, or null if there's no such account.
+async function resetCode(email, sa, env) {
+  const r = await fetch(IDT_ADMIN + encodeURIComponent(env.FIREBASE_PROJECT_ID) + "/accounts:sendOobCode", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + (await googleAccessToken(sa)), "Content-Type": "application/json" },
+    body: JSON.stringify({ requestType: "PASSWORD_RESET", email, returnOobLink: true }),
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const why = (d && d.error && d.error.message) || "";
+    if (/EMAIL_NOT_FOUND|USER_NOT_FOUND/.test(why)) return null;
+    throw new Error("reset_link_" + r.status + (why ? "_" + why : ""));
+  }
+  return new URL(d.oobLink).searchParams.get("oobCode");
+}
+
+async function sendEmail(env, to, mail) {
+  if (emailSender(env) === "cloudflare") {
+    await env.EMAIL.send({ to, from: RESET_FROM, subject: mail.subject, html: mail.html, text: mail.text });
+    return;
+  }
+  const r = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: RESET_FROM.name + " <" + RESET_FROM.email + ">", to: [to], subject: mail.subject, html: mail.html, text: mail.text }),
+  });
+  if (!r.ok) throw new Error("resend_" + r.status);
+}
+
+async function sha256Hex(s) {
+  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function handleReset(request, env) {
+  const sa = serviceAccount(env);
+  if (!sa || !emailSender(env)) return json({ error: "reset_email_not_configured" }, 501, env);
+  let email = "";
+  try { email = String((await request.json()).email || "").trim(); } catch (e) { /* stays empty */ }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) return json({ error: "bad_email" }, 400, env);
+
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  const ipKey = "rl:ip:" + ip;
+  const tries = Number(await env.TOKENS.get(ipKey)) || 0;
+  if (tries >= RESET_PER_IP) return json({ error: "too_many" }, 429, env);
+  await env.TOKENS.put(ipKey, String(tries + 1), { expirationTtl: 3600 });
+
+  const mailKey = "rl:reset:" + (await sha256Hex(email.toLowerCase()));
+  if (await env.TOKENS.get(mailKey)) return json({ ok: true }, 200, env);   // one's just gone
+
+  const code = await resetCode(email, sa, env);
+  if (!code) return json({ ok: true }, 200, env);                         // no such account; say nothing
+  const site = String(env.SITE_URL || "https://savestation.net/");
+  const link = site + (site.includes("?") ? "&" : "?") + "mode=resetPassword&oobCode=" + encodeURIComponent(code);
+  try {
+    await sendEmail(env, email, resetEmail({ email, link, logo: new URL("assets/email-logo.png", site).href }));
+  } catch (e) {
+    return json({ error: "send_failed", detail: String((e && (e.code || e.message)) || e) }, 502, env);
+  }
+  await env.TOKENS.put(mailKey, "1", { expirationTtl: RESET_PER_EMAIL });
+  return json({ ok: true }, 200, env);
 }
 
 /* ----------------------------------------------------------------- routes */
@@ -536,7 +655,10 @@ async function route(request, env) {
     if (url.pathname === "/qr/start" && request.method === "POST") {
       return await handleQrStart(request, env);
     }
-    if (url.pathname === "/qr/claim" && request.method === "POST") {
+    if (url.pathname === "/reset" && request.method === "POST") {
+    return await handleReset(request, env);
+  }
+  if (url.pathname === "/qr/claim" && request.method === "POST") {
       return await handleQrClaim(request, env);
     }
     if (url.pathname === "/covers/search" && request.method === "POST") {
@@ -547,7 +669,8 @@ async function route(request, env) {
     }
     if (url.pathname === "/health") {
       const qrProblem = await serviceAccountProblem(env);
-      return json(Object.assign({ ok: true, linked: "n/a", covers: igdbConfigured(env), qr: !qrProblem },
+      return json(Object.assign({ ok: true, linked: "n/a", covers: igdbConfigured(env), qr: !qrProblem,
+                                  email: emailSender(env) || false },
                                 qrProblem ? { qr_problem: qrProblem } : {}), 200, env);
     }
     return json({ error: "not_found" }, 404, env);
@@ -562,4 +685,4 @@ async function route(request, env) {
 }
 
 // Exported for the local test harness.
-export const _internals = { verifyFirebaseToken, b64urlToBytes, b64urlToString, mintCustomToken };
+export const _internals = { verifyFirebaseToken, b64urlToBytes, b64urlToString, mintCustomToken, signJwt };
