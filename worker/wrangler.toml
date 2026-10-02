@@ -1,6 +1,10 @@
 name = "save-station-drive"
 main = "src/index.js"
 compatibility_date = "2024-11-01"
+# IGDB_CLIENT_ID was added in the dashboard (Settings -> Variables and Secrets).
+# Without this, `wrangler deploy` would replace the dashboard's variables with
+# only the ones listed below and IGDB covers would quietly switch off.
+keep_vars = true
 
 # Plain values — safe to commit. The client SECRET is not here; it goes in via
 # `wrangler secret put GOOGLE_CLIENT_SECRET` (see README).
