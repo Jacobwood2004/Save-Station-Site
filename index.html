@@ -1562,7 +1562,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-10-01b";
+const BUILD = "2026-10-01c";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -4219,17 +4219,19 @@ async function chooseCoverFor(folderId, gameName, consoleId, opts) {
   opts = opts || {};
   let lookupError = null;
   const libretro = !!coverSystem(consoleId);
-  const [igdb, lib] = await Promise.all([
-    igdbCovers(gameName, consoleId),
-    libretro
-      ? coverNameList(consoleId).then((n) => findCoverMatches(gameName, n || []))
-          .catch((e) => { lookupError = e; return []; })
-      : Promise.resolve([]),
-  ]);
+  // IGDB's covers all share one shape and size, so when IGDB knows the game
+  // they're the only suggestions. libretro's scans (a nearly square 3DS box)
+  // are the fallback for what IGDB doesn't have: hacks, homebrew, rarities.
+  const igdb = await igdbCovers(gameName, consoleId);
   const fromIgdb = ((igdb && igdb.results) || []).map((r) => ({
     source: "igdb", key: r.id, title: r.title, sub: r.year ? String(r.year) : "IGDB", thumb: r.thumb,
   }));
-  const fromLibretro = lib.slice(0, fromIgdb.length ? 6 : COVER_MAX).map((m) => ({
+  let lib = [];
+  if (!fromIgdb.length && libretro) {
+    try { lib = findCoverMatches(gameName, (await coverNameList(consoleId)) || []); }
+    catch (e) { lookupError = e; }
+  }
+  const fromLibretro = lib.slice(0, COVER_MAX).map((m) => ({
     source: "libretro", key: m.name, title: m.name.replace(/\.png$/i, ""), sub: "libretro",
     thumb: coverImageUrl(consoleId, m.name),
   }));
