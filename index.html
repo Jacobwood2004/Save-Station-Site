@@ -430,8 +430,8 @@
   }
   .lp-window img { display: block; width: 100%; height: auto; }
   .lp-dev { position: absolute; height: auto; filter: drop-shadow(0 28px 36px rgba(0, 0, 0, .5)); pointer-events: none; }
-  .lp-dev-3ds { width: 25%; left: 0; bottom: 0; transform: rotate(-7deg); }
-  .lp-dev-switch { width: 37%; right: 0; bottom: 26px; transform: rotate(4deg); }
+  .lp-dev-3ds { width: 33%; left: -3%; bottom: -3%; }
+  .lp-dev-switch { width: 44%; right: -4%; bottom: 2%; }
   .lp-float {
     position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 16px 10px 10px; border-radius: 14px;
     background: color-mix(in srgb, var(--panel) 88%, transparent);
@@ -640,8 +640,8 @@
     .lp-features { gap: 80px; padding-top: 72px; }
     .lp-bento { grid-template-columns: repeat(2, 1fr); }
     .lp-hero-art { padding: 0 0 56px; margin-top: 48px; }
-    .lp-dev-3ds { width: 31%; left: -6px; bottom: -6px; }
-    .lp-dev-switch { width: 45%; right: -8px; bottom: 0; }
+    .lp-dev-3ds { width: 38%; left: -6px; bottom: -8px; }
+    .lp-dev-switch { width: 50%; right: -8px; bottom: 0; }
     .lp-float-ok { left: -6px; top: 34%; }
     .lp-float-life { right: -6px; top: -18px; }
     .lp-account { min-height: calc(100vh - 104px - 110px); }
@@ -1271,6 +1271,177 @@
   @keyframes boot-pulse { 50% { transform: scale(1.05); } }
   @keyframes boot-dot { 50% { opacity: 1; transform: translateY(-3px); } }
   @media (prefers-reduced-motion: reduce) { .boot-mark, .boot-mark svg, .boot-dots i { animation: none; } }
+  /* ------------------------------------------------- signed in: the top bar */
+  .app-top {
+    position: sticky; top: 0; z-index: 25;
+    display: flex; align-items: center; gap: 12px;
+    margin: -28px 0 22px; padding: 12px 0;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .at-menu, .at-brand { display: none; }
+  .at-tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; min-width: 0; }
+  .at-tabs::-webkit-scrollbar { display: none; }
+  .at-tab { background: none; height: 34px; padding: 0 13px; border-radius: 999px; color: var(--muted); font-size: 13.5px; white-space: nowrap; border: 0; }
+  .at-tab:hover { color: var(--text); background: var(--hover); }
+  .at-tab.on { color: var(--text); background: var(--panel-2); box-shadow: inset 0 0 0 1px var(--border-2); }
+  .at-grow { flex: 1; }
+  .app-top .lifetime { height: 30px; padding: 0 10px 0 7px; font-size: 12.5px; }
+  .app-top .lifetime-disk { width: 17px; height: 17px; }
+  .app-top .lifetime-tip { bottom: auto; top: calc(100% + 10px); }
+  .app-top .lifetime-tip::after { top: auto; bottom: 100%; margin: 0 0 -5px; transform: rotate(225deg); }
+
+  /* The account circle: initials on amber, or the Google picture. */
+  .acct-btn { width: 40px; height: 40px; padding: 0; border-radius: 50%; background: none; border: 0; flex-shrink: 0; }
+  .acct-av {
+    width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0;
+    font: 700 13.5px/1 var(--font-display); letter-spacing: .02em; color: var(--accent-ink);
+    background: linear-gradient(145deg, #ffc061, #ff8a1f) center / cover no-repeat;
+    box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--border-3);
+    transition: box-shadow .15s ease;
+  }
+  .acct-btn:hover .acct-av, .acct-btn[aria-expanded="true"] .acct-av { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--accent); }
+  .acct-av.has-pic { color: transparent; }
+
+  .acct-menu {
+    position: fixed; z-index: 80; width: 292px; max-width: calc(100vw - 16px); padding: 8px; border-radius: 18px;
+    background: var(--panel); border: 1px solid var(--border-2); box-shadow: var(--shadow-pop);
+    animation: modalIn .14s var(--ease);
+  }
+  .am-head { display: flex; align-items: center; gap: 12px; padding: 10px 10px 12px; }
+  .am-av { width: 46px; height: 46px; font-size: 17px; box-shadow: none; }
+  .am-who { min-width: 0; }
+  .am-who b { display: block; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .am-who small { display: block; color: var(--faint); font-size: 12.5px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .am-life { display: flex; align-items: center; gap: 10px; margin: 0 4px 6px; padding: 10px 12px; border-radius: 12px; background: var(--accent-soft); font-size: 13px; }
+  .am-life svg { display: block; flex-shrink: 0; }
+  .am-life b { color: var(--accent-text); font: 700 15px var(--font-display); font-variant-numeric: tabular-nums; }
+  .am-item { width: 100%; justify-content: flex-start; gap: 12px; height: 40px; padding: 0 12px; border-radius: 10px; background: none; border: 0; color: var(--text); font-size: 13.5px; }
+  .am-item:hover, .am-item:focus-visible { background: var(--hover); }
+  .am-item .ico { width: 17px; height: 17px; color: var(--muted); vertical-align: 0; }
+  .am-sep { height: 1px; background: var(--border); margin: 6px 4px; }
+  .am-out, .am-out .ico { color: var(--danger); }
+
+  /* Search, beside the library's heading. */
+  .section-title { justify-content: flex-start; }
+  .g-search {
+    margin-left: auto; display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px;
+    border-radius: 10px; background: var(--panel); border: 1px solid var(--border-2); color: var(--faint);
+    min-width: 240px; cursor: text;
+  }
+  .g-search:focus-within { border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .g-search .ico { flex-shrink: 0; }
+  .g-search input {
+    border: 0; background: none; padding: 0; height: 100%; width: 100%; min-width: 0;
+    color: var(--text); font-size: 13.5px; box-shadow: none; outline: none;
+  }
+  .g-search input::-webkit-search-cancel-button { filter: grayscale(1); }
+
+  /* Phones only: consoles as chips under the search, and roomier cards. */
+  .con-chips, .gc-m, .gc-when, .gc-chev, .m-tabbar, .fab { display: none; }
+  .cchip {
+    flex-shrink: 0; height: 36px; padding: 0 16px; border-radius: 999px;
+    background: var(--panel); border: 1px solid var(--border-2); color: var(--text); font-size: 13.5px; font-weight: 600;
+  }
+  .cchip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+  /* A notice worth acting on, bottom centre. */
+  .notice {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 90;
+    display: flex; align-items: center; gap: 12px; width: max-content; max-width: min(560px, calc(100vw - 24px));
+    padding: 10px 10px 10px 16px; border-radius: 14px; font-size: 13.5px; line-height: 1.4;
+    background: var(--panel-3); border: 1px solid var(--border-2); box-shadow: var(--shadow-pop);
+  }
+  .notice-x { width: 30px; height: 30px; padding: 0; background: none; border: 0; color: var(--faint); border-radius: 8px; flex-shrink: 0; }
+  .notice-x:hover { color: var(--text); background: var(--hover); }
+
+  /* The landing page, when you're signed in: your games and your circle. */
+  .gate .lp-mine, .gate .lp-acct { display: none; }
+  .gate.lp-signed .lp-login, .gate.lp-signed .lp-start { display: none; }
+  .gate.lp-signed .lp-mine, .gate.lp-signed .lp-acct { display: inline-flex; }
+  .lp-actions .acct-btn { width: 40px; height: 40px; padding: 0; }
+  .lp-legal { max-width: 1180px; margin: 0 auto; padding: 0 24px 22px; color: var(--faint); font-size: 11.5px; line-height: 1.5; }
+
+  @media (max-width: 620px) {
+    /* The top bar becomes the phone's: menu, name, circle. */
+    .app-top {
+      position: fixed; left: 0; right: 0; top: 0; z-index: 28; margin: 0;
+      height: calc(58px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) 10px 0; gap: 8px;
+      background: color-mix(in srgb, var(--bg) 92%, transparent);
+    }
+    .at-menu {
+      display: grid; place-items: center; width: 42px; height: 42px; padding: 0;
+      background: none; border: 0; border-radius: 12px; color: var(--text);
+    }
+    .at-menu .ico { width: 22px; height: 22px; vertical-align: 0; }
+    .at-brand {
+      display: flex; align-items: center; gap: 8px; position: absolute; left: 50%; transform: translateX(-50%);
+      font: 700 18px/1 var(--font-display); letter-spacing: -.01em; bottom: 17px;
+    }
+    .at-brand svg { display: block; }
+    .at-tabs, .app-top .lifetime { display: none; }
+    main#app, body.sb-collapsed main#app { padding-top: calc(76px + env(safe-area-inset-top)); padding-bottom: 110px; }
+    .sb-open-btn { display: none !important; }
+
+    .section-title { gap: 12px; margin: 4px 0 14px; }
+    .section-title h3 { font: 700 30px/1.1 var(--font-display); letter-spacing: -.025em; flex: 1; }
+    .g-search { order: 3; flex: 1 1 100%; margin-left: 0; height: 48px; border-radius: 14px; font-size: 15px; padding: 0 14px; }
+    .g-search input { font-size: 15.5px; }
+    .g-search .ico { width: 19px; height: 19px; }
+    .section-title .view-toggle, #newGameBtn, #clearFilterBtn { display: none !important; }
+    #refreshBtn { font-size: 0; gap: 0; width: 40px; height: 40px; padding: 0; border-radius: 12px; }
+    #refreshBtn .ico { width: 18px; height: 18px; vertical-align: 0; }
+
+    .con-chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -14px 16px; padding: 0 14px 2px; }
+    .con-chips::-webkit-scrollbar { display: none; }
+
+    .games-grid { grid-template-columns: 1fr; gap: 12px; }
+    .game-card {
+      flex-direction: row; align-items: stretch; position: relative; overflow: hidden;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 18px;
+    }
+    .game-card .gc-cover { width: 100px; flex-shrink: 0; border-radius: 0; box-shadow: none; }
+    .game-card:hover .gc-cover { transform: none; box-shadow: none; }
+    .game-card .gc-body { flex: 1; min-width: 0; padding: 14px 40px 14px 16px; display: flex; flex-direction: column; justify-content: center; gap: 9px; }
+    .game-card .gc-name { font: 700 17px/1.22 var(--font-display); letter-spacing: -.01em; }
+    .game-card .gc-meta { display: none; }
+    .gc-m { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--muted); }
+    .gc-badge { padding: 3px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 700; color: #fff; background: var(--c, #555); }
+    .gc-when { display: block; font-size: 13px; color: var(--faint); }
+    .gc-chev { display: grid; place-items: center; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--faint); }
+    .gc-chev .ico { width: 20px; height: 20px; }
+    .game-card .gc-pin { transform: scale(.85); transform-origin: top left; }
+
+    body:has(#app:not(.hidden)) .m-tabbar { display: flex; }
+    body:has(#app:not(.hidden)):has(#gamesView:not(.hidden)) .fab { display: grid; }
+    .notice { bottom: calc(84px + env(safe-area-inset-bottom)); }
+    /* Settings is one of the tabs, so the tabs stay put beneath it. */
+    .settings-layer { bottom: calc(65px + env(safe-area-inset-bottom)); }
+    .settings-window { border-bottom: 1px solid var(--border); }
+    body:has(#app:not(.hidden)) #toast { bottom: calc(76px + env(safe-area-inset-bottom)); }
+  }
+  .m-tabbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 27;
+    justify-content: space-around; padding-bottom: env(safe-area-inset-bottom);
+    background: color-mix(in srgb, var(--chrome) 94%, transparent);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+  }
+  .mt { flex: 1; flex-direction: column; gap: 4px; height: 64px; background: none; border: 0; border-radius: 0; color: var(--faint); font-size: 12px; font-weight: 600; }
+  .mt .ico { width: 24px; height: 24px; vertical-align: 0; }
+  .mt[data-mt="games"] { color: var(--accent-text); }
+  body.settings-open .mt[data-mt="games"] { color: var(--faint); }
+  body.settings-open .mt[data-mt="settings"] { color: var(--accent-text); }
+  .fab {
+    position: fixed; right: 18px; bottom: calc(82px + env(safe-area-inset-bottom)); z-index: 27;
+    width: 60px; height: 60px; padding: 0; place-items: center; border-radius: 50%; border: 0;
+    background: var(--accent); color: var(--accent-ink);
+    box-shadow: 0 12px 28px rgba(255, 140, 30, .38), var(--shadow);
+  }
+  .fab:hover { background: var(--accent-hover); }
+  .fab .ico { width: 26px; height: 26px; stroke-width: 2.4; vertical-align: 0; }
+
 </style>
 <script>
   // Firebase keeps the session in localStorage ("firebase:authUser:…"), so a
@@ -1316,8 +1487,7 @@
     <div class="sb-sec">Consoles</div>
     <div class="sb-group" id="sbConsoles"></div>
 
-    <div class="sb-sec">Account</div>
-    <button class="sb-item" data-view="settings" title="Settings">
+    <button class="sb-item hidden" data-view="settings" title="Settings">
       <span class="sb-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="sb-label">Settings</span>
     </button>
   </div>
@@ -1326,23 +1496,40 @@
     <button class="sb-toggle" id="sbToggle" title="Collapse sidebar">
       <span id="sbToggleIcon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg></span><span class="sb-label">Collapse</span>
     </button>
-    <div class="sb-user">
-      <img id="userAvatar" alt="" class="hidden">
-      <div class="sb-who">
-        <div class="sb-name" id="userName"></div>
-        <div class="sb-mail" id="sbUserMail"></div>
-      </div>
-      <span class="lifetime hidden" id="lifetimeChip" role="img" aria-label="Lifetime saves">
-        <svg class="lifetime-disk" viewBox="0 0 40 40" aria-hidden="true"><path d="M4 0h28l8 8v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4Z" fill="#ffa033"/><rect x="10" y="0" width="18" height="12" rx="1.5" fill="#2b2a26"/><rect x="20" y="2.5" width="4.5" height="7" rx="1" fill="#ffa033"/><rect x="6" y="19" width="28" height="17" rx="2" fill="#faf8f3"/></svg>
-        <span class="lifetime-n" id="lifetimeN"></span>
-        <span class="lifetime-tip" aria-hidden="true"><span>Lifetime saves</span><b id="lifetimeFull"></b></span>
-      </span>
-    </div>
-    <button class="sb-item" id="signOutBtn" title="Sign out">
-      <span class="sb-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg></span><span class="sb-label">Sign out</span>
-    </button>
   </div>
 </aside>
+
+<!-- Your account, from the circle at the top right of the app and the site. -->
+<div class="acct-menu hidden" id="acctMenu" role="menu" aria-label="Your account">
+  <div class="am-head">
+    <span class="acct-av am-av" data-acct-av></span>
+    <img id="userAvatar" alt="" class="hidden">
+    <div class="am-who"><b id="userName"></b><small id="sbUserMail"></small></div>
+  </div>
+  <div class="am-life hidden" id="amLife"><svg viewBox="0 0 40 40" width="18" height="18" aria-hidden="true"><path d="M4 0h28l8 8v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4Z" fill="#ffa033"/><rect x="10" y="0" width="18" height="12" rx="1.5" fill="#2b2a26"/><rect x="6" y="19" width="28" height="17" rx="2" fill="#faf8f3"/></svg><span><b id="amLifeN"></b> lifetime saves</span></div>
+  <button class="am-item" type="button" role="menuitem" data-am="games"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="18" x="3" y="3" rx="1"/><path d="M7 3v18"/><path d="M20.4 18.9c.2.5-.1 1.1-.6 1.3l-1.9.7c-.5.2-1.1-.1-1.3-.6L11.1 5.1c-.2-.5.1-1.1.6-1.3l1.9-.7c.5-.2 1.1.1 1.3.6Z"/></svg>My games</button>
+  <button class="am-item" type="button" role="menuitem" data-am="settings"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Settings</button>
+  <button class="am-item" type="button" role="menuitem" data-am="qr"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>Sign in on another device</button>
+  <button class="am-item" type="button" role="menuitem" data-am="download"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>Download the apps</button>
+  <div class="am-sep"></div>
+  <button class="am-item am-out" type="button" role="menuitem" id="signOutBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>Sign out</button>
+</div>
+
+<!-- Something worth acting on: a newer version of the site is up, or Google
+     Drive needs reconnecting. -->
+<div class="notice hidden" id="notice" role="status" aria-live="polite">
+  <span id="noticeText"></span>
+  <button class="btn-primary btn-sm" type="button" id="noticeAct"></button>
+  <button class="notice-x" type="button" id="noticeX" aria-label="Dismiss"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+</div>
+
+<!-- Phones: the sections along the bottom, and Add game under your thumb. -->
+<nav class="m-tabbar" id="mTabbar" aria-label="Sections">
+  <button class="mt" type="button" data-mt="games"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h4"/><path d="M8 10v4"/><path d="M15 13h.01"/><path d="M18 11h.01"/><rect width="20" height="12" x="2" y="6" rx="2"/></svg><span>My games</span></button>
+  <button class="mt" type="button" data-mt="settings"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span>Settings</span></button>
+</nav>
+<button class="fab" type="button" id="fabAdd" aria-label="Add a game"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
+
 
 <!-- LANDING — what a signed-out visitor sees: a few tabs about Save Station,
      the apps (coming soon), and the log in / create account form. -->
@@ -1359,6 +1546,8 @@
       <div class="lp-actions">
         <button class="btn-ghost lp-login" data-go="login">Log in</button>
         <button class="btn-primary lp-start" data-go="signup">Get started</button>
+        <button class="btn-primary lp-mine" data-go="games">My games</button>
+        <button class="acct-btn lp-acct" type="button" data-acct-menu aria-label="Your account" aria-haspopup="menu" aria-expanded="false"><span class="acct-av" data-acct-av></span></button>
       </div>
     </div>
   </header>
@@ -1369,7 +1558,7 @@
       <div class="lp-hero-glow" aria-hidden="true"></div>
       <div class="lp-hero-text">
         <span class="lp-eyebrow"><i></i>Your saves live in your own Google Drive</span>
-        <h1>Never lose a save <span class="lp-hl">again.</span></h1>
+        <h1>Save <span class="lp-hl">Station</span></h1>
         <p class="lp-lede">Save Station backs up your console and emulator saves, keeps every version, and puts them back wherever you play: on your PC, your phone, your 3DS or your Switch.</p>
         <div class="lp-cta">
           <button class="btn-primary lp-big" data-go="signup">Get started</button>
@@ -1382,8 +1571,8 @@
         <figure class="lp-window">
           <img src="assets/landing/windows-app.webp" width="1800" height="1138" alt="The Save Station app on Windows: a library of games with their box art, pinned games, and one save waiting to upload" fetchpriority="high">
         </figure>
-        <img class="lp-dev lp-dev-3ds" src="assets/landing/3ds.webp" width="900" height="1170" alt="Save Station on a Nintendo 3DS, with a HOME Menu-style home screen" loading="lazy">
-        <img class="lp-dev lp-dev-switch" src="assets/landing/switch.webp" width="1200" height="583" alt="Save Station on a Nintendo Switch" loading="lazy">
+        <img class="lp-dev lp-dev-3ds" src="assets/landing/2ds-xl.webp" width="1000" height="712" alt="Save Station on a New Nintendo 2DS XL: a game's cover on the top screen, the library on the touch screen" loading="lazy">
+        <img class="lp-dev lp-dev-switch" src="assets/landing/switch.webp" width="1300" height="573" alt="Save Station on a Nintendo Switch, with your games along its home screen" loading="lazy">
         <div class="lp-float lp-float-ok" aria-hidden="true">
           <span class="lp-float-ico"><svg class="ico" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>
           <div><b>Backed up</b><small>Pokémon Emerald · just now</small></div>
@@ -1633,8 +1822,10 @@
         <a href="#faq" data-go="faq">FAQ</a>
         <a href="#login" data-go="login">Log in</a>
       </nav>
-      <span class="lp-foot-note">Not affiliated with Nintendo or Sony. <span data-build></span></span>
+      <span class="lp-foot-note"><span data-build></span></span>
     </div>
+    <p class="lp-legal">Nintendo 3DS, Nintendo Switch, Game Boy, Wii and Wii U are trademarks of Nintendo. PSP and PS Vita
+      are trademarks of Sony Interactive Entertainment. Save Station isn't affiliated with or endorsed by either.</p>
   </footer>
 </div>
 
@@ -1714,27 +1905,27 @@
 <!-- APP -->
 <main id="app" class="hidden">
 
-  <!-- ONBOARDING: pick your consoles (first sign-in) -->
-  <div id="onboardView" class="hidden">
-    <div class="onboard">
-      <div class="onboard-head">
-        <h2 id="onboardTitle">Welcome to Save Station</h2>
-        <p id="onboardBlurb">
-          Which consoles do you plan on keeping saves for? Pick as many as you like — this just tailors
-          the upload form and filters to you. You can change it any time in <b>Settings</b>.
-        </p>
-      </div>
-      <div class="console-grid" id="consoleGrid"></div>
-      <div class="onboard-foot">
-        <span class="of-count" id="onboardCount">0 selected</span>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn-ghost btn-sm" id="selectAllConsolesBtn">Select all</button>
-          <button class="btn-ghost btn-sm hidden" id="onboardCancelBtn">Cancel</button>
-          <button class="btn-primary" id="onboardDoneBtn" disabled>Continue</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- The bar along the top: the rest of the site, your lifetime saves, and
+       your account -- the circle at the right, as Microsoft and Google have
+       it. On a phone it's the menu, the name and the circle. -->
+  <header class="app-top" id="appTop">
+    <button class="at-menu" id="atMenuBtn" type="button" aria-label="Open the menu"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></svg></button>
+    <span class="at-brand"><span data-logo="24"></span><span>Save Station</span></span>
+    <nav class="at-tabs" aria-label="Save Station">
+      <button class="at-tab on" type="button" data-site="games">My games</button>
+      <button class="at-tab" type="button" data-site="home">Home</button>
+      <button class="at-tab" type="button" data-site="how-it-works">How it works</button>
+      <button class="at-tab" type="button" data-site="download">Download</button>
+      <button class="at-tab" type="button" data-site="faq">FAQ</button>
+    </nav>
+    <span class="at-grow"></span>
+    <span class="lifetime hidden" id="lifetimeChip" role="img" aria-label="Lifetime saves">
+      <svg class="lifetime-disk" viewBox="0 0 40 40" aria-hidden="true"><path d="M4 0h28l8 8v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4Z" fill="#ffa033"/><rect x="10" y="0" width="18" height="12" rx="1.5" fill="#2b2a26"/><rect x="20" y="2.5" width="4.5" height="7" rx="1" fill="#ffa033"/><rect x="6" y="19" width="28" height="17" rx="2" fill="#faf8f3"/></svg>
+      <span class="lifetime-n" id="lifetimeN"></span>
+      <span class="lifetime-tip" aria-hidden="true"><span>Lifetime saves</span><b id="lifetimeFull"></b></span>
+    </span>
+    <button class="acct-btn" type="button" data-acct-menu aria-label="Your account" aria-haspopup="menu" aria-expanded="false"><span class="acct-av" data-acct-av></span></button>
+  </header>
 
   <!-- SETTINGS — a window over the page, which stays put behind a blur.
        The same window as the Windows app's Settings. -->
@@ -1747,14 +1938,12 @@
       <div class="sw-body">
         <nav class="sw-nav" aria-label="Settings sections">
           <button type="button" class="sw-tab on" data-pane="account"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Account</button>
-          <button type="button" class="sw-tab" data-pane="consoles"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h4"/><path d="M8 10v4"/><path d="M15 13h.01"/><path d="M18 11h.01"/><rect width="20" height="12" x="2" y="6" rx="2"/></svg> Your consoles</button>
         </nav>
         <div class="sw-pane" data-pane="account">
           <h3 class="sw-title">Account</h3>
           <div class="sw-card">
             <div class="acct-row">Save Station account <b id="acctName">—</b></div>
             <div class="acct-row">Email <b id="acctEmail">—</b></div>
-            <div class="acct-row">Drive session <b id="acctDriveState">—</b></div>
             <div class="acct-row">Saves live in your Drive under <b id="acctFolder">—</b></div>
             <div class="acct-row hidden" id="acctQrNote">
               📱 This device was signed in by scanning a QR code.
@@ -1806,26 +1995,12 @@
             </div>
           </div>
         </div>
-        <div class="sw-pane hidden" data-pane="consoles">
-          <h3 class="sw-title">Your consoles</h3>
-          <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:16px;">
-            Tick the ones you keep saves for. This tailors the upload form and picks which
-            consoles lead the sidebar — <b>unticking one never deletes saves</b>, and every
-            console stays reachable in the sidebar regardless.
-          </div>
-          <div class="console-grid" id="settingsConsoleGrid"></div>
-          <div style="margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-            <button class="btn-ghost btn-sm" id="settingsSelectAllBtn">Select all</button>
-            <span id="consolePrefStatus" style="font-size:12px;color:var(--muted);min-height:16px;"></span>
-          </div>
-        </div>
       </div>
       <div class="sw-foot">
         <span class="sw-mark" data-logo="18"></span>
         <span>Save Station <span class="faint">· <b data-build></b></span></span>
         <span class="sw-grow"></span>
-        <span class="sw-note faint">Changes save as you make them</span>
-        <button class="btn-primary btn-sm" id="settingsDoneBtn">Done</button>
+        <button class="btn-primary btn-sm" id="settingsSaveBtn">Save</button>
       </div>
     </div>
   </div>
@@ -1891,7 +2066,8 @@
   <div id="gamesView">
     <div class="section-title">
       <h3 id="gamesTitle">Your games</h3>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <label class="g-search"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="gameSearch" placeholder="Search your games" autocomplete="off" aria-label="Search your games"></label>
+      <div class="g-tools" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <!-- Grid or List, as in the Windows app. Remembered per browser. -->
         <div class="view-toggle" id="viewToggle" role="group" aria-label="Library view">
           <button type="button" data-mode="grid" title="Grid">
@@ -1910,6 +2086,7 @@
         <button class="btn-primary btn-sm" id="newGameBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Add game</button>
       </div>
     </div>
+    <div class="con-chips" id="conChips" role="group" aria-label="Consoles"></div>
     <div id="gamesContainer"></div>
   </div>
 
@@ -2003,7 +2180,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-10-03f";
+const BUILD = "2026-10-03h";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -2200,10 +2377,10 @@ let justSignedUp = false;
 let linkedViaQr = false;       // signed in by scanning a computer's code
 let googleEmail = "";          // the Google account whose Drive is linked
 let profile = null;            // { version, consoles:[], account:{}, createdAt, updatedAt }
-let onboardSelection = new Set();
-let onboardMode = "first";     // "first" | "edit"
 let allGames = [];             // enriched game list, for client-side filtering
 let activeFilter = "all";
+let gameSearch = "";           // the library search, as typed
+const NARROW = window.matchMedia("(max-width: 620px)");
 
 const $ = (id) => document.getElementById(id);
 
@@ -2424,6 +2601,7 @@ function bootDone() { document.documentElement.classList.remove("booting"); }
 
 function showGate() {
   bootDone();
+  setSignedLanding(false);
   $("gateRestoring").classList.add("hidden");
   $("linkGate").classList.add("hidden");
   $("app").classList.add("hidden");
@@ -2771,9 +2949,8 @@ async function onLoggedIn() {
 
   profile = await loadProfile();
   if (!profile) {
-    // Brand new account → ask which consoles they'll keep saves for.
-    startOnboarding("first");
-    return;
+    // A brand new account: make its profile and go straight in.
+    try { profile = await saveProfile({ consoles: [] }); } catch (e) { profile = { consoles: [] }; }
   }
   await stampAccount();
   if (justSignedUp) { justSignedUp = false; toast("Drive connected ✔", "ok"); }
@@ -2841,7 +3018,6 @@ function navigate(view) {
   const views = {
     games: "gamesView",
     history: "historyView",
-    onboard: "onboardView",
   };
   if (view === "upload") {
     navigate("games");
@@ -2877,7 +3053,6 @@ function openSettings(pane) {
   const layer = $("settingsView");
   if (layer.classList.contains("hidden")) settingsBack = currentNav === "settings" ? "games" : currentNav;
   refreshConsoleUi();
-  renderSettingsConsoles();
   showSettingsPane(pane || settingsPane);
   layer.classList.remove("hidden", "leaving");
   document.body.classList.add("settings-open");
@@ -2896,6 +3071,16 @@ function closeSettings(instant) {
   if (instant || window.matchMedia("(prefers-reduced-motion: reduce)").matches) done();
   else { layer.classList.add("leaving"); setTimeout(done, 140); }
   if (currentNav === "settings") markNav(settingsBack || "games");
+}
+
+// Save: keep what's in Settings. On a computer that also closes the window;
+// on a phone Settings is one of the tabs, so it stays where it is.
+function saveSettings() {
+  const v = $("acctDevice").value.trim();
+  if (v) { localStorage.setItem("ssw_device_name", v); $("deviceName").value = v; }
+  else $("acctDevice").value = getDeviceName();
+  toast("Settings saved", "ok");
+  if (!NARROW.matches) closeSettings();
 }
 
 function markNav(view) {
@@ -3265,12 +3450,8 @@ function renderPinnedNav() {
 function renderConsoleNav() {
   const counts = {};
   allGames.forEach((g) => { if (g.consoleId) counts[g.consoleId] = (counts[g.consoleId] || 0) + 1; });
-  // Their picks lead, but every supported console stays listed — this section
-  // is the map of what the site handles, not just what they ticked.
-  const picked = (profile && profile.consoles) || [];
-  const mine = CONSOLES.filter((c) => picked.indexOf(c.id) >= 0);
-  const rest = CONSOLES.filter((c) => picked.indexOf(c.id) < 0);
-  $("sbConsoles").innerHTML = mine.concat(rest).map((c) =>
+  // Every console the site handles, always in the same order.
+  $("sbConsoles").innerHTML = CONSOLES.map((c) =>
     '<button class="sb-item sb-console" data-cid="' + c.id + '" title="' + escapeAttr(c.label) + '">' +
       '<span class="sb-ico sb-ico-img">' + consoleIcon(c.id, 18, 5) + '</span>' +
       '<span class="sb-label">' + escapeHtml(c.label) + '</span>' +
@@ -3503,32 +3684,29 @@ function refreshAccountHeader() {
   $("sbUserMail").textContent = (fbUser && fbUser.email) ||
     (profile && profile.account && profile.account.email) || googleEmail || "";
 
-  // Visible state for the Drive session, so "why is it asking me again?" has an
-  // answer without opening devtools.
-  const el = $("acctDriveState");
-  if (el) {
-    const left = tokenExpiresAt ? tokenExpiresAt - Math.floor(Date.now() / 1000) : 0;
-    const remembered = !!cachedDriveToken();
-    el.textContent = !accessToken ? "not connected"
-      : left > 0
-        ? "active · " + Math.max(1, Math.round(left / 60)) + " min left" +
-          (remembered ? " · remembered for next launch" : " · not remembered")
-        : "active";
-  }
+  refreshAvatars();
 }
 
-// Re-tick the Drive session line while the Account page is open.
-setInterval(() => {
-  if (!$("settingsView").classList.contains("hidden")) refreshAccountHeader();
-}, 30000);
 
 /* ============================================================
    Drive helpers
    ============================================================ */
-async function driveFetch(url, opts = {}) {
+let driveRetry = null;     // one refresh shared by every request that hit the stale token
+async function driveFetch(url, opts = {}, retried) {
   opts.headers = Object.assign({}, opts.headers, { Authorization: "Bearer " + accessToken });
   const r = await fetch(url, opts);
-  if (r.status === 401) { toast("Session expired — please sign in again.", "err"); signOut(); throw new Error("401"); }
+  if (r.status === 401) {
+    // Usually just a token that ran out while the tab slept: get a fresh one
+    // in the background and try once more. Only if that fails is there
+    // anything to tell you.
+    if (!retried && accessToken && workerEnabled()) {
+      driveRetry = driveRetry || refreshDriveToken().catch(() => false)
+        .finally(() => setTimeout(() => { driveRetry = null; }, 0));
+      if (await driveRetry) return driveFetch(url, opts, true);
+    }
+    showDriveTrouble();
+    throw new Error("401");
+  }
   if (!r.ok) { const t = await r.text(); throw new Error("Drive error " + r.status + ": " + t); }
   return r;
 }
@@ -3792,95 +3970,21 @@ function renderLifetime() {
   $("lifetimeFull").textContent = full;
   chip.setAttribute("aria-label", "Lifetime saves: " + full);
   chip.classList.remove("hidden");
-}
-
-/* ============================================================
-   Onboarding — "which consoles do you plan to keep saves for?"
-   ============================================================ */
-function startOnboarding(mode) {
-  onboardMode = mode;
-  onboardSelection = new Set(mode === "edit" && profile ? profile.consoles : []);
-  $("gamesView").classList.add("hidden");
-  $("historyView").classList.add("hidden");
-  closeSettings(true);
-  $("uploadPanel").classList.add("hidden");
-  $("onboardView").classList.remove("hidden");
-  $("onboardTitle").textContent = mode === "edit" ? "Your consoles" : "Welcome to Save Station";
-  $("onboardBlurb").innerHTML = mode === "edit"
-    ? "Add or remove consoles any time. Unticking one never deletes saves — it just hides it from the pickers."
-    : "Which consoles do you plan on keeping saves for? Pick as many as you like — this just tailors " +
-      "the upload form and filters to you. You can change it any time in <b>Settings</b>.";
-  $("onboardCancelBtn").classList.toggle("hidden", mode !== "edit");
-  $("onboardDoneBtn").textContent = mode === "edit" ? "Save" : "Continue";
-  renderConsoleGrid();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function renderConsoleGrid() {
-  // Just the icon and the name — where the saves live is shown when you're
-  // actually uploading, which is the moment you need it.
-  $("consoleGrid").innerHTML = CONSOLES.map((c) =>
-    '<div class="console-card' + (onboardSelection.has(c.id) ? " on" : "") + '" data-cid="' + c.id + '">' +
-      '<div class="cc-icon">' + consoleIcon(c.id, 30) + '</div>' +
-      '<div><div class="cc-name">' + escapeHtml(c.label) + '</div></div>' +
-      '<div class="cc-check">✓</div>' +
-    '</div>').join("");
-  $("consoleGrid").querySelectorAll(".console-card").forEach((el) => {
-    el.onclick = () => {
-      const id = el.dataset.cid;
-      if (onboardSelection.has(id)) onboardSelection.delete(id); else onboardSelection.add(id);
-      el.classList.toggle("on");
-      updateOnboardCount();
-    };
-  });
-  updateOnboardCount();
-}
-
-function updateOnboardCount() {
-  const n = onboardSelection.size;
-  $("onboardCount").textContent = n + " selected" + (n === 0 ? " — pick at least one" : "");
-  $("onboardDoneBtn").disabled = n === 0;
-  $("selectAllConsolesBtn").textContent = n === CONSOLES.length ? "Clear all" : "Select all";
-}
-
-async function finishOnboarding() {
-  const btn = $("onboardDoneBtn");
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Saving…';
-  try {
-    profile = await saveProfile(Object.assign(profile || {}, {
-      consoles: CONSOLES.filter((c) => onboardSelection.has(c.id)).map((c) => c.id),
-    }));
-    toast(onboardMode === "edit" ? "Consoles updated ✔" : "You're all set — let's back up some saves ✔", "ok");
-    enterApp();
-  } catch (e) {
-    toast("Could not save your consoles: " + e.message, "err", 5000);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = onboardMode === "edit" ? "Save" : "Continue";
-  }
+  $("amLifeN").textContent = full;
+  $("amLife").classList.remove("hidden");
 }
 
 /* ============================================================
    Console-driven UI
    ============================================================ */
 function myConsoles() {
-  const picked = (profile && profile.consoles) || [];
-  const list = CONSOLES.filter((c) => picked.includes(c.id));
-  return list.length ? list : CONSOLES;
+  return CONSOLES;
 }
 
 function refreshConsoleUi() {
-  // Upload form console dropdown — their consoles first, everything else after.
-  const mine = myConsoles();
-  const others = CONSOLES.filter((c) => !mine.includes(c));
-  let html = mine.map((c) => '<option value="' + c.id + '">' + c.icon + "  " + escapeHtml(c.label) + "</option>").join("");
-  if (others.length) {
-    html += '<optgroup label="Other consoles">' +
-      others.map((c) => '<option value="' + c.id + '">' + c.icon + "  " + escapeHtml(c.label) + "</option>").join("") +
-      "</optgroup>";
-  }
-  $("consoleSel").innerHTML = html;
+  // Upload form console dropdown: every console Save Station knows.
+  $("consoleSel").innerHTML = CONSOLES.map((c) =>
+    '<option value="' + c.id + '">' + c.icon + "  " + escapeHtml(c.label) + "</option>").join("");
   onConsoleChanged();
 
   // Settings panel
@@ -3890,58 +3994,6 @@ function refreshConsoleUi() {
   // Filtering lives in the sidebar now, which lists every console rather than
   // only the ticked ones — one place to navigate from instead of two.
   renderSidebar();
-}
-
-/* ---------------------------------------------- console prefs, in Settings
-   The same grid as onboarding, but inline and saving as you tick rather than
-   behind a Save button — there's nothing here to get half-finished. */
-function renderSettingsConsoles() {
-  const picked = (profile && profile.consoles) || [];
-  $("settingsConsoleGrid").innerHTML = CONSOLES.map((c) =>
-    '<div class="console-card' + (picked.indexOf(c.id) >= 0 ? " on" : "") + '" data-cid="' + c.id + '">' +
-      '<div class="cc-icon">' + consoleIcon(c.id, 30) + '</div>' +
-      '<div><div class="cc-name">' + escapeHtml(c.label) + '</div></div>' +
-      '<div class="cc-check">✓</div>' +
-    '</div>').join("");
-  $("settingsConsoleGrid").querySelectorAll(".console-card").forEach((el) => {
-    el.onclick = () => {
-      const id = el.dataset.cid;
-      const now = ((profile && profile.consoles) || []).slice();
-      const at = now.indexOf(id);
-      if (at >= 0) now.splice(at, 1); else now.push(id);
-      el.classList.toggle("on");
-      saveConsolePrefs(now);
-    };
-  });
-  syncSelectAllLabel();
-}
-
-function syncSelectAllLabel() {
-  const n = ((profile && profile.consoles) || []).length;
-  $("settingsSelectAllBtn").textContent = n === CONSOLES.length ? "Clear all" : "Select all";
-}
-
-let consolePrefTimer = null;
-function saveConsolePrefs(ids) {
-  if (!profile) return;
-  // Store in CONSOLES order, not click order, so the sidebar and the upload
-  // dropdown stay in a predictable sequence.
-  profile.consoles = CONSOLES.filter((c) => ids.indexOf(c.id) >= 0).map((c) => c.id);
-  $("consolePrefStatus").textContent = "Saving…";
-  refreshConsoleUi();
-  syncSelectAllLabel();
-  clearTimeout(consolePrefTimer);
-  consolePrefTimer = setTimeout(async () => {
-    try {
-      profile = await saveProfile(Object.assign(profile, { consoles: profile.consoles }));
-      $("consolePrefStatus").textContent = "Saved ✔";
-      setTimeout(() => {
-        if ($("consolePrefStatus").textContent === "Saved ✔") $("consolePrefStatus").textContent = "";
-      }, 2500);
-    } catch (e) {
-      $("consolePrefStatus").textContent = "Couldn't save: " + e.message;
-    }
-  }, 600);
 }
 
 function consolePill(c, extra) {
@@ -5442,8 +5494,11 @@ async function loadGames() {
 
 function renderGames() {
   const c = $("gamesContainer");
-  const games = activeFilter === "all" ? allGames : allGames.filter((g) => g.consoleId === activeFilter);
+  let games = activeFilter === "all" ? allGames : allGames.filter((g) => g.consoleId === activeFilter);
+  const term = gameSearch.trim().toLowerCase();
+  if (term) games = games.filter((g) => g.folder.name.toLowerCase().indexOf(term) >= 0);
   $("sbGameCount").textContent = allGames.length || "";
+  renderConsoleChips();
 
   // The heading carries the active filter, since the chips row that used to
   // say so has moved into the sidebar.
@@ -5456,11 +5511,15 @@ function renderGames() {
 
   if (!games.length) {
     const label = activeFilter === "all" ? "" : " for " + ((consoleOf(activeFilter) || {}).label || activeFilter);
-    c.innerHTML = '<div class="empty"><div class="e-icon">' + ico("gamepad") + '</div>No games' + escapeHtml(label) + " yet.</div>";
+    c.innerHTML = '<div class="empty"><div class="e-icon">' + ico(term ? "search" : "gamepad") + '</div>' +
+      (term ? "No games match \u201c" + escapeHtml(gameSearch.trim()) + "\u201d" + escapeHtml(label) + "."
+            : "No games" + escapeHtml(label) + " yet.") + "</div>";
     return;
   }
   syncViewToggle();
-  const view = libraryView();
+  // On a phone every game is a card -- cover, name, console, backups -- so
+  // the Grid / List choice is the computer's.
+  const view = NARROW.matches ? "grid" : libraryView();
   if (view === "list") { renderList(c, games); return; }
 
   c.innerHTML = '<div class="games-grid">' + games.map((g) => {
@@ -5484,7 +5543,11 @@ function renderGames() {
         '<span class="no-cover-label nc-rich">' + consoleIcon(g.consoleId, 30, 8) +
         '<span>' + escapeHtml(g.folder.name) + '</span></span></div>' +
       '<div class="gc-body"><div class="gc-name">' + escapeHtml(g.folder.name) + '</div>' +
-      '<div class="gc-meta">' + tag + '<span>' + meta + '</span></div></div></div>';
+      '<div class="gc-meta">' + tag + '<span>' + meta + '</span></div>' +
+      '<div class="gc-m">' + (con ? '<span class="gc-badge" style="--c:' + con.color + '">' + escapeHtml(con.short) + '</span>' : '') +
+        '<span>' + (g.saves.length ? g.saves.length + " backup" + (g.saves.length > 1 ? "s" : "") : "No backups yet") + '</span></div>' +
+      (latest ? '<div class="gc-when">Updated ' + escapeHtml(relLong(latest.createdTime)) + '</div>' : '') +
+      '</div><span class="gc-chev"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></div>';
   }).join("") + "</div>";
 
   c.querySelectorAll(".game-card").forEach((card) => {
@@ -5501,6 +5564,38 @@ function renderGames() {
   });
   // lazy-load cover images
   c.querySelectorAll(".gc-cover[data-cover]").forEach((el) => showCoverIn(el, el.dataset.cover));
+}
+
+// Phones: the consoles you have games for, as chips under the search.
+function renderConsoleChips() {
+  const box = $("conChips");
+  if (!box) return;
+  const counts = {};
+  allGames.forEach((g) => { if (g.consoleId) counts[g.consoleId] = (counts[g.consoleId] || 0) + 1; });
+  const chip = (id, label) => '<button type="button" class="cchip' + (activeFilter === id ? " on" : "") +
+    '" data-chip="' + id + '">' + label + "</button>";
+  box.innerHTML = chip("all", "All games") +
+    CONSOLES.filter((c) => counts[c.id]).map((c) => chip(c.id, escapeHtml(c.short))).join("");
+  box.querySelectorAll(".cchip").forEach((b) => {
+    b.onclick = () => {
+      if (b.dataset.chip === "all") { showAllGames(); return; }
+      activeFilter = b.dataset.chip;
+      renderGames();
+    };
+  });
+}
+
+// "3 minutes ago", "5 days ago", or the date: the phone cards' Updated line.
+function relLong(iso) {
+  const t = new Date(iso).getTime();
+  if (!t) return "";
+  const s = Math.max(0, (Date.now() - t) / 1000);
+  const n = (v, unit) => { const k = Math.round(v); return k + " " + unit + (k === 1 ? "" : "s") + " ago"; };
+  if (s < 60) return "just now";
+  if (s < 3600) return n(s / 60, "minute");
+  if (s < 86400) return n(s / 3600, "hour");
+  if (s < 86400 * 31) return n(s / 86400, "day");
+  return "on " + new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
 /* ============================================================
@@ -5579,7 +5674,6 @@ async function openHistory(folderId, name, consoleId) {
   closeDrawerIfNarrow();
   $("gamesView").classList.add("hidden");
   closeSettings(true);
-  $("onboardView").classList.add("hidden");
   $("uploadPanel").classList.add("hidden");
   $("historyView").classList.remove("hidden");
   markNav("history");
@@ -5731,12 +5825,6 @@ async function changeGameConsole() {
     g.consoleId = pick;
     g.folder.appProperties = Object.assign({}, g.folder.appProperties, { console: pick });
     g.saves.forEach((s) => { s.appProperties = Object.assign({}, s.appProperties, { console: pick }); });
-  }
-  // The consoles they've said they play lead the sidebar, and one they've just
-  // filed a game under is plainly one of them.
-  if (profile && Array.isArray(profile.consoles) && profile.consoles.indexOf(pick) < 0) {
-    profile.consoles.push(pick);
-    saveProfile(profile).catch(() => {});
   }
   renderSidebar();
   renderGames();
@@ -6399,7 +6487,7 @@ function wireEvents() {
   });
   setSidebarCollapsed(localStorage.getItem("ssw_sb_collapsed") === "1");
   $("acctBackBtn").onclick = () => closeSettings();
-  $("settingsDoneBtn").onclick = () => closeSettings();
+  $("settingsSaveBtn").onclick = saveSettings;
   $("settingsView").addEventListener("mousedown", (e) => { if (e.target === e.currentTarget) closeSettings(); });
   document.querySelectorAll("#settingsView .sw-tab").forEach((b) => {
     b.onclick = () => showSettingsPane(b.dataset.pane);
@@ -6409,10 +6497,7 @@ function wireEvents() {
     if (e.key === "Escape" && !$("settingsView").classList.contains("hidden") &&
         $("modalBack").classList.contains("hidden")) closeSettings();
   });
-  $("acctDevice").onchange = () => {
-    const v = $("acctDevice").value.trim();
-    if (v) { localStorage.setItem("ssw_device_name", v); $("deviceName").value = v; toast("Device name saved", "ok"); }
-  };
+  $("acctDevice").addEventListener("keydown", (e) => { if (e.key === "Enter") saveSettings(); });
   // QR sign-in
   $("showQrBtn").onclick = showQrCode;
   $("hideQrBtn").onclick = hideQrCode;
@@ -6420,22 +6505,10 @@ function wireEvents() {
   $("scanQrBtn").onclick = openScanner;
   $("scanCancelBtn").onclick = () => { closeScanner(); $("gate").classList.remove("hidden"); };
 
-  $("onboardDoneBtn").onclick = finishOnboarding;
-  $("onboardCancelBtn").onclick = enterApp;
-  $("selectAllConsolesBtn").onclick = () => {
-    if (onboardSelection.size === CONSOLES.length) onboardSelection.clear();
-    else CONSOLES.forEach((c) => onboardSelection.add(c.id));
-    renderConsoleGrid();
-  };
 
   // Pins and filtering
   $("pinGameBtn").onclick = () => togglePin(currentHistory.folderId, currentHistory.name);
   $("clearFilterBtn").onclick = showAllGames;
-  $("settingsSelectAllBtn").onclick = () => {
-    const all = ((profile && profile.consoles) || []).length === CONSOLES.length;
-    saveConsolePrefs(all ? [] : CONSOLES.map((c) => c.id));
-    renderSettingsConsoles();
-  };
 }
 
 /* ============================================================
@@ -6611,6 +6684,10 @@ function toast(msg, type, ms) {
   }
 
   function show(next, how) {
+    // Signed in, the forms have nothing to offer: your games instead.
+    const signed = gate.classList.contains("lp-signed");
+    if (signed && (next === "games" || next === "login" || next === "signup")) { backToApp(); return; }
+    if (next === "games") next = "login";
     if (!ROUTES[next]) next = "home";
     route = next;
     if (next === "login" || next === "signup") setAuthMode(next);
@@ -6657,7 +6734,13 @@ function toast(msg, type, ms) {
     });
   });
 
-  window.addEventListener("popstate", () => show(routeInHash() || "home"));
+  // Back from a landing tab while signed in goes back to your games.
+  window.addEventListener("popstate", () => {
+    const r = routeInHash();
+    if (!r && gate.classList.contains("lp-signed") && !gate.classList.contains("hidden")) { backToApp(); return; }
+    show(r || "home");
+  });
+  window.landingGo = (r) => show(r, "click");
   window.addEventListener("hashchange", () => { const r = routeInHash(); if (r) show(r); });
 
   // Signed in: the landing's address has nothing more to say, so it goes. And
@@ -6680,6 +6763,171 @@ function toast(msg, type, ms) {
   ).join("");
 
   show(routeInHash() || "home");
+})();
+
+/* ============================================================
+   Signed in: the rest of the site, your account, and phones
+   ============================================================ */
+
+// The landing page with you signed in: its tabs, with your games and your
+// account where Log in and Get started were.
+function setSignedLanding(on) {
+  const gate = $("gate");
+  gate.classList.toggle("lp-signed", !!on);
+  gate.querySelectorAll('.lp-panel [data-go="signup"]').forEach((b) => {
+    if (b.dataset.label === undefined) b.dataset.label = b.textContent;
+    b.textContent = on ? "Open my games" : b.dataset.label;
+  });
+}
+
+function openLanding(route) {
+  closeAcctMenu();
+  closeSettings(true);
+  setDrawer(false);
+  setSignedLanding(true);
+  $("app").classList.add("hidden");
+  $("appHeader").classList.add("hidden");
+  $("gate").classList.remove("hidden");
+  window.landingGo(route || "home");
+}
+
+function backToApp() {
+  if ($("gate").classList.contains("hidden") || !accessToken) return;
+  $("gate").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  $("appHeader").classList.remove("hidden");
+  window.scrollTo(0, 0);
+}
+
+/* ---- your account: the circle, and its menu ---- */
+function avatarInitials() {
+  const name = ((fbUser && fbUser.displayName) || (profile && profile.account && profile.account.name) || "").trim();
+  const mail = (fbUser && fbUser.email) || (profile && profile.account && profile.account.email) || googleEmail || "";
+  const words = name.split(/\s+/).filter(Boolean);
+  if (words.length > 1) return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+  if (words.length) return words[0][0].toUpperCase();
+  return (mail[0] || "?").toUpperCase();
+}
+
+function refreshAvatars() {
+  const pic = $("userAvatar");
+  const url = pic && !pic.classList.contains("hidden") && pic.src ? pic.src : "";
+  const ini = avatarInitials();
+  document.querySelectorAll("[data-acct-av]").forEach((el) => {
+    el.textContent = ini;
+    el.style.backgroundImage = url ? "url('" + url.replace(/'/g, "%27") + "')" : "";
+    el.classList.toggle("has-pic", !!url);
+  });
+}
+
+function openAcctMenu(btn) {
+  const m = $("acctMenu");
+  refreshAvatars();
+  const r = btn.getBoundingClientRect();
+  m.style.top = Math.round(r.bottom + 8) + "px";
+  m.style.right = Math.max(8, Math.round(document.documentElement.clientWidth - r.right)) + "px";
+  m.classList.remove("hidden");
+  document.querySelectorAll("[data-acct-menu]").forEach((b) => b.setAttribute("aria-expanded", b === btn ? "true" : "false"));
+  const first = m.querySelector(".am-item");
+  if (first) first.focus({ preventScroll: true });
+}
+
+function closeAcctMenu() {
+  const m = $("acctMenu");
+  if (!m || m.classList.contains("hidden")) return;
+  m.classList.add("hidden");
+  document.querySelectorAll("[data-acct-menu]").forEach((b) => b.setAttribute("aria-expanded", "false"));
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-acct-menu]");
+  if (btn) {
+    e.preventDefault();
+    if ($("acctMenu").classList.contains("hidden")) openAcctMenu(btn); else closeAcctMenu();
+    return;
+  }
+  if (!e.target.closest("#acctMenu")) closeAcctMenu();
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAcctMenu(); });
+window.addEventListener("resize", closeAcctMenu);
+
+$("acctMenu").addEventListener("click", (e) => {
+  const item = e.target.closest(".am-item");
+  if (!item) return;
+  closeAcctMenu();
+  switch (item.dataset.am) {
+    case "games": backToApp(); showAllGames(); break;
+    case "settings": backToApp(); openSettings("account"); break;
+    case "qr": backToApp(); openSettings("account"); showQrCode(); break;
+    case "download": openLanding("download"); break;
+  }
+});
+
+/* ---- the top bar's tabs, and the phone's bar along the bottom ---- */
+$("appTop").querySelectorAll("[data-site]").forEach((b) => {
+  b.onclick = () => (b.dataset.site === "games" ? showAllGames() : openLanding(b.dataset.site));
+});
+$("atMenuBtn").onclick = () => setDrawer(true);
+$("mTabbar").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-mt]");
+  if (!b) return;
+  if (b.dataset.mt === "games") { closeSettings(true); showAllGames(); }
+  else openSettings("account");
+});
+$("fabAdd").onclick = () => openNewGamePanel();
+
+// Search the library as you type.
+$("gameSearch").addEventListener("input", (e) => { gameSearch = e.target.value; renderGames(); });
+// Crossing the phone breakpoint changes how cards are drawn.
+NARROW.addEventListener("change", () => { if (!$("app").classList.contains("hidden")) renderGames(); });
+
+/* ---- a notice: one at a time, until it's acted on or dismissed ---- */
+let noticeAction = null;
+function notice(text, label, action) {
+  $("noticeText").textContent = text;
+  $("noticeAct").textContent = label;
+  noticeAction = action;
+  $("notice").classList.remove("hidden");
+}
+function hideNotice() { $("notice").classList.add("hidden"); noticeAction = null; }
+$("noticeAct").onclick = () => { const a = noticeAction; hideNotice(); if (a) a(); };
+$("noticeX").onclick = hideNotice;
+
+// Google Drive stopped accepting this tab's session and a fresh one couldn't
+// be had in the background. Say so plainly, with the one button that helps.
+function showDriveTrouble() {
+  notice("Save Station lost its connection to your Google Drive.", "Reconnect", async () => {
+    if (workerEnabled() && await refreshDriveToken().catch(() => false)) {
+      toast("Reconnected to Google Drive ✔", "ok");
+      loadGames();
+    } else {
+      showLinkGate();
+    }
+  });
+}
+
+// A new version of the site went up while this tab was open: offer a refresh.
+// The page's ETag (or Last-Modified) changes with every deploy, so a HEAD
+// request is all it takes.
+(function watchForNewVersion() {
+  let seen = null;
+  let told = false;
+  async function check() {
+    if (told || document.hidden) return;
+    try {
+      const r = await fetch(location.pathname + "?v=" + Date.now(), { method: "HEAD", cache: "no-store" });
+      const tag = r.headers.get("etag") || r.headers.get("last-modified");
+      if (!r.ok || !tag) return;
+      if (seen === null) { seen = tag; return; }
+      if (tag !== seen) {
+        told = true;
+        notice("A new version of Save Station is ready.", "Refresh", () => location.reload());
+      }
+    } catch (e) { /* offline for a moment: try again later */ }
+  }
+  check();
+  setInterval(check, 10 * 60 * 1000);
+  document.addEventListener("visibilitychange", check);
 })();
 </script>
 </body>
