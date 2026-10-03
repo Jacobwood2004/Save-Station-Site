@@ -996,9 +996,34 @@
   .slot-tools { flex-shrink: 0; padding-left: 10px; }
   .hh-info, .sr-main, .gc-name { min-width: 0; }
   .ds-linked .ds-path, .acct-row b { word-break: break-word; }
+
+  /* Opening the site already signed in: a splash instead of the login form
+     while Firebase confirms it, so the form never flashes up first. */
+  #bootSplash { display: none; position: fixed; inset: 0; z-index: 90; place-items: center; background: var(--bg); }
+  html.booting #bootSplash { display: grid; }
+  html.booting #gate { display: none !important; }
+  .boot-mark { display: flex; flex-direction: column; align-items: center; gap: 18px; animation: fadeIn .3s ease .15s both; }
+  .boot-mark svg { animation: boot-pulse 1.6s ease-in-out infinite; }
+  .boot-dots { display: flex; gap: 6px; }
+  .boot-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: .3; animation: boot-dot 1s ease-in-out infinite; }
+  .boot-dots i:nth-child(2) { animation-delay: .15s; } .boot-dots i:nth-child(3) { animation-delay: .3s; }
+  @keyframes boot-pulse { 50% { transform: scale(1.05); } }
+  @keyframes boot-dot { 50% { opacity: 1; transform: translateY(-3px); } }
+  @media (prefers-reduced-motion: reduce) { .boot-mark, .boot-mark svg, .boot-dots i { animation: none; } }
 </style>
+<script>
+  // Firebase keeps the session in localStorage ("firebase:authUser:…"), so a
+  // returning visit can be told apart before the page draws anything. A
+  // scanned QR code is about to sign in too.
+  try {
+    var signedIn = /^#ss=/.test(location.hash);
+    for (var i = 0; !signedIn && i < localStorage.length; i++) signedIn = /^firebase:authUser:/.test(localStorage.key(i));
+    if (signedIn) document.documentElement.classList.add("booting");
+  } catch (e) {}
+</script>
 </head>
 <body>
+<div id="bootSplash" aria-live="polite"><div class="boot-mark"><svg width="40" height="68" viewBox="30 8 68 116" aria-hidden="true"><g transform="translate(44 14)"><path d="M4 0h28l8 8v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4Z" fill="#dcd7cc"/><rect x="10" y="0" width="18" height="12" rx="1.5" fill="#2b2a26"/><rect x="20" y="2.5" width="4.5" height="7" rx="1" fill="#ffa033"/><rect x="6" y="19" width="28" height="17" rx="2" fill="#faf8f3"/><rect x="10" y="24" width="20" height="1.8" rx=".9" fill="#ffa033"/><rect x="10" y="28.6" width="13" height="1.8" rx=".9" fill="#ffa033" opacity=".55"/></g><path d="M86 60C82 53 74 50 64 50C51 50 43 56 43 65C43 76 53 78 64 80C76 82 86 85 86 96C86 106 77 111 64 111C53 111 45 107 41 100" fill="none" stroke="var(--bg)" stroke-width="22" stroke-linecap="round"/><path d="M86 60C82 53 74 50 64 50C51 50 43 56 43 65C43 76 53 78 64 80C76 82 86 85 86 96C86 106 77 111 64 111C53 111 45 107 41 100" fill="none" stroke="#ffa033" stroke-width="15" stroke-linecap="round"/></svg><div class="boot-dots" aria-label="Signing you in"><i></i><i></i><i></i></div></div></div>
 
 <!-- On a narrow window the sidebar becomes a drawer; these two open and
      dismiss it. Both are invisible at any width where the sidebar just fits. -->
@@ -1502,7 +1527,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-10-03a";
+const BUILD = "2026-10-03b";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -1810,6 +1835,7 @@ function configProblem() {
 }
 
 function showConfigWarning(msg) {
+  bootDone();
   const el = $("configWarn");
   el.innerHTML = "⚠️ <b>Not set up yet.</b> " + msg;
   el.classList.remove("hidden");
@@ -1906,7 +1932,22 @@ function driveStartupFailed(e) {
   $("linkStatus").textContent = "That Drive session had expired — connect again.";
 }
 
+function bootDone() { document.documentElement.classList.remove("booting"); }
+
+// The splash stays until something real is on screen (the app, the Drive
+// step, an email-link page) or the login form is wanted after all.
+(function watchBoot() {
+  if (!document.documentElement.classList.contains("booting")) return;
+  const els = ["app", "linkGate", "actionGate"].map((id) => document.getElementById(id)).filter(Boolean);
+  const obs = new MutationObserver(() => {
+    if (els.some((el) => !el.classList.contains("hidden"))) { bootDone(); obs.disconnect(); }
+  });
+  els.forEach((el) => obs.observe(el, { attributes: true, attributeFilter: ["class"] }));
+  setTimeout(bootDone, 12000);   // never stuck on it
+})();
+
 function showGate() {
+  bootDone();
   $("gateRestoring").classList.add("hidden");
   $("linkGate").classList.add("hidden");
   $("app").classList.add("hidden");
@@ -5421,6 +5462,7 @@ function passwordStrength(pw) {
 }
 
 async function runEmailAction(a) {
+  bootDone();
   // The code comes out of the address bar now: it's spent once used, and a
   // reload shouldn't try it again.
   try { history.replaceState(null, "", location.pathname); } catch (e) {}
