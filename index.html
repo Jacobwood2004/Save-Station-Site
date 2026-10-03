@@ -875,6 +875,8 @@
   .sw-title { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
   .sw-card { border: 1px solid var(--border); border-radius: 14px; background: var(--panel-2); padding: 2px 16px; }
   .sw-card .acct-row:first-child { border-top: 0; }
+  .sw-section { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .sw-sub { margin: 0 0 6px; font-size: 14.5px; font-weight: 600; }
   .sw-foot {
     display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 20px;
     border-top: 1px solid var(--border); background: var(--panel-2); font-size: 12.5px; color: var(--muted);
@@ -1259,8 +1261,6 @@
         <nav class="sw-nav" aria-label="Settings sections">
           <button type="button" class="sw-tab on" data-pane="account"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Account</button>
           <button type="button" class="sw-tab" data-pane="consoles"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h4"/><path d="M8 10v4"/><path d="M15 13h.01"/><path d="M18 11h.01"/><rect width="20" height="12" x="2" y="6" rx="2"/></svg> Your consoles</button>
-          <button type="button" class="sw-tab" data-pane="covers"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/></svg> Covers</button>
-          <button type="button" class="sw-tab" data-pane="devices"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg> Other devices</button>
         </nav>
         <div class="sw-pane" data-pane="account">
           <h3 class="sw-title">Account</h3>
@@ -1270,8 +1270,6 @@
             <div class="acct-row">Google Drive linked <b id="acctGoogle">—</b></div>
             <div class="acct-row">Drive session <b id="acctDriveState">—</b></div>
             <div class="acct-row">Saves live in your Drive under <b id="acctFolder">—</b></div>
-            <div class="acct-row">This page's build <b data-build></b></div>
-            <div class="acct-row">Nothing is stored on this site's server — only in your Google Drive.</div>
             <div class="acct-row hidden" id="acctQrNote">
               📱 This device was signed in by scanning a QR code.
             </div>
@@ -1291,6 +1289,35 @@
               <span class="hint">Shown on every backup you upload from this browser.</span>
             </div>
           </div>
+          <div class="sw-section">
+            <h4 class="sw-sub">Sign in on another device</h4>
+            <div style="font-size:13px;color:var(--muted);line-height:1.6;">
+              Show a one-time code, then scan it with your phone or iPad to sign that device
+              into this account — no typing your password on a small screen.
+            </div>
+            <button class="btn-ghost btn-sm" id="showQrBtn" style="margin-top:14px;"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg> Show QR code</button>
+            <div id="qrArea" class="hidden">
+              <div class="qr-wrap">
+                <div class="qr-box" id="qrBox"></div>
+                <div class="qr-side">
+                  <ol>
+                    <li>Open the <b>Camera app</b> on your phone or iPad.</li>
+                    <li>Point it at this code and tap the link that appears.</li>
+                    <li>You'll land on Save Station already signed in.</li>
+                  </ol>
+                  <div>Expires in <span class="qr-count" id="qrCount">2:00</span></div>
+                  <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn-ghost btn-sm" id="qrRefreshBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg> New code</button>
+                    <button class="btn-ghost btn-sm" id="hideQrBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> Hide</button>
+                  </div>
+                </div>
+              </div>
+              <div class="qr-warn">
+                <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span><b>Treat this like a password.</b> Anyone who scans it gets into your Save Station
+                folder until it expires. Don't screenshot it, share it, or show it on a stream.</span>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="sw-pane hidden" data-pane="consoles">
           <h3 class="sw-title">Your consoles</h3>
@@ -1303,44 +1330,6 @@
           <div style="margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
             <button class="btn-ghost btn-sm" id="settingsSelectAllBtn">Select all</button>
             <span id="consolePrefStatus" style="font-size:12px;color:var(--muted);min-height:16px;"></span>
-          </div>
-        </div>
-        <div class="sw-pane hidden" data-pane="covers">
-          <h3 class="sw-title">Covers</h3>
-          <div style="font-size:13px;color:var(--muted);line-height:1.6;">
-            New covers — from IGDB, libretro, or a picture of your own — are all saved at the same
-            size (528 × 748), so the library lines up. Covers added before that can be brought up to
-            it in one go: each is resized in place, and nothing else changes.
-          </div>
-          <button class="btn-ghost btn-sm" id="resizeCoversBtn" style="margin-top:14px;"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg> Resize all covers</button>
-        </div>
-        <div class="sw-pane hidden" data-pane="devices">
-          <h3 class="sw-title">Sign in on another device</h3>
-          <div style="font-size:13px;color:var(--muted);line-height:1.6;">
-            Show a one-time code, then scan it with your phone or iPad to sign that device
-            into this account — no typing your password on a small screen.
-          </div>
-          <button class="btn-ghost btn-sm" id="showQrBtn" style="margin-top:14px;"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg> Show QR code</button>
-          <div id="qrArea" class="hidden">
-            <div class="qr-wrap">
-              <div class="qr-box" id="qrBox"></div>
-              <div class="qr-side">
-                <ol>
-                  <li>Open the <b>Camera app</b> on your phone or iPad.</li>
-                  <li>Point it at this code and tap the link that appears.</li>
-                  <li>You'll land on Save Station already signed in.</li>
-                </ol>
-                <div>Expires in <span class="qr-count" id="qrCount">2:00</span></div>
-                <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
-                  <button class="btn-ghost btn-sm" id="qrRefreshBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg> New code</button>
-                  <button class="btn-ghost btn-sm" id="hideQrBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> Hide</button>
-                </div>
-              </div>
-            </div>
-            <div class="qr-warn">
-              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span><b>Treat this like a password.</b> Anyone who scans it gets into your Save Station
-              folder until it expires. Don't screenshot it, share it, or show it on a stream.</span>
-            </div>
           </div>
         </div>
       </div>
@@ -1527,7 +1516,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-10-03b";
+const BUILD = "2026-10-03c";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -2394,7 +2383,7 @@ function showSettingsPane(id) {
   document.querySelectorAll("#settingsView .sw-pane").forEach((p) => {
     p.classList.toggle("hidden", p.dataset.pane !== id);
   });
-  if (id !== "devices") hideQrCode();
+  if (id !== "account") hideQrCode();
 }
 
 function openSettings(pane) {
@@ -4401,37 +4390,6 @@ async function uploadCoverTo(folderId, file) {
     { role: "cover", originalName: String(file.name || "cover").slice(0, 80), size: COVER_SIZE_TAG });
 }
 
-/* Settings \u2192 Covers: bring covers added before this existed up to the
-   standard size. The new one goes in before the old one comes out, so a
-   failure part-way never leaves a game without its cover. */
-async function resizeAllCovers() {
-  const btn = $("resizeCoversBtn");
-  const todo = allGames.filter((g) => g.cover && (g.cover.appProperties || {}).size !== COVER_SIZE_TAG);
-  if (!todo.length) { toast("Every cover is already the standard size \u2714", "ok"); return; }
-  const label = btn.innerHTML;
-  btn.disabled = true;
-  let done = 0, failed = 0;
-  for (const g of todo) {
-    btn.innerHTML = '<span class="spinner"></span> Resizing ' + (done + failed + 1) + " of " + todo.length + "\u2026";
-    try {
-      const sized = await normalizeCoverBlob(await fetchSaveBlob(g.cover.id));
-      await uploadSave(g.folder.id, "cover.jpg", sized,
-        { role: "cover", originalName: (g.cover.appProperties || {}).originalName || "cover", size: COVER_SIZE_TAG });
-      delete coverUrlCache[g.cover.id];
-      await deleteFile(g.cover.id);
-      done++;
-    } catch (e) {
-      failed++;
-    }
-  }
-  btn.disabled = false;
-  btn.innerHTML = label;
-  toast(failed
-    ? "Resized " + done + ", but " + failed + " couldn't be read."
-    : "Resized " + done + " cover" + (done === 1 ? "" : "s") + " \u2714", failed ? "err" : "ok", 6000);
-  await loadGames();
-}
-
 async function removeCoverFrom(folderId) {
   for (const f of await listSaves(folderId)) {
     if (f.appProperties && f.appProperties.role === "cover") { delete coverUrlCache[f.id]; await deleteFile(f.id); }
@@ -5970,7 +5928,6 @@ function wireEvents() {
   };
   // QR sign-in
   $("showQrBtn").onclick = showQrCode;
-  $("resizeCoversBtn").onclick = resizeAllCovers;
   $("hideQrBtn").onclick = hideQrCode;
   $("qrRefreshBtn").onclick = showQrCode;
   $("scanQrBtn").onclick = openScanner;

@@ -94,7 +94,7 @@ logged out.
 Typing a password on a phone is miserable, so a computer that's already signed
 in can sign the phone in for you:
 
-1. On the computer, at <https://savestation.net>: **Settings → Other devices → Show QR code**.
+1. On the computer, at <https://savestation.net>: **Settings → Account → Show QR code**.
 2. On the phone or iPad: open the **Camera app** and point it at the code (or tap
    **Scan a QR code from a signed-in device** on the sign-in screen — that option
    only appears on phones and iPads).
