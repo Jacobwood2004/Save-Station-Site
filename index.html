@@ -364,46 +364,310 @@
   .build-tag { margin-top: 18px; font-size: 11px; color: var(--faint); letter-spacing: .04em; text-align: center; }
   .gate-restoring { color: var(--muted); font-size: 13px; margin-top: 18px; display: flex; align-items: center; gap: 8px; }
 
-  /* The sign-in gate splits in two on a wide screen, like the app's. */
-  .gate.gate-main { padding: 0; place-items: stretch; background: none; }
-  .gate-split { display: grid; grid-template-columns: minmax(380px, 1.05fr) minmax(380px, 1fr); min-height: 100vh; }
-  .gate-art {
-    position: relative; overflow: hidden; padding: 56px;
-    display: flex; align-items: center;
+  /* ---------------------------------------------------------- landing
+     What a signed-out visitor sees: tabs about Save Station, the apps,
+     and the log in form. Sized for a phone first, then widened. */
+  .gate.landing { display: block; place-items: normal; min-height: 100vh; padding: 0; background: var(--bg); overflow-x: clip; }
+  .lp-panel[hidden] { display: none !important; }
+  .lp-panel { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+  .lp-nav {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px); backdrop-filter: saturate(1.4) blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .lp-nav-in { max-width: 1180px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; gap: 20px; }
+  .lp-brand { display: inline-flex; align-items: center; gap: 10px; color: var(--text); font: 650 16px/1 var(--font-display); letter-spacing: -.01em; white-space: nowrap; }
+  .lp-brand [data-logo] svg { display: block; }
+  .lp-tabs { display: flex; gap: 2px; flex: 1; justify-content: center; }
+  .lp-tab { background: none; height: 36px; padding: 0 14px; border-radius: 999px; color: var(--muted); font-size: 14px; white-space: nowrap; }
+  .lp-tab:hover { color: var(--text); background: var(--hover); }
+  .lp-tab.on { color: var(--text); background: var(--panel-2); box-shadow: inset 0 0 0 1px var(--border-2); }
+  .lp-actions { display: flex; gap: 8px; }
+  .lp-actions button { height: 36px; padding: 0 16px; border-radius: 999px; font-size: 14px; }
+
+  /* Hero */
+  .lp-hero { position: relative; text-align: center; padding: 76px 0 24px; }
+  .lp-hero-glow {
+    position: absolute; left: 50%; top: -64px; width: 1400px; height: 860px; transform: translateX(-50%);
+    pointer-events: none; z-index: 0;
     background:
-      radial-gradient(900px 500px at 0% 100%, rgba(255, 160, 51, .13), transparent 60%),
-      linear-gradient(180deg, var(--chrome), var(--bg-sunk));
-    border-right: 1px solid var(--border);
+      radial-gradient(560px 280px at 50% 22%, rgba(255, 160, 51, .22), transparent 70%),
+      radial-gradient(900px 520px at 50% 72%, rgba(255, 160, 51, .08), transparent 70%);
   }
-  .gate-art::after {
+  .lp-hero-glow::after {
+    content: ""; position: absolute; inset: 0;
+    background-image: radial-gradient(var(--border-2) 1px, transparent 1px); background-size: 24px 24px;
+    -webkit-mask-image: radial-gradient(ellipse 50% 40% at 50% 30%, #000, transparent 75%);
+    mask-image: radial-gradient(ellipse 50% 40% at 50% 30%, #000, transparent 75%);
+    opacity: .7;
+  }
+  .lp-hero-text { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; }
+  .lp-eyebrow {
+    display: inline-flex; align-items: center; gap: 9px; padding: 6px 13px 6px 11px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent-text); border: 1px solid var(--accent-line);
+    font-size: 12.5px; font-weight: 600;
+  }
+  .lp-eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(255, 160, 51, .2); }
+  .lp-hero h1 {
+    font-size: clamp(42px, 7.4vw, 80px); line-height: 1; letter-spacing: -.04em; font-weight: 700;
+    margin: 22px 0 0; text-wrap: balance;
+  }
+  .lp-hl { background: linear-gradient(100deg, #ffc35f 0%, #ff9a26 55%, #ff6b3d 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lp-lede { color: var(--muted); font-size: clamp(15.5px, 1.7vw, 18.5px); line-height: 1.55; margin: 20px auto 0; max-width: 640px; text-wrap: pretty; }
+  .lp-cta { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
+  .lp-big { height: 48px; padding: 0 24px; border-radius: 14px; font-size: 15.5px; font-weight: 600; }
+  .lp-big .ico { width: 18px; height: 18px; }
+  .lp-micro { color: var(--faint); font-size: 13px; margin: 14px 0 0; }
+
+  .lp-hero-art { position: relative; z-index: 1; max-width: 1060px; margin: 64px auto 0; padding: 0 84px 70px; }
+  .lp-window {
+    margin: 0; border-radius: 14px; overflow: hidden; background: #0f0f0e;
+    border: 1px solid var(--border-2);
+    box-shadow: 0 50px 120px -20px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .03), 0 0 80px rgba(255, 160, 51, .08);
+    transform: perspective(2000px) rotateX(5deg); transform-origin: 50% 0;
+  }
+  .lp-window img { display: block; width: 100%; height: auto; }
+  .lp-dev { position: absolute; height: auto; filter: drop-shadow(0 28px 36px rgba(0, 0, 0, .5)); pointer-events: none; }
+  .lp-dev-3ds { width: 25%; left: 0; bottom: 0; transform: rotate(-7deg); }
+  .lp-dev-switch { width: 37%; right: 0; bottom: 26px; transform: rotate(4deg); }
+  .lp-float {
+    position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 16px 10px 10px; border-radius: 14px;
+    background: color-mix(in srgb, var(--panel) 88%, transparent);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    border: 1px solid var(--border-2); box-shadow: var(--shadow-pop); text-align: left;
+    animation: lp-bob 6s ease-in-out infinite;
+  }
+  .lp-float b { display: block; font-size: 13.5px; }
+  .lp-float small { display: block; color: var(--faint); font-size: 12px; }
+  .lp-float-ok { left: 2%; top: 16%; }
+  .lp-float-life { right: 1%; top: 6%; animation-delay: -3s; }
+  .lp-float-life b { font: 700 19px/1 var(--font-display); color: var(--accent-text); font-variant-numeric: tabular-nums; }
+  .lp-float-ico { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: var(--ok-soft); color: var(--ok); }
+  @keyframes lp-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+  /* The consoles, scrolling past */
+  .lp-strip { text-align: center; padding: 28px 0 8px; }
+  .lp-strip p { color: var(--faint); font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 16px; }
+  .lp-marquee {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .lp-marquee-in { display: flex; gap: 12px; width: max-content; animation: lp-scroll 45s linear infinite; }
+  .lp-marquee:hover .lp-marquee-in { animation-play-state: paused; }
+  .lp-chip {
+    display: inline-flex; align-items: center; gap: 10px; padding: 7px 16px 7px 7px; border-radius: 13px;
+    background: var(--panel); border: 1px solid var(--border); font-weight: 600; font-size: 14px; white-space: nowrap;
+  }
+  .lp-chip svg { display: block; }
+  @keyframes lp-scroll { to { transform: translateX(calc(-50% - 6px)); } }
+
+  /* Feature rows */
+  .lp-features { display: flex; flex-direction: column; gap: 110px; padding: 96px 0 56px; }
+  .lp-feature { display: grid; grid-template-columns: 1fr 1.08fr; gap: 64px; align-items: center; }
+  .lp-flip .lp-feature-text { order: 2; }
+  .lp-kicker { color: var(--accent-text); font-size: 12.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  .lp-feature h2 { font-size: clamp(28px, 3.7vw, 44px); line-height: 1.06; letter-spacing: -.03em; margin: 12px 0 16px; font-weight: 700; text-wrap: balance; }
+  .lp-feature p { color: var(--muted); font-size: 16.5px; line-height: 1.6; margin: 0; max-width: 470px; text-wrap: pretty; }
+  .lp-feature p b { color: var(--text); font-weight: 600; }
+  .lp-feature-art { position: relative; }
+  .lp-feature-art::before {
+    content: ""; position: absolute; inset: -40px; z-index: 0; pointer-events: none;
+    background: radial-gradient(closest-side, rgba(255, 160, 51, .11), transparent);
+  }
+  .lp-card {
+    position: relative; z-index: 1; background: var(--panel); border: 1px solid var(--border-2);
+    border-radius: 20px; box-shadow: var(--shadow-pop); padding: 18px;
+  }
+  .lp-card svg { display: block; }
+  .lp-mini {
+    font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 8px; white-space: nowrap;
+    background: var(--panel-2); border: 1px solid var(--border-2); color: var(--muted);
+  }
+  .lp-mini-hot { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .lp-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .lp-dot.ok { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft); }
+  .lp-dot.warn { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  .lp-hist-head { display: flex; align-items: center; gap: 12px; }
+  .lp-hist-head b, .lp-watch b, .lp-versions b { display: block; font-size: 14px; font-weight: 600; }
+  .lp-hist-head small, .lp-watch small, .lp-versions small { display: block; color: var(--faint); font-size: 12px; margin-top: 1px; }
+  .lp-slots { display: flex; gap: 6px; margin: 16px 0 10px; }
+  .lp-slots span { font-size: 12.5px; font-weight: 600; padding: 5px 12px; border-radius: 999px; background: var(--panel-2); color: var(--muted); border: 1px solid var(--border); }
+  .lp-slots span.on { background: var(--accent-soft); color: var(--accent-text); border-color: var(--accent-line); }
+  .lp-slots span:last-child { border-style: dashed; background: none; color: var(--faint); }
+  .lp-versions { list-style: none; margin: 0; padding: 0; position: relative; }
+  .lp-versions::before { content: ""; position: absolute; left: 11px; top: 22px; bottom: 22px; width: 2px; background: var(--border-2); border-radius: 1px; }
+  .lp-versions li { display: flex; align-items: center; gap: 14px; padding: 10px 4px 10px 6px; position: relative; }
+  .lp-versions li > div { flex: 1; min-width: 0; }
+  .lp-versions i { width: 12px; height: 12px; border-radius: 50%; background: var(--panel); border: 2px solid var(--border-3); flex-shrink: 0; position: relative; }
+  .lp-versions i.latest { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+
+  .lp-watch-banner {
+    display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 14px;
+    background: var(--accent-soft); border: 1px solid var(--accent-line);
+  }
+  .lp-watch-banner > .ico { width: 20px; height: 20px; color: var(--accent-text); }
+  .lp-watch-banner > div { flex: 1; min-width: 0; }
+  .lp-watch-list { list-style: none; margin: 8px 0 0; padding: 0; }
+  .lp-watch-list li { display: flex; align-items: center; gap: 12px; padding: 10px 6px; }
+  .lp-watch-list li + li { border-top: 1px solid var(--border); }
+  .lp-watch-list li > div { flex: 1; min-width: 0; }
+  .lp-watch-foot { display: flex; align-items: center; gap: 10px; margin-top: 6px; padding: 12px 6px 2px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12.5px; }
+
+  .lp-crumbs { font-size: 13px; color: var(--faint); padding: 2px 4px 12px; border-bottom: 1px solid var(--border); }
+  .lp-crumbs span { margin: 0 4px; }
+  .lp-crumbs b { color: var(--text); font-weight: 600; }
+  .lp-tree { list-style: none; margin: 6px 0; padding: 0; }
+  .lp-tree li { display: flex; align-items: center; gap: 12px; padding: 10px 6px; font-size: 13.5px; }
+  .lp-tree li .ico { width: 18px; height: 18px; color: var(--info); }
+  .lp-tree li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--mono); font-size: 12.5px; }
+  .lp-tree li small { color: var(--faint); font-size: 12px; }
+  .lp-lock { display: flex; align-items: center; gap: 9px; padding: 11px 12px; border-radius: 12px; background: var(--ok-soft); color: var(--ok); font-size: 13px; font-weight: 600; }
+  .lp-lock .ico { width: 16px; height: 16px; }
+
+  /* The smaller features */
+  .lp-bento { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 24px 0 8px; }
+  .lp-bento-card { background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 22px; transition: border-color .15s, transform .15s; }
+  .lp-bento-card:hover { border-color: var(--border-3); transform: translateY(-2px); }
+  .lp-bento-card b { display: block; font-size: 15.5px; margin-top: 16px; }
+  .lp-bento-card p { color: var(--muted); font-size: 14px; margin: 5px 0 0; line-height: 1.5; }
+  .lp-bento-ico { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); border: 1px solid var(--accent-line); }
+  .lp-bento-ico .ico { width: 18px; height: 18px; }
+
+  /* The call to action at the bottom of a tab */
+  .lp-band {
+    margin: 64px 0 80px; padding: 36px 40px; border-radius: 26px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+    background: radial-gradient(640px 240px at 0% 0%, rgba(255, 160, 51, .2), transparent 70%), var(--panel);
+    border: 1px solid var(--accent-line);
+  }
+  .lp-band h2 { margin: 0; font-size: clamp(24px, 3vw, 32px); letter-spacing: -.025em; font-weight: 700; }
+  .lp-band p { margin: 8px 0 0; color: var(--muted); font-size: 15px; }
+  .lp-band .lp-cta { margin: 0; }
+
+  /* The other tabs */
+  .lp-page-head { text-align: center; max-width: 740px; margin: 0 auto; padding: 76px 0 40px; }
+  .lp-page-head h1 { font-size: clamp(34px, 5.4vw, 58px); line-height: 1.04; letter-spacing: -.035em; margin: 14px 0 0; font-weight: 700; text-wrap: balance; }
+  .lp-page-head.lp-sub { padding: 72px 0 26px; }
+  .lp-page-head h2 { font-size: clamp(24px, 3vw, 32px); letter-spacing: -.025em; margin: 0; font-weight: 700; }
+  .lp-page-head.lp-sub p { color: var(--muted); margin: 10px 0 0; }
+
+  .lp-steps { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .lp-steps li { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 24px 22px; }
+  .lp-steps b { display: block; font-size: 16px; margin-top: 18px; }
+  .lp-steps p { color: var(--muted); font-size: 14px; line-height: 1.55; margin: 6px 0 0; }
+  .lp-step-n { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 15px; box-shadow: 0 0 0 5px var(--accent-soft); }
+
+  .lp-consoles { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .lp-console { display: flex; gap: 12px; align-items: center; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 12px 14px; }
+  .lp-console svg { display: block; flex-shrink: 0; }
+  .lp-console b { display: block; font-size: 14.5px; }
+  .lp-console small { display: block; color: var(--faint); font-size: 12.5px; line-height: 1.4; margin-top: 1px; }
+
+  .lp-platforms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .lp-platform {
+    display: flex; flex-direction: column; gap: 16px; padding: 24px; border-radius: 22px;
+    background: linear-gradient(180deg, var(--panel), color-mix(in srgb, var(--panel) 70%, var(--bg)));
+    border: 1px solid var(--border);
+  }
+  .lp-plat-ico { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; background: var(--panel-2); border: 1px solid var(--border-2); color: var(--text); }
+  .lp-plat-ico svg { width: 32px; height: 32px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .lp-plat-ico svg .fill { fill: var(--accent-soft); stroke: var(--accent-line); }
+  .lp-plat-body b { display: block; font-size: 17px; letter-spacing: -.01em; }
+  .lp-plat-kind { display: block; color: var(--faint); font-size: 12.5px; margin-top: 3px; }
+  .lp-plat-body p { color: var(--muted); font-size: 14px; line-height: 1.55; margin: 12px 0 0; }
+  /* "Coming soon": the yellow download button, greyed out. */
+  .lp-soon {
+    margin-top: auto; align-self: flex-start; display: inline-flex; align-items: center; gap: 8px;
+    height: 38px; padding: 0 18px; border-radius: 999px;
+    background: var(--accent); color: var(--accent-ink); font-size: 13.5px; font-weight: 700;
+    filter: saturate(.45); opacity: .5; cursor: not-allowed; user-select: none;
+  }
+  .lp-soon::before {
+    content: ""; width: 14px; height: 14px; flex-shrink: 0;
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+
+  .lp-faq { max-width: 780px; margin: 0 auto 96px; display: flex; flex-direction: column; gap: 10px; }
+  .lp-faq details { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 0 20px; transition: border-color .15s; }
+  .lp-faq details[open] { border-color: var(--border-3); }
+  .lp-faq summary { cursor: pointer; list-style: none; padding: 18px 0; font-weight: 600; font-size: 15.5px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  .lp-faq summary::-webkit-details-marker { display: none; }
+  .lp-faq summary::after { content: "+"; color: var(--faint); font-size: 22px; font-weight: 400; line-height: 1; transition: transform .2s var(--ease); }
+  .lp-faq details[open] summary::after { transform: rotate(45deg); color: var(--accent-text); }
+  .lp-faq p { margin: 0 0 18px; color: var(--muted); line-height: 1.6; font-size: 14.5px; }
+  .lp-faq p b { color: var(--text); font-weight: 600; }
+
+  /* Log in / create account */
+  .lp-account { display: grid; place-items: center; min-height: calc(100vh - 64px - 74px); padding: 56px 24px; position: relative; }
+  .lp-account::before {
     content: ""; position: absolute; inset: 0; pointer-events: none;
-    background-image: radial-gradient(var(--border) 1px, transparent 1px); background-size: 22px 22px;
-    -webkit-mask-image: linear-gradient(180deg, transparent, #000 40%, #000 70%, transparent);
-    mask-image: linear-gradient(180deg, transparent, #000 40%, #000 70%, transparent);
-    opacity: .55;
+    background: radial-gradient(640px 360px at 50% 20%, rgba(255, 160, 51, .1), transparent 70%);
   }
-  .ga-inner { position: relative; z-index: 1; max-width: 500px; }
-  .ga-title { font-size: 34px; line-height: 1.12; font-weight: 600; letter-spacing: -.025em; margin: 0; text-wrap: balance; }
-  .ga-lede { margin: 14px 0 0; color: var(--muted); font-size: 15px; max-width: 440px; line-height: 1.5; }
-  .ga-points { list-style: none; margin: 30px 0 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
-  .ga-points li { display: flex; gap: 14px; align-items: flex-start; }
-  .ga-points li > .ico {
-    width: 34px; height: 34px; padding: 8px; border-radius: 10px;
-    background: var(--panel-2); border: 1px solid var(--border-2); color: var(--accent-text);
+  .lp-account .gate-form { position: relative; width: 100%; display: grid; place-items: center; }
+
+  .lp-foot { border-top: 1px solid var(--border); }
+  .lp-foot-in { max-width: 1180px; margin: 0 auto; padding: 22px 24px; display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+  .lp-brand-sm { font-size: 14px; gap: 8px; }
+  .lp-foot nav { display: flex; gap: 20px; flex: 1; flex-wrap: wrap; }
+  .lp-foot nav a { color: var(--muted); font-size: 13.5px; }
+  .lp-foot nav a:hover { color: var(--text); }
+  .lp-foot-note { color: var(--faint); font-size: 12px; }
+
+  @media (prefers-color-scheme: light) {
+    .lp-window { box-shadow: 0 40px 100px -24px rgba(40, 35, 25, .35), 0 0 0 1px rgba(40, 35, 25, .06); }
+    .lp-dev { filter: drop-shadow(0 24px 30px rgba(40, 35, 25, .28)); }
   }
-  .ga-points b { display: block; font-size: 14px; }
-  .ga-points span { display: block; color: var(--muted); font-size: 13px; margin-top: 1px; }
-  .ga-log {
-    margin-top: 36px; padding: 8px; border-radius: 16px; border: 1px solid var(--border-2);
-    background: var(--panel); box-shadow: var(--shadow);
+  @media (max-width: 1000px) {
+    .lp-platforms { grid-template-columns: repeat(2, 1fr); }
+    .lp-steps { grid-template-columns: repeat(2, 1fr); }
   }
-  .ga-log-row { display: flex; align-items: center; gap: 12px; padding: 10px; font-size: 13.5px; }
-  .ga-log-row + .ga-log-row { border-top: 1px solid var(--border); }
-  .ga-log-row > div { flex: 1; min-width: 0; }
-  .ga-log-row b { display: block; font-weight: 600; }
-  .ga-log-row small { display: block; color: var(--faint); font-size: 12px; }
-  .gate-main .gate-form { display: grid; place-items: center; padding: 40px; }
-  .gate-main .gate-card { background: none; border: 0; box-shadow: none; padding: 0; max-width: 380px; }
+  @media (max-width: 860px) {
+    .lp-nav-in { height: auto; flex-wrap: wrap; padding: 10px 16px 0; gap: 10px; }
+    .lp-actions { margin-left: auto; }
+    .lp-tabs {
+      order: 3; flex-basis: 100%; justify-content: flex-start; overflow-x: auto; scrollbar-width: none;
+      margin: 0 -16px; padding: 0 12px 10px;
+    }
+    .lp-tabs::-webkit-scrollbar { display: none; }
+    .lp-feature, .lp-flip { grid-template-columns: 1fr; gap: 32px; }
+    .lp-flip .lp-feature-text { order: 0; }
+    .lp-features { gap: 80px; padding-top: 72px; }
+    .lp-bento { grid-template-columns: repeat(2, 1fr); }
+    .lp-hero-art { padding: 0 0 56px; margin-top: 48px; }
+    .lp-dev-3ds { width: 31%; left: -6px; bottom: -6px; }
+    .lp-dev-switch { width: 45%; right: -8px; bottom: 0; }
+    .lp-float-ok { left: -6px; top: 34%; }
+    .lp-float-life { right: -6px; top: -18px; }
+    .lp-account { min-height: calc(100vh - 104px - 110px); }
+  }
+  @media (max-width: 600px) {
+    .lp-panel { padding: 0 16px; }
+    .lp-nav-in { padding: 10px 16px 0; }
+    .lp-brand > span:last-child { display: none; }
+    .lp-hero { padding-top: 44px; }
+    .lp-big { flex: 1 1 100%; }
+    .lp-float { padding: 7px 11px 7px 7px; gap: 8px; }
+    .lp-float b { font-size: 12px; }
+    .lp-float small { font-size: 10.5px; }
+    .lp-float-ico { width: 24px; height: 24px; }
+    .lp-bento, .lp-steps, .lp-platforms { grid-template-columns: 1fr; }
+    .lp-band { padding: 28px 22px; margin: 48px 0 64px; }
+    .lp-page-head { padding: 48px 0 28px; }
+    .lp-features { gap: 64px; }
+    .lp-card { padding: 14px; }
+    .lp-account { padding: 32px 0; }
+    .lp-foot-in { padding: 20px 16px; gap: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lp-marquee-in, .lp-float { animation: none; }
+    .lp-marquee { overflow-x: auto; }
+  }
 
   /* Account login / sign-up */
   .auth-tabs {
@@ -933,10 +1197,6 @@
 
   /* ------------------------------------------------------- narrower
      Full sidebar, then an icon rail, then a drawer. */
-  @media (max-width: 1040px) {
-    .gate-split { grid-template-columns: 1fr; }
-    .gate-art { display: none; }
-  }
   @media (max-width: 960px) {
     .sidebar { width: 68px; }
     main#app, body.sb-collapsed main#app { margin-left: 68px; }
@@ -975,7 +1235,6 @@
     .view-toggle button span { display: none; }
     .panel { padding: 16px; }
     .gate-card { padding: 26px 20px; }
-    .gate-main .gate-form { padding: 32px 20px; }
     .save-row { flex-wrap: wrap; }
     .save-row .sr-main { flex-basis: calc(100% - 54px); }
     .save-row .sr-actions { width: 100%; justify-content: flex-end; }
@@ -1085,25 +1344,240 @@
   </div>
 </aside>
 
-<!-- ACCOUNT GATE — log in / create a Save Station account -->
-<div class="gate gate-main" id="gate">
- <div class="gate-split">
-  <aside class="gate-art" aria-hidden="true">
-    <div class="ga-inner">
-      <h1 class="ga-title">Every save, kept safe in your own Google Drive.</h1>
-      <p class="ga-lede">Back up your console and emulator saves from any browser, phone or PC. Every version is kept, in a folder that belongs to you.</p>
-      <ul class="ga-points">
-        <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg><div><b>Every version kept</b><span>Each upload is a new backup. Go back to any of them, any time.</span></div></li>
-        <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg><div><b>Save slots</b><span>Two playthroughs of one game never get mixed up.</span></div></li>
-        <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="10" height="14" x="3" y="8" rx="2"/><path d="M5 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-2.4"/><path d="M8 18h.01"/></svg><div><b>One library, everywhere</b><span>This site, your phone and the Windows app all share it.</span></div></li>
-      </ul>
-      <div class="ga-log">
-        <div class="ga-log-row"><span data-cicon="gba"></span><div><b>Beat the 4th gym</b><small>Pokémon Emerald · just now</small></div><span class="badge latest">Latest</span></div>
-        <div class="ga-log-row"><span data-cicon="3ds"></span><div><b>Before the final boss</b><small>Fire Emblem Awakening · 2 hr ago</small></div><span class="badge">GAMING-PC</span></div>
-        <div class="ga-log-row"><span data-cicon="psp"></span><div><b>Chapter 6 done</b><small>Crisis Core · yesterday</small></div><span class="badge">iPhone</span></div>
+<!-- LANDING — what a signed-out visitor sees: a few tabs about Save Station,
+     the apps (coming soon), and the log in / create account form. -->
+<div class="gate gate-main landing" id="gate">
+  <header class="lp-nav">
+    <div class="lp-nav-in">
+      <a class="lp-brand" href="#" data-go="home" aria-label="Save Station home"><span data-logo="28"></span><span>Save Station</span></a>
+      <nav class="lp-tabs" role="tablist" aria-label="Save Station">
+        <button class="lp-tab" role="tab" id="lpTabHome" data-go="home" aria-controls="lpHome">Home</button>
+        <button class="lp-tab" role="tab" id="lpTabHow" data-go="how-it-works" aria-controls="lpHow">How it works</button>
+        <button class="lp-tab" role="tab" id="lpTabDownload" data-go="download" aria-controls="lpDownload">Download</button>
+        <button class="lp-tab" role="tab" id="lpTabFaq" data-go="faq" aria-controls="lpFaq">FAQ</button>
+      </nav>
+      <div class="lp-actions">
+        <button class="btn-ghost lp-login" data-go="login">Log in</button>
+        <button class="btn-primary lp-start" data-go="signup">Get started</button>
       </div>
     </div>
-  </aside>
+  </header>
+
+  <!-- ============================ HOME ============================ -->
+  <section class="lp-panel" id="lpHome" role="tabpanel" aria-labelledby="lpTabHome" data-panel="home">
+    <div class="lp-hero">
+      <div class="lp-hero-glow" aria-hidden="true"></div>
+      <div class="lp-hero-text">
+        <span class="lp-eyebrow"><i></i>Your saves live in your own Google Drive</span>
+        <h1>Never lose a save <span class="lp-hl">again.</span></h1>
+        <p class="lp-lede">Save Station backs up your console and emulator saves, keeps every version, and puts them back wherever you play: on your PC, your phone, your 3DS or your Switch.</p>
+        <div class="lp-cta">
+          <button class="btn-primary lp-big" data-go="signup">Get started</button>
+          <button class="btn-ghost lp-big" data-go="download"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Download the app</button>
+        </div>
+        <p class="lp-micro">Works right here in your browser. Nothing to install.</p>
+      </div>
+
+      <div class="lp-hero-art">
+        <figure class="lp-window">
+          <img src="assets/landing/windows-app.webp" width="1800" height="1138" alt="The Save Station app on Windows: a library of games with their box art, pinned games, and one save waiting to upload" fetchpriority="high">
+        </figure>
+        <img class="lp-dev lp-dev-3ds" src="assets/landing/3ds.webp" width="900" height="1170" alt="Save Station on a Nintendo 3DS, with a HOME Menu-style home screen" loading="lazy">
+        <img class="lp-dev lp-dev-switch" src="assets/landing/switch.webp" width="1200" height="583" alt="Save Station on a Nintendo Switch" loading="lazy">
+        <div class="lp-float lp-float-ok" aria-hidden="true">
+          <span class="lp-float-ico"><svg class="ico" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>
+          <div><b>Backed up</b><small>Pokémon Emerald · just now</small></div>
+        </div>
+        <div class="lp-float lp-float-life" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 40 40"><path d="M4 0h28l8 8v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4Z" fill="#ffc53d"/><rect x="10" y="0" width="18" height="12" rx="1.5" fill="#2b2a26"/><rect x="20" y="2.5" width="4.5" height="7" rx="1" fill="#ffc53d"/><rect x="6" y="19" width="28" height="17" rx="2" fill="#fff8e6"/></svg>
+          <div><b>214</b><small>lifetime saves</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lp-strip">
+      <p>Saves from</p>
+      <div class="lp-marquee" aria-label="Game Boy, Game Boy Color, Game Boy Advance, Nintendo DS, Nintendo 3DS, Wii, Wii U, Nintendo Switch, PSP and PS Vita">
+        <div class="lp-marquee-in" id="lpConsoleStrip"></div>
+      </div>
+    </div>
+
+    <div class="lp-features">
+      <article class="lp-feature">
+        <div class="lp-feature-text">
+          <span class="lp-kicker">History</span>
+          <h2>Every version, kept.</h2>
+          <p>Each backup is a new version, with the device it came from and a note if you want one. Go back to any of them, any time. Save slots keep a Nuzlocke apart from your main run.</p>
+        </div>
+        <div class="lp-feature-art">
+          <div class="lp-card lp-history" aria-hidden="true">
+            <div class="lp-hist-head"><span data-cicon="gba"></span><div><b>Pokémon Emerald</b><small>Game Boy Advance · 9 backups</small></div></div>
+            <div class="lp-slots"><span class="on">Main run</span><span>Nuzlocke</span><span>+ New slot</span></div>
+            <ol class="lp-versions">
+              <li><i class="latest"></i><div><b>Beat the 4th gym</b><small>GAMING-PC · just now</small></div><span class="badge latest">Latest</span></li>
+              <li><i></i><div><b>Before Victory Road</b><small>iPhone · yesterday</small></div><span class="lp-mini">Restore</span></li>
+              <li><i></i><div><b>Caught Rayquaza</b><small>LAPTOP · 3 days ago</small></div><span class="lp-mini">Restore</span></li>
+              <li><i></i><div><b>Started the Battle Frontier</b><small>GAMING-PC · last week</small></div><span class="lp-mini">Restore</span></li>
+            </ol>
+          </div>
+        </div>
+      </article>
+
+      <article class="lp-feature lp-flip">
+        <div class="lp-feature-text">
+          <span class="lp-kicker">Automatic</span>
+          <h2>Backed up the moment you stop playing.</h2>
+          <p>The Windows app keeps an eye on your emulators. Close the game and your new save is ready to back up in one click, or it goes up on its own.</p>
+        </div>
+        <div class="lp-feature-art">
+          <div class="lp-card lp-watch" aria-hidden="true">
+            <div class="lp-watch-banner"><svg class="ico" viewBox="0 0 24 24"><path d="M12 13v8"/><path d="m8 17 4-4 4 4"/><path d="M20 16.6A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 4 15.3"/></svg><div><b>1 save changed since the last backup</b><small>Pokémon Emerald · mGBA closed a moment ago</small></div><span class="lp-mini lp-mini-hot">Upload</span></div>
+            <ul class="lp-watch-list">
+              <li><span data-cicon="gba"></span><div><b>Pokémon Emerald</b><small>Saved 1 min ago · not backed up</small></div><i class="lp-dot warn"></i></li>
+              <li><span data-cicon="nds"></span><div><b>Pokémon Platinum</b><small>Backed up 1 hr ago</small></div><i class="lp-dot ok"></i></li>
+              <li><span data-cicon="3ds"></span><div><b>Fire Emblem Awakening</b><small>Backed up 2 hr ago</small></div><i class="lp-dot ok"></i></li>
+            </ul>
+            <div class="lp-watch-foot"><i class="lp-dot ok"></i>Watching 4 saves · mGBA running</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="lp-feature">
+        <div class="lp-feature-text">
+          <span class="lp-kicker">Private</span>
+          <h2>Your Drive. Your saves.</h2>
+          <p>Everything goes in one folder in your own Google Drive, called <b>Save Station Web Saves</b>. Save Station can only see the files it made, and your saves never sit on anyone else's server.</p>
+        </div>
+        <div class="lp-feature-art">
+          <div class="lp-card lp-drive" aria-hidden="true">
+            <div class="lp-crumbs">My Drive <span>›</span> <b>Save Station Web Saves</b> <span>›</span> <b>Pokémon Emerald</b></div>
+            <ul class="lp-tree">
+              <li><svg class="ico" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/></svg><span>2026-10-03 16.15__GAMING-PC.sav</span><small>128 KB</small></li>
+              <li><svg class="ico" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/></svg><span>2026-10-02 21.40__iPhone.sav</span><small>128 KB</small></li>
+              <li><svg class="ico" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/></svg><span>2026-09-30 18.02__LAPTOP.sav</span><small>128 KB</small></li>
+              <li><svg class="ico" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/></svg><span>2026-09-26 20.11__GAMING-PC.sav</span><small>128 KB</small></li>
+            </ul>
+            <div class="lp-lock"><svg class="ico" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Only this folder is shared with Save Station</div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="lp-bento">
+      <div class="lp-bento-card"><span class="lp-bento-ico"><svg class="ico" viewBox="0 0 24 24"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg></span><b>Save slots</b><p>Two playthroughs of one game, never mixed up.</p></div>
+      <div class="lp-bento-card"><span class="lp-bento-ico"><svg class="ico" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/></svg></span><b>Box art for every game</b><p>Pick a cover for any game from a huge library of box art.</p></div>
+      <div class="lp-bento-card"><span class="lp-bento-ico"><svg class="ico" viewBox="0 0 24 24"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg></span><b>Sign in with a QR code</b><p>Scan the code on a signed-in computer and your phone is in.</p></div>
+      <div class="lp-bento-card"><span class="lp-bento-ico lp-bento-floppy"><svg viewBox="0 0 40 40" width="18" height="18"><path d="M4 0h28l8 8v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4Z" fill="#ffc53d"/><rect x="10" y="0" width="18" height="12" rx="1.5" fill="#2b2a26"/><rect x="6" y="19" width="28" height="17" rx="2" fill="#fff8e6"/></svg></span><b>Lifetime saves</b><p>A running count of every backup you've ever made.</p></div>
+      <div class="lp-bento-card"><span class="lp-bento-ico"><svg class="ico" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span><b>Restore anywhere</b><p>Download any version and put it back on your console, PC or phone.</p></div>
+      <div class="lp-bento-card"><span class="lp-bento-ico"><svg class="ico" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></span><b>Nothing gone for good</b><p>Deleted backups wait 30 days in your Drive's trash, and retired games keep their saves.</p></div>
+    </div>
+
+    <div class="lp-band">
+      <div>
+        <h2>Your saves deserve a backup.</h2>
+        <p>Make an account, link your Google Drive, and your first save is safe in a minute.</p>
+      </div>
+      <div class="lp-cta">
+        <button class="btn-primary lp-big" data-go="signup">Get started</button>
+        <button class="btn-ghost lp-big" data-go="how-it-works">How it works</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== HOW IT WORKS ======================== -->
+  <section class="lp-panel" id="lpHow" role="tabpanel" aria-labelledby="lpTabHow" data-panel="how-it-works" hidden>
+    <div class="lp-page-head">
+      <span class="lp-kicker">How it works</span>
+      <h1>From your game to your Drive in four steps.</h1>
+      <p class="lp-lede">No server keeps your saves. Save Station is the go-between: it puts them in a folder you own and gets them back out when you need them.</p>
+    </div>
+    <ol class="lp-steps">
+      <li><span class="lp-step-n">1</span><b>Make an account</b><p>An email and a password. That's it.</p></li>
+      <li><span class="lp-step-n">2</span><b>Link your Google Drive</b><p>Save Station makes one folder for your saves, and can only see what it puts there.</p></li>
+      <li><span class="lp-step-n">3</span><b>Back up from anywhere</b><p>Drop a save on this site, let the Windows app catch it when you close your emulator, or send it from your 3DS or Switch.</p></li>
+      <li><span class="lp-step-n">4</span><b>Restore any version</b><p>Pick a backup and download it, on whatever you're playing on now.</p></li>
+    </ol>
+    <div class="lp-page-head lp-sub">
+      <h2>Consoles and emulators</h2>
+      <p>Saves from these work today, from real hardware dumps and the emulators people use most.</p>
+    </div>
+    <div class="lp-consoles" id="lpConsoleGrid"></div>
+    <div class="lp-band">
+      <div>
+        <h2>Ready when you are.</h2>
+        <p>It all works in your browser, on a phone, tablet or computer.</p>
+      </div>
+      <div class="lp-cta"><button class="btn-primary lp-big" data-go="signup">Get started</button></div>
+    </div>
+  </section>
+
+  <!-- ========================== DOWNLOAD ========================== -->
+  <section class="lp-panel" id="lpDownload" role="tabpanel" aria-labelledby="lpTabDownload" data-panel="download" hidden>
+    <div class="lp-page-head">
+      <span class="lp-kicker">Download</span>
+      <h1>Save Station on every screen.</h1>
+      <p class="lp-lede">The apps are on their way. Until they're out, everything works right here in your browser, and each app will use the same account and the same library.</p>
+    </div>
+    <div class="lp-platforms">
+      <div class="lp-platform">
+        <span class="lp-plat-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="3" width="22" height="12" rx="2.5"/><rect x="8.5" y="5.5" width="15" height="7.5" rx="1" class="fill"/><rect x="5" y="17" width="22" height="12" rx="2.5"/><rect x="11.5" y="19" width="9" height="7.5" rx="1" class="fill"/><path d="M7 23h2.6M8.3 21.7v2.6"/><circle cx="24" cy="21.6" r=".6"/><circle cx="24" cy="24.4" r=".6"/><circle cx="22.6" cy="23" r=".6"/><circle cx="25.4" cy="23" r=".6"/></svg></span>
+        <div class="lp-plat-body"><b>Nintendo 3DS</b><span class="lp-plat-kind">Homebrew app · .cia</span><p>A HOME Menu-style home screen for your saves. Download a backup to the SD card, or upload one Checkpoint or JKSM made.</p></div>
+        <span class="lp-soon" aria-disabled="true">Coming soon</span>
+      </div>
+      <div class="lp-platform">
+        <span class="lp-plat-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="8" width="5" height="16" rx="2.5"/><rect x="25" y="8" width="5" height="16" rx="2.5"/><rect x="8" y="8" width="16" height="16" rx="1.5"/><rect x="10" y="10.5" width="12" height="11" rx="1" class="fill"/></svg></span>
+        <div class="lp-plat-body"><b>Nintendo Switch</b><span class="lp-plat-kind">Homebrew app · .nro</span><p>Your library and backups on the big screen, from the Homebrew Menu.</p></div>
+        <span class="lp-soon" aria-disabled="true">Coming soon</span>
+      </div>
+      <div class="lp-platform">
+        <span class="lp-plat-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="5" width="26" height="17" rx="2"/><rect x="5.5" y="7.5" width="21" height="12" rx="1" class="fill"/><path d="M12 27h8M16 22v5"/></svg></span>
+        <div class="lp-plat-body"><b>Windows</b><span class="lp-plat-kind">Desktop app · Windows 10 and 11</span><p>Watches your emulators and has your new save ready to back up the moment you close the game.</p></div>
+        <span class="lp-soon" aria-disabled="true">Coming soon</span>
+      </div>
+      <div class="lp-platform">
+        <span class="lp-plat-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="6" width="22" height="15" rx="2"/><rect x="7.5" y="8.5" width="17" height="10" rx="1" class="fill"/><path d="M2 25h28l-2 2H4z"/></svg></span>
+        <div class="lp-plat-body"><b>Mac</b><span class="lp-plat-kind">Desktop app · Apple silicon and Intel</span><p>The desktop app, made for macOS, with the same emulator watching as on Windows.</p></div>
+        <span class="lp-soon" aria-disabled="true">Coming soon</span>
+      </div>
+      <div class="lp-platform">
+        <span class="lp-plat-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="2.5" width="26" height="13" rx="2.5"/><rect x="4.6" y="4" width="22.8" height="10" rx="1.2" class="fill"/><rect x="3" y="17" width="26" height="12.5" rx="2.5"/><rect x="11" y="18.6" width="10" height="7.6" rx="1" class="fill"/><circle cx="7" cy="21.6" r="1.7"/><circle cx="25" cy="25.4" r="1.7"/></svg></span>
+        <div class="lp-plat-body"><b>AYN Thor &amp; dual-screen Android</b><span class="lp-plat-kind">Android app · .apk</span><p>Made for two screens: your game on one, your saves on the other.</p></div>
+        <span class="lp-soon" aria-disabled="true">Coming soon</span>
+      </div>
+      <div class="lp-platform">
+        <span class="lp-plat-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="9" y="2.5" width="14" height="27" rx="3"/><rect x="11" y="6" width="10" height="18" rx="1" class="fill"/><path d="M14.5 26.5h3"/></svg></span>
+        <div class="lp-plat-body"><b>Android</b><span class="lp-plat-kind">Android app · .apk</span><p>Phones and tablets, with your whole save library in your pocket.</p></div>
+        <span class="lp-soon" aria-disabled="true">Coming soon</span>
+      </div>
+    </div>
+    <div class="lp-band">
+      <div>
+        <h2>Don't wait for the apps.</h2>
+        <p>Save Station works in any browser today, on your phone, tablet or computer.</p>
+      </div>
+      <div class="lp-cta"><button class="btn-primary lp-big" data-go="signup">Get started</button></div>
+    </div>
+  </section>
+
+  <!-- ============================= FAQ ============================ -->
+  <section class="lp-panel" id="lpFaq" role="tabpanel" aria-labelledby="lpTabFaq" data-panel="faq" hidden>
+    <div class="lp-page-head">
+      <span class="lp-kicker">FAQ</span>
+      <h1>Questions, answered.</h1>
+    </div>
+    <div class="lp-faq">
+      <details open><summary>Where are my saves stored?</summary><p>In your own Google Drive, in a folder called <b>Save Station Web Saves</b>, with a folder for each game inside it. Save Station doesn't keep copies anywhere else.</p></details>
+      <details><summary>What can Save Station see in my Google Drive?</summary><p>Only the files and folders it made. It asks Google for that narrow permission, so the rest of your Drive stays invisible to it.</p></details>
+      <details><summary>Which consoles and emulators work?</summary><p>Game Boy, Game Boy Color, Game Boy Advance, Nintendo DS, Nintendo 3DS, Wii, Wii U, Nintendo Switch, PSP and PS Vita, from emulators like mGBA, melonDS, Citra, Dolphin, Cemu and PPSSPP. <a href="#how-it-works" data-go="how-it-works">See them all</a>.</p></details>
+      <details><summary>Do I have to install anything?</summary><p>No. This site does everything: back up, look through your history, and restore. The apps add automatic backups and Save Station on the consoles themselves.</p></details>
+      <details><summary>Can I use it on my phone?</summary><p>Yes. Sign in with your email and password, or open <b>Settings → Account</b> on a signed-in computer and scan its QR code.</p></details>
+      <details><summary>What happens when I delete a backup?</summary><p>It goes to your Google Drive's trash, where you can get it back for 30 days. Your lifetime saves count never goes down.</p></details>
+      <details><summary>When do the apps come out?</summary><p>Soon. They'll show up on the <a href="#download" data-go="download">Download</a> tab the day they're ready.</p></details>
+    </div>
+  </section>
+
+  <!-- ===================== LOG IN / SIGN UP ======================= -->
+  <section class="lp-panel lp-account" id="lpAccount" role="tabpanel" data-panel="account" hidden>
   <div class="gate-form">
   <div class="gate-card">
     <div class="biglogo" data-logo="48"></div>
@@ -1148,7 +1622,20 @@
     <div class="build-tag" data-build></div>
   </div>
   </div>
- </div>
+  </section>
+
+  <footer class="lp-foot">
+    <div class="lp-foot-in">
+      <span class="lp-brand lp-brand-sm"><span data-logo="20"></span><span>Save Station</span></span>
+      <nav aria-label="More">
+        <a href="#how-it-works" data-go="how-it-works">How it works</a>
+        <a href="#download" data-go="download">Download</a>
+        <a href="#faq" data-go="faq">FAQ</a>
+        <a href="#login" data-go="login">Log in</a>
+      </nav>
+      <span class="lp-foot-note">Not affiliated with Nintendo or Sony. <span data-build></span></span>
+    </div>
+  </footer>
 </div>
 
 <!-- EMAIL LINKS — where the links in Save Station's emails land. Firebase's
@@ -1516,7 +2003,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-10-03e";
+const BUILD = "2026-10-03f";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -6106,6 +6593,94 @@ function toast(msg, type, ms) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { t.className = t.className.replace("show", "").trim(); }, ms || 3000);
 }
+/* ============================================================
+   The landing page's tabs
+   Each tab has its own address (savestation.net/#download), so a link can
+   point straight at it and Back goes to the tab before. Log in and Create
+   account are the same panel, the form switched between them.
+   ============================================================ */
+(function landing() {
+  const gate = $("gate");
+  const ROUTES = { "home": "home", "how-it-works": "how-it-works", "download": "download", "faq": "faq",
+                   "login": "account", "signup": "account" };
+  let route = "home";
+
+  function routeInHash() {
+    const h = (location.hash || "").slice(1);
+    return Object.prototype.hasOwnProperty.call(ROUTES, h) ? h : null;
+  }
+
+  function show(next, how) {
+    if (!ROUTES[next]) next = "home";
+    route = next;
+    if (next === "login" || next === "signup") setAuthMode(next);
+    const panel = ROUTES[next];
+    gate.querySelectorAll("[data-panel]").forEach((p) => { p.hidden = p.dataset.panel !== panel; });
+    gate.querySelectorAll(".lp-tab").forEach((t) => {
+      const on = t.dataset.go === panel;
+      t.classList.toggle("on", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    if (how === "click") {
+      const hash = next === "home" ? "" : "#" + next;
+      if (location.hash !== hash) history.pushState(null, "", location.pathname + location.search + hash);
+      window.scrollTo(0, 0);
+      if (panel === "account" && matchMedia("(pointer: fine)").matches) {
+        setTimeout(() => { if (!$("authForm").classList.contains("hidden")) $("authEmail").focus({ preventScroll: true }); }, 30);
+      }
+    }
+  }
+
+  gate.addEventListener("click", (e) => {
+    const el = e.target.closest("[data-go]");
+    if (!el || !gate.contains(el)) return;
+    e.preventDefault();
+    show(el.dataset.go, "click");
+  });
+
+  // Left and right move along the tabs, as a tab list should.
+  gate.querySelector(".lp-tabs").addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    const tabs = [...gate.querySelectorAll(".lp-tab")];
+    const i = tabs.indexOf(document.activeElement);
+    if (i < 0) return;
+    const next = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+    next.focus();
+    show(next.dataset.go, "click");
+  });
+
+  // Switching between Log in and Create account keeps the address in step.
+  [["tabLogin", "login"], ["tabSignup", "signup"]].forEach(([id, r]) => {
+    $(id).addEventListener("click", () => {
+      route = r;
+      if (routeInHash()) history.replaceState(null, "", location.pathname + location.search + "#" + r);
+    });
+  });
+
+  window.addEventListener("popstate", () => show(routeInHash() || "home"));
+  window.addEventListener("hashchange", () => { const r = routeInHash(); if (r) show(r); });
+
+  // Signed in: the landing's address has nothing more to say, so it goes. And
+  // signing out lands on Home rather than on a form filled in a while ago.
+  new MutationObserver(() => {
+    if (gate.classList.contains("hidden")) {
+      if (routeInHash()) history.replaceState(null, "", location.pathname + location.search);
+      if (route !== "home") show("home");
+    }
+  }).observe(gate, { attributes: true, attributeFilter: ["class"] });
+
+  // Every console Save Station knows: a strip that scrolls past on Home, and
+  // what reads their saves on How it works.
+  const chip = (c) => '<span class="lp-chip">' + consoleIcon(c.id, 30, 9) + escapeHtml(c.label) + "</span>";
+  const chips = CONSOLES.map(chip).join("");
+  $("lpConsoleStrip").innerHTML = chips + chips;
+  $("lpConsoleGrid").innerHTML = CONSOLES.map((c) =>
+    '<div class="lp-console">' + consoleIcon(c.id, 42, 12) +
+    "<div><b>" + escapeHtml(c.label) + "</b><small>" + escapeHtml((c.emus || []).join(", ")) + "</small></div></div>"
+  ).join("");
+
+  show(routeInHash() || "home");
+})();
 </script>
 </body>
 </html>
