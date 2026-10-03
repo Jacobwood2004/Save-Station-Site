@@ -1267,7 +1267,6 @@
           <div class="sw-card">
             <div class="acct-row">Save Station account <b id="acctName">—</b></div>
             <div class="acct-row">Email <b id="acctEmail">—</b></div>
-            <div class="acct-row">Google Drive linked <b id="acctGoogle">—</b></div>
             <div class="acct-row">Drive session <b id="acctDriveState">—</b></div>
             <div class="acct-row">Saves live in your Drive under <b id="acctFolder">—</b></div>
             <div class="acct-row hidden" id="acctQrNote">
@@ -1516,7 +1515,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-10-03c";
+const BUILD = "2026-10-03d";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
@@ -3012,7 +3011,6 @@ function refreshAccountHeader() {
     (profile && profile.account && profile.account.name) || "—";
   $("acctEmail").textContent = (fbUser && fbUser.email) ||
     (profile && profile.account && profile.account.email) || "—";
-  $("acctGoogle").textContent = googleEmail || localStorage.getItem("ssw_email") || "—";
   $("acctQrNote").classList.toggle("hidden", !linkedViaQr);
   $("sbUserMail").textContent = (fbUser && fbUser.email) ||
     (profile && profile.account && profile.account.email) || googleEmail || "";
