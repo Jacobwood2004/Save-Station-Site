@@ -333,6 +333,9 @@ async function resetCode(email, sa, env) {
     if (/EMAIL_NOT_FOUND|USER_NOT_FOUND/.test(why)) return null;
     throw new Error("reset_link_" + r.status + (why ? "_" + why : ""));
   }
+  // With email-enumeration protection on, an unknown address isn't an error:
+  // Firebase answers OK and simply leaves the link out.
+  if (!d || !d.oobLink) return null;
   return new URL(d.oobLink).searchParams.get("oobCode");
 }
 

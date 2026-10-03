@@ -45,6 +45,8 @@ globalThis.fetch = async (url, init = {}) => {
     assert.equal(b.requestType, "PASSWORD_RESET");
     assert.equal(b.returnOobLink, true, "Firebase makes the link and sends nothing itself");
     if (b.email === "nobody@example.com") return Response.json({ error: { message: "EMAIL_NOT_FOUND" } }, { status: 400 });
+    // What a project with email-enumeration protection says instead: OK, no link.
+    if (b.email === "hidden@example.com") return Response.json({ email: b.email });
     return Response.json({ email: b.email, oobLink: "https://" + PROJECT + ".firebaseapp.com/__/auth/action?mode=resetPassword&oobCode=CODE-123&apiKey=k&lang=en" });
   }
   if (url === "https://api.resend.com/emails") {
@@ -98,6 +100,13 @@ await test("asking again within a minute sends nothing more, and says the same",
 
 await test("an address with no account gets the same answer and no email", async () => {
   const r = await reset(cf, "nobody@example.com");
+  assert.equal(r.status, 200);
+  assert.deepEqual(await r.json(), { ok: true });
+  assert.equal(sent.length, 1);
+});
+
+await test("…including when Firebase hides it (OK, but no link): still no email, no error", async () => {
+  const r = await reset(cf, "hidden@example.com");
   assert.equal(r.status, 200);
   assert.deepEqual(await r.json(), { ok: true });
   assert.equal(sent.length, 1);
