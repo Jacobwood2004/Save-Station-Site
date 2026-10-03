@@ -573,6 +573,12 @@ function igdbTerm(s) {
   return String(s || "").replace(/["\\;]/g, " ").replace(/\s+/g, " ").trim().slice(0, 100);
 }
 
+function heroOf(g) {
+  const pick = (list) => (Array.isArray(list) ? list.find((x) => x && x.image_id) : null);
+  const h = pick(g.artworks) || pick(g.screenshots);
+  return h ? h.image_id : null;
+}
+
 async function handleCoverSearch(request, env) {
   await requireUid(request, env);
   if (!igdbConfigured(env)) return json({ configured: false, results: [] }, 200, env);
@@ -582,7 +588,7 @@ async function handleCoverSearch(request, env) {
   if (!term) return json({ configured: true, results: [] }, 200, env);
 
   const platforms = IGDB_PLATFORMS[input.console] || null;
-  const base = `search "${term}"; fields name,first_release_date,cover.image_id; where cover != null`;
+  const base = `search "${term}"; fields name,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id; where cover != null`;
   let games = await igdbGames(env, base + (platforms ? ` & platforms = (${platforms.join(",")})` : "") + "; limit 12;");
   // Nothing listed for that console — a hack filed under its base game, say —
   // so look across every platform rather than come back empty.
@@ -598,6 +604,9 @@ async function handleCoverSearch(request, env) {
       title: g.name,
       year: g.first_release_date ? new Date(g.first_release_date * 1000).getUTCFullYear() : null,
       thumb: igdbImage("cover_big", g.cover.image_id),
+      // A wide picture of the game, for the 3DS's top screen: its key art, or
+      // failing that a screenshot. IGDB serves it at any of its fixed sizes.
+      hero: heroOf(g),
     }));
   return json({ configured: true, anyPlatform, results }, 200, env);
 }

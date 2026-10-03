@@ -40,7 +40,8 @@ globalThis.fetch = async (url, init = {}) => {
     const onPlatform = /platforms = \(24\)/.test(init.body);
     if (/search "Nothing Here"/.test(init.body) && onPlatform) return Response.json([]);
     return Response.json([
-      { id: 1, name: "Pokemon Emerald Version", first_release_date: 1095724800, cover: { image_id: "co1abc" } },
+      { id: 1, name: "Pokemon Emerald Version", first_release_date: 1095724800, cover: { image_id: "co1abc" },
+        artworks: [{ image_id: "ar1xyz" }], screenshots: [{ image_id: "sc1qrs" }] },
       { id: 2, name: "No Cover Game" },
     ]);
   }
@@ -68,7 +69,7 @@ let d = await r.json();
 assert.equal(d.configured, true);
 assert.equal(d.results.length, 1, "games without a cover are left out");
 assert.deepEqual(d.results[0], { id: "co1abc", title: "Pokemon Emerald Version", year: 2004,
-  thumb: "https://images.igdb.com/igdb/image/upload/t_cover_big/co1abc.jpg" });
+  thumb: "https://images.igdb.com/igdb/image/upload/t_cover_big/co1abc.jpg", hero: "ar1xyz" });
 const q = calls.filter((c) => c.url.includes("api.igdb.com")).pop().body;
 assert.ok(!/"Emerald"/.test(q) && !/; fields \*/.test(q), "quotes and semicolons can't break out of the search");
 assert.match(q, /platforms = \(24\)/, "filtered to GBA");
