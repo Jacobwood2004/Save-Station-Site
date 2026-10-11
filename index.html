@@ -628,6 +628,7 @@
   .lp-console small { display: block; color: var(--faint); font-size: 12.5px; line-height: 1.4; margin-top: 1px; }
 
   .lp-platforms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .lp-platforms > .lp-platform:last-child:nth-child(3n + 1) { grid-column: 2; }
   .lp-platform {
     display: flex; flex-direction: column; gap: 16px; padding: 24px; border-radius: 22px;
     background: linear-gradient(180deg, var(--panel), color-mix(in srgb, var(--panel) 70%, var(--bg)));
@@ -675,6 +676,10 @@
   }
   @media (max-width: 1000px) {
     .lp-platforms { grid-template-columns: repeat(2, 1fr); }
+    .lp-platforms > .lp-platform:last-child:nth-child(3n + 1) { grid-column: auto; }
+    .lp-platforms > .lp-platform:last-child:nth-child(2n + 1) {
+      grid-column: 1 / -1; justify-self: center; width: calc(50% - 7px);
+    }
     .lp-steps { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 860px) {
@@ -698,6 +703,7 @@
     .lp-hero { padding-top: 44px; }
     .lp-big { flex: 1 1 100%; }
     .lp-bento, .lp-steps, .lp-platforms { grid-template-columns: 1fr; }
+    .lp-platforms > .lp-platform:last-child:nth-child(2n + 1) { width: auto; justify-self: stretch; }
     .lp-band { padding: 28px 22px; margin: 48px 0 64px; }
     .lp-page-head { padding: 48px 0 28px; }
     .lp-features { gap: 64px; }
@@ -1769,6 +1775,11 @@
         <span class="lp-soon" aria-disabled="true">Coming soon</span>
       </div>
       <div class="lp-platform">
+        <span class="lp-plat-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3.5c-3.9 0-6 3.2-6 7.2 0 2.3-.8 3.9-2.1 5.8C6.6 18.4 5.5 20.6 5.5 23c0 3.4 4.4 5.5 10.5 5.5s10.5-2.1 10.5-5.5c0-2.4-1.1-4.6-2.4-6.5-1.3-1.9-2.1-3.5-2.1-5.8 0-4-2.1-7.2-6-7.2z"/><path class="fill" d="M16 14c-3 0-5.2 3.2-5.2 6.9 0 3.2 2.3 5.4 5.2 5.4s5.2-2.2 5.2-5.4c0-3.7-2.2-6.9-5.2-6.9z"/><circle cx="13.8" cy="9.4" r=".6"/><circle cx="18.2" cy="9.4" r=".6"/><path d="M14.5 11.8h3L16 13.3z"/></svg></span>
+        <div class="lp-plat-body"><b>Linux</b><span class="lp-plat-kind">Desktop app · Ubuntu, Debian, Fedora and more</span><p>The desktop app for Linux, watching your emulators just as it does on Windows, Flatpaks and AppImages included.</p></div>
+        <span class="lp-soon" aria-disabled="true">Coming soon</span>
+      </div>
+      <div class="lp-platform">
         <span class="lp-plat-ico"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="2.5" width="26" height="13" rx="2.5"/><rect x="4.6" y="4" width="22.8" height="10" rx="1.2" class="fill"/><rect x="3" y="17" width="26" height="12.5" rx="2.5"/><rect x="11" y="18.6" width="10" height="7.6" rx="1" class="fill"/><circle cx="7" cy="21.6" r="1.7"/><circle cx="25" cy="25.4" r="1.7"/></svg></span>
         <div class="lp-plat-body"><b>AYN Thor &amp; dual-screen Android</b><span class="lp-plat-kind">Android app · .apk</span><p>Made for two screens: your game on one, your saves on the other.</p></div>
         <span class="lp-soon" aria-disabled="true">Coming soon</span>
@@ -2201,7 +2212,7 @@ const WORKER_URL = "https://save-station-drive.jacob-wood2038.workers.dev";
    ten minutes, phones keep it longer given the chance, and "have you got the
    fix yet" is otherwise unanswerable from either end. Bump it when you change
    something you'll want to confirm arrived. */
-const BUILD = "2026-10-03i";
+const BUILD = "2026-10-10a";
 
 const ROOT_FOLDER_NAME = "Save Station Web Saves";
 // Deleting a game while keeping its saves parks the whole game folder in here,
