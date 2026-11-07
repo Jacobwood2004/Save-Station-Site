@@ -611,6 +611,92 @@ async function handleCoverSearch(request, env) {
   return json({ configured: true, anyPlatform, results }, 200, env);
 }
 
+/* ------------------------------------------------------------ games (IGDB)
+   Looking games up, as Backloggd does -- IGDB is its database too. The site's
+   search box (any game: "Pokémon Y (2013)") and its game pages: who made it,
+   when, what it's about, its platforms and pictures. */
+
+// IGDB platform id -> Save Station console id, the other way round from above.
+const CONSOLE_OF_PLATFORM = {};
+for (const [c, ids] of Object.entries(IGDB_PLATFORMS)) ids.forEach((id) => { CONSOLE_OF_PLATFORM[id] = c; });
+
+const yearOf = (t) => (t ? new Date(t * 1000).getUTCFullYear() : null);
+
+function platformsOf(g) {
+  return (g.platforms || []).map((p) => ({
+    id: p.id, name: p.name || "", abbr: p.abbreviation || p.name || "",
+    console: CONSOLE_OF_PLATFORM[p.id] || null,
+  }));
+}
+
+async function handleGameSearch(request, env) {
+  await requireUid(request, env);
+  if (!igdbConfigured(env)) return json({ configured: false, results: [] }, 200, env);
+  let input = {};
+  try { input = await request.json(); } catch (e) { /* an empty search */ }
+  const term = igdbTerm(input.q);
+  if (term.length < 2) return json({ configured: true, results: [] }, 200, env);
+  // Games and their remakes and expansions -- not each edition of one game
+  const games = await igdbGames(env,
+    `search "${term}"; fields name,first_release_date,cover.image_id,platforms.name,platforms.abbreviation; ` +
+    "where version_parent = null; limit 20;");
+  const results = games.map((g) => ({
+    id: g.id,
+    name: g.name,
+    year: yearOf(g.first_release_date),
+    cover: g.cover && g.cover.image_id ? g.cover.image_id : null,
+    platforms: platformsOf(g),
+  }));
+  return json({ configured: true, results }, 200, env);
+}
+
+async function handleGameInfo(request, env) {
+  await requireUid(request, env);
+  if (!igdbConfigured(env)) return json({ configured: false }, 200, env);
+  let input = {};
+  try { input = await request.json(); } catch (e) { /* falls to bad_request */ }
+  const id = Number(input.id);
+  if (!Number.isInteger(id) || id <= 0) return json({ error: "bad_request" }, 400, env);
+  const [g] = await igdbGames(env,
+    "fields name,summary,storyline,first_release_date,url,total_rating,total_rating_count," +
+    "cover.image_id,artworks.image_id,screenshots.image_id,videos.video_id,videos.name," +
+    "genres.name,themes.name,game_modes.name,platforms.name,platforms.abbreviation," +
+    "involved_companies.developer,involved_companies.publisher,involved_companies.company.name," +
+    "parent_game.id,parent_game.name,version_parent.id,version_parent.name;" +
+    ` where id = ${id}; limit 1;`);
+  if (!g) return json({ error: "not_found" }, 404, env);
+  const companies = (role) => (g.involved_companies || [])
+    .filter((c) => c[role] && c.company && c.company.name).map((c) => c.company.name);
+  const ref = (x) => (x && x.id ? { id: x.id, name: x.name } : null);
+  return json({
+    configured: true,
+    game: {
+      id: g.id,
+      name: g.name,
+      summary: g.summary || "",
+      storyline: g.storyline || "",
+      released: g.first_release_date ? new Date(g.first_release_date * 1000).toISOString().slice(0, 10) : null,
+      year: yearOf(g.first_release_date),
+      cover: g.cover && g.cover.image_id ? g.cover.image_id : null,
+      hero: heroOf(g),
+      screenshots: (g.screenshots || []).map((x) => x.image_id).filter(Boolean).slice(0, 12),
+      artworks: (g.artworks || []).map((x) => x.image_id).filter(Boolean).slice(0, 6),
+      videos: (g.videos || []).filter((v) => v.video_id).slice(0, 4).map((v) => ({ id: v.video_id, name: v.name || "" })),
+      genres: (g.genres || []).map((x) => x.name),
+      themes: (g.themes || []).map((x) => x.name),
+      modes: (g.game_modes || []).map((x) => x.name),
+      platforms: platformsOf(g),
+      developers: companies("developer"),
+      publishers: companies("publisher"),
+      parent: ref(g.parent_game),
+      versionOf: ref(g.version_parent),
+      rating: typeof g.total_rating === "number" ? Math.round(g.total_rating) : null,
+      ratingCount: g.total_rating_count || 0,
+      url: g.url || "",
+    },
+  }, 200, env);
+}
+
 // The chosen cover's bytes, at IGDB's fixed "cover_big_2x" size, passed
 // through so the page can copy it into the user's Drive.
 async function handleCoverImage(request, env) {
@@ -675,6 +761,12 @@ async function route(request, env) {
     }
     if (url.pathname === "/covers/search" && request.method === "POST") {
       return await handleCoverSearch(request, env);
+    }
+    if (url.pathname === "/games/search" && request.method === "POST") {
+      return await handleGameSearch(request, env);
+    }
+    if (url.pathname === "/games/info" && request.method === "POST") {
+      return await handleGameInfo(request, env);
     }
     if (url.pathname === "/covers/image" && request.method === "POST") {
       return await handleCoverImage(request, env);
