@@ -2111,6 +2111,29 @@
               <span class="hint">Shown on every backup you upload from this browser.</span>
             </div>
           </div>
+          <!-- SteamGridDB: connected once, here, for every device -->
+          <div class="sw-section" id="sgdbSection">
+            <h4 class="sw-sub">SteamGridDB</h4>
+            <div style="font-size:13px;color:var(--muted);line-height:1.6;">
+              Heroes, icons and logos for your games, on the 3DS and the Thor, from SteamGridDB, the
+              artwork site Steam ROM Manager and Cocoon use. Paste your API key from
+              <a href="https://www.steamgriddb.com/profile/preferences/api" target="_blank" rel="noopener">steamgriddb.com &rarr; Preferences &rarr; API</a>.
+              It's kept with your Save Station account and never shown again.
+            </div>
+            <div id="sgdbOff" style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+              <div class="field" style="flex:1;min-width:220px;max-width:360px;margin:0;">
+                <label for="sgdbKey">API key</label>
+                <input type="password" id="sgdbKey" placeholder="Paste it here" autocomplete="off" spellcheck="false">
+              </div>
+              <button class="btn-primary btn-sm" id="sgdbConnectBtn">Connect</button>
+            </div>
+            <div id="sgdbOn" class="hidden" style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <span style="font-size:13.5px;font-weight:600;color:var(--ok, #62cf8d);">&#10003; Connected</span>
+              <button class="btn-ghost btn-sm danger" id="sgdbDisconnectBtn">Disconnect</button>
+            </div>
+            <div class="hint" id="sgdbMsg" style="margin-top:8px;font-size:12.5px;color:var(--muted);"></div>
+          </div>
+
           <div class="sw-section">
             <h4 class="sw-sub">Sign in on another device</h4>
             <div style="font-size:13px;color:var(--muted);line-height:1.6;">
@@ -3203,6 +3226,7 @@ function openSettings(pane) {
   const layer = $("settingsView");
   if (layer.classList.contains("hidden")) settingsBack = currentNav === "settings" ? "games" : currentNav;
   refreshConsoleUi();
+  refreshSgdbUi();
   showSettingsPane(pane || settingsPane);
   layer.classList.remove("hidden", "leaving");
   document.body.classList.add("settings-open");
@@ -5290,6 +5314,64 @@ function setupGameSearch() {
   });
 }
 
+/* ---- SteamGridDB: the key goes to the Drive broker, kept with your account,
+   so the 3DS and the Thor get heroes, icons and logos too ---- */
+async function sgdbCall(path, body) {
+  if (!workerEnabled()) throw new Error("SteamGridDB isn't set up here.");
+  const idt = await firebaseIdToken();
+  if (!idt) throw new Error("Sign in first.");
+  const r = await fetch(workerPath(path), {
+    method: "POST",
+    headers: { Authorization: "Bearer " + idt, "Content-Type": "application/json" },
+    body: JSON.stringify(body || {}),
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.message || "Save Station's server didn't answer (" + r.status + ").");
+  return d;
+}
+
+function showSgdb(on, msg) {
+  $("sgdbOn").classList.toggle("hidden", !on);
+  $("sgdbOff").classList.toggle("hidden", !!on);
+  $("sgdbMsg").textContent = msg || "";
+}
+
+async function refreshSgdbUi() {
+  try {
+    const d = await sgdbCall("/sgdb/status");
+    showSgdb(!!d.connected);
+  } catch (e) {
+    $("sgdbMsg").textContent = "";
+  }
+}
+
+async function connectSgdb() {
+  const key = $("sgdbKey").value.trim();
+  if (!key) { $("sgdbMsg").textContent = "Paste your API key first."; return; }
+  const btn = $("sgdbConnectBtn");
+  btn.disabled = true;
+  $("sgdbMsg").textContent = "Checking it with SteamGridDB\u2026";
+  try {
+    await sgdbCall("/sgdb/link", { key });
+    $("sgdbKey").value = "";
+    showSgdb(true, "Your 3DS and Thor pick up its art the next time they look.");
+    toast("SteamGridDB connected \u2714", "ok");
+  } catch (e) {
+    $("sgdbMsg").textContent = e.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function disconnectSgdb() {
+  try {
+    await sgdbCall("/sgdb/unlink");
+    showSgdb(false, "Disconnected. What you picked for each game is kept, for if you connect again.");
+  } catch (e) {
+    $("sgdbMsg").textContent = e.message;
+  }
+}
+
 // The bytes of a picked candidate.
 async function coverCandidateBlob(cand) {
   let r;
@@ -6977,6 +7059,9 @@ function wireEvents() {
 
   $("newGameBtn").onclick = openNewGamePanel;
   setupGameSearch();
+  $("sgdbConnectBtn").onclick = connectSgdb;
+  $("sgdbKey").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); connectSgdb(); } });
+  $("sgdbDisconnectBtn").onclick = disconnectSgdb;
   $("closeUploadBtn").onclick = () => $("uploadPanel").classList.add("hidden");
   $("uploadToGameBtn").onclick = () => $("gameSaveInput").click();
   $("gameSaveInput").onchange = (e) => {

@@ -697,6 +697,266 @@ async function handleGameInfo(request, env) {
   }, 200, env);
 }
 
+/* --------------------------------------------------------- SteamGridDB
+   Heroes, icons and logos from SteamGridDB, the artwork site Steam ROM
+   Manager and the Thor's frontends use. Its API takes each person's own key
+   (steamgriddb.com, Preferences > API), so you connect it once, from any
+   device, and it's kept here with your account -- never sent back out. Every
+   device then asks here for a game's art: the 3DS, the Thor, the website.
+
+   What you pick for a game (an icon, a hero, a logo, or which SteamGridDB
+   game it is) is kept here too, so every device shows the same. The art
+   itself is SteamGridDB's own public images, by address. */
+
+const SGDB_API = "https://www.steamgriddb.com/api/v2";
+const SGDB_KINDS = { icon: "icons", hero: "heroes", logo: "logos", grid: "grids" };
+const SGDB_FILTERS = {
+  icons: "types=static&nsfw=false&humor=false&mimes=image/png",
+  heroes: "types=static&nsfw=false&humor=false&mimes=image/png,image/jpeg",
+  logos: "types=static&nsfw=false&humor=false&mimes=image/png",
+  grids: "types=static&nsfw=false&humor=false&mimes=image/png,image/jpeg&dimensions=600x900,660x930,342x482",
+};
+const SGDB_DAY = 24 * 3600;
+
+const sgdbKeyName = (uid) => "sgdb:" + uid;
+const sgdbPicksName = (uid) => "sgdbpick:" + uid;
+
+// SteamGridDB's own image servers only: what's stored and passed through
+function sgdbImageUrl(u) {
+  try {
+    const url = new URL(String(u));
+    return url.protocol === "https:" && /^cdn\d*\.steamgriddb\.com$/.test(url.hostname) ? url.toString() : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function sgdbGet(key, path) {
+  const r = await fetch(SGDB_API + path, { headers: { Authorization: "Bearer " + key, Accept: "application/json" } });
+  if (r.status === 401 || r.status === 403) { const e = new Error("sgdb_key"); e.sgdbKey = true; throw e; }
+  if (r.status === 404) return [];
+  if (!r.ok) throw new Error("sgdb_failed_" + r.status);
+  const d = await r.json();
+  return (d && d.success && d.data) || [];
+}
+
+const sgdbItem = (x) => ({
+  id: x.id, url: sgdbImageUrl(x.url), thumb: sgdbImageUrl(x.thumb) || sgdbImageUrl(x.url),
+  width: x.width || 0, height: x.height || 0, mime: x.mime || "", style: x.style || "",
+  author: (x.author && x.author.name) || "",
+});
+const sgdbSlim = (x) => (x ? { url: x.url, thumb: x.thumb, width: x.width, height: x.height, mime: x.mime } : null);
+
+async function sgdbSearch(key, q, env) {
+  const term = String(q || "").replace(/[\/\\?#]/g, " ").replace(/\s+/g, " ").trim().slice(0, 100);
+  if (term.length < 2) return [];
+  const cacheKey = "sgdbq:" + term.toLowerCase();
+  const cached = await env.TOKENS.get(cacheKey, "json");
+  if (cached) return cached;
+  const found = (await sgdbGet(key, "/search/autocomplete/" + encodeURIComponent(term))).slice(0, 12).map((g) => ({
+    id: g.id, name: g.name,
+    year: g.release_date ? new Date(g.release_date * 1000).getUTCFullYear() : null,
+  }));
+  await env.TOKENS.put(cacheKey, JSON.stringify(found), { expirationTtl: 7 * SGDB_DAY });
+  return found;
+}
+
+async function sgdbAssets(key, gameId, kind, page, env) {
+  const what = SGDB_KINDS[kind];
+  const cacheKey = "sgdba:" + gameId + ":" + kind + ":" + page;
+  const cached = await env.TOKENS.get(cacheKey, "json");
+  if (cached) return cached;
+  const items = (await sgdbGet(key, "/" + what + "/game/" + gameId + "?" + SGDB_FILTERS[what] + "&page=" + page))
+    .map(sgdbItem).filter((x) => x.url);
+  await env.TOKENS.put(cacheKey, JSON.stringify(items), { expirationTtl: SGDB_DAY });
+  return items;
+}
+
+async function sgdbBody(request) {
+  try { return await request.json(); } catch (e) { return {}; }
+}
+
+async function handleSgdbStatus(request, env) {
+  const uid = await requireUid(request, env);
+  return json({ connected: !!(await env.TOKENS.get(sgdbKeyName(uid))) }, 200, env);
+}
+
+async function handleSgdbLink(request, env) {
+  const uid = await requireUid(request, env);
+  const key = String((await sgdbBody(request)).key || "").trim();
+  if (!/^[A-Za-z0-9_-]{16,128}$/.test(key)) return json({ error: "bad_key", message: "That doesn't look like a SteamGridDB API key." }, 400, env);
+  try {
+    await sgdbGet(key, "/search/autocomplete/mario");
+  } catch (e) {
+    if (e.sgdbKey) return json({ error: "bad_key", message: "SteamGridDB didn't accept that key. Copy it again from Preferences > API." }, 400, env);
+    return json({ error: "sgdb_down", message: "Couldn't reach SteamGridDB. Try again in a moment." }, 502, env);
+  }
+  await env.TOKENS.put(sgdbKeyName(uid), key);
+  return json({ connected: true }, 200, env);
+}
+
+async function handleSgdbUnlink(request, env) {
+  const uid = await requireUid(request, env);
+  await env.TOKENS.delete(sgdbKeyName(uid));
+  return json({ connected: false }, 200, env);
+}
+
+// Run something with the person's key; a key SteamGridDB stopped taking is
+// forgotten, so devices say "connect again" rather than failing quietly.
+async function withSgdbKey(request, env, fn) {
+  const uid = await requireUid(request, env);
+  const key = await env.TOKENS.get(sgdbKeyName(uid));
+  if (!key) return json({ connected: false }, 200, env);
+  try {
+    return json(Object.assign({ connected: true }, await fn(key, uid)), 200, env);
+  } catch (e) {
+    if (e.sgdbKey) {
+      await env.TOKENS.delete(sgdbKeyName(uid));
+      return json({ connected: false, expired: true }, 200, env);
+    }
+    throw e;
+  }
+}
+
+async function handleSgdbSearch(request, env) {
+  const input = await sgdbBody(request);
+  return withSgdbKey(request, env, async (key) => ({ results: await sgdbSearch(key, input.q, env) }));
+}
+
+async function handleSgdbAssets(request, env) {
+  const input = await sgdbBody(request);
+  const gameId = Number(input.gameId);
+  if (!Number.isInteger(gameId) || gameId <= 0 || !SGDB_KINDS[input.kind]) return json({ error: "bad_request" }, 400, env);
+  const page = Math.max(0, Math.min(20, Number(input.page) || 0));
+  return withSgdbKey(request, env, async (key) => ({ items: await sgdbAssets(key, gameId, input.kind, page, env) }));
+}
+
+async function readPicks(env, uid) {
+  return (await env.TOKENS.get(sgdbPicksName(uid), "json")) || {};
+}
+
+/* A game's art: what you picked, and SteamGridDB's best for the rest.
+   { connected, game: { id, name } | null, icon, hero, logo, grid, picked: { kind: true } }
+   Each piece is { url, thumb, key }: key is short and changes with the
+   picture, for a device to file it under (the 3DS does). */
+async function handleSgdbArt(request, env) {
+  const uid = await requireUid(request, env);
+  return json(await sgdbArtFor(env, uid, await sgdbBody(request)), 200, env);
+}
+
+const sgdbKeyOf = (u) => "S" + String((String(u || "").split("/").pop() || "").split(".")[0]).replace(/[^A-Za-z0-9]/g, "").slice(0, 32);
+
+async function sgdbArtFor(env, uid, input) {
+  const folder = String(input.id || "").slice(0, 100);
+  const picks = (folder && (await readPicks(env, uid))[folder]) || {};
+  const key = await env.TOKENS.get(sgdbKeyName(uid));
+  const out = { connected: !!key, game: picks.game || null, picked: {} };
+  for (const k of ["icon", "hero", "logo", "grid"]) {
+    out[k] = picks[k] ? { url: picks[k], thumb: picks[k + "Thumb"] || picks[k] } : null;
+    if (picks[k]) out.picked[k] = true;
+  }
+  if (!key) return keyed(out);
+  try {
+    if (!out.game) {
+      const found = await sgdbSearch(key, input.name, env);
+      out.game = found[0] ? { id: found[0].id, name: found[0].name } : null;
+    }
+    if (out.game) {
+      for (const k of ["icon", "hero", "logo", "grid"]) {
+        if (picks[k + "None"]) { out[k] = null; out.picked[k] = true; continue; }
+        if (!out[k]) out[k] = sgdbSlim((await sgdbAssets(key, out.game.id, k, 0, env))[0]);
+      }
+    }
+  } catch (e) {
+    if (e.sgdbKey) {
+      await env.TOKENS.delete(sgdbKeyName(uid));
+      out.connected = false;
+      out.expired = true;
+    } else throw e;
+  }
+  return keyed(out);
+}
+
+function keyed(out) {
+  for (const k of ["icon", "hero", "logo", "grid"]) if (out[k]) out[k].key = sgdbKeyOf(out[k].thumb || out[k].url);
+  return out;
+}
+
+/* One picture of a game's, for the 3DS: { id (the game's folder), name,
+   kind } -> the image itself (the thumbnail: small enough to decode there),
+   your pick or SteamGridDB's best. 404 when there's none. */
+async function handleSgdbFile(request, env) {
+  const uid = await requireUid(request, env);
+  const input = await sgdbBody(request);
+  if (!SGDB_KINDS[input.kind]) return json({ error: "bad_request" }, 400, env);
+  const art = await sgdbArtFor(env, uid, input);
+  const pic = art[input.kind];
+  const url = pic && sgdbImageUrl(pic.thumb || pic.url);
+  if (!url) return json({ error: "not_found" }, 404, env);
+  const r = await fetch(url);
+  if (!r.ok) return json({ error: "not_found" }, 404, env);
+  return new Response(r.body, {
+    status: 200,
+    headers: {
+      "Content-Type": r.headers.get("Content-Type") || "image/png",
+      "Cache-Control": "private, max-age=86400",
+      ...corsHeaders(env),
+    },
+  });
+}
+
+/* Keep a pick for a game: { id (the game's Drive folder), kind: icon | hero |
+   logo | grid | game, url (or a game { id, name }), or none: true to show
+   nothing of that kind, or clear: true to go back to the automatic one }. */
+async function handleSgdbPick(request, env) {
+  const uid = await requireUid(request, env);
+  const input = await sgdbBody(request);
+  const folder = String(input.id || "").slice(0, 100);
+  if (!/^[\w-]{4,100}$/.test(folder)) return json({ error: "bad_request" }, 400, env);
+  const all = await readPicks(env, uid);
+  const p = Object.assign({}, all[folder]);
+  const kind = String(input.kind || "");
+  if (kind === "game") {
+    const id = Number(input.game && input.game.id);
+    if (input.clear) delete p.game;
+    else if (Number.isInteger(id) && id > 0) p.game = { id, name: String(input.game.name || "").slice(0, 120) };
+    else return json({ error: "bad_request" }, 400, env);
+    // Another game's art: the old picks were for the old one
+    ["icon", "hero", "logo", "grid"].forEach((k) => { delete p[k]; delete p[k + "Thumb"]; delete p[k + "None"]; });
+  } else if (SGDB_KINDS[kind]) {
+    delete p[kind]; delete p[kind + "Thumb"]; delete p[kind + "None"];
+    if (input.none) p[kind + "None"] = true;
+    else if (!input.clear) {
+      const url = sgdbImageUrl(input.url);
+      if (!url) return json({ error: "bad_request" }, 400, env);
+      p[kind] = url;
+      const thumb = sgdbImageUrl(input.thumb);
+      if (thumb && thumb !== url) p[kind + "Thumb"] = thumb;
+    }
+  } else return json({ error: "bad_request" }, 400, env);
+  if (Object.keys(p).length) all[folder] = p; else delete all[folder];
+  await env.TOKENS.put(sgdbPicksName(uid), JSON.stringify(all));
+  return json({ ok: true, picks: p }, 200, env);
+}
+
+// An image's bytes, for the 3DS (which can't reach every image server
+// itself): SteamGridDB's own images only.
+async function handleSgdbImage(request, env) {
+  await requireUid(request, env);
+  const url = sgdbImageUrl((await sgdbBody(request)).url);
+  if (!url) return json({ error: "bad_request" }, 400, env);
+  const r = await fetch(url);
+  if (!r.ok) return json({ error: "not_found" }, 404, env);
+  return new Response(r.body, {
+    status: 200,
+    headers: {
+      "Content-Type": r.headers.get("Content-Type") || "image/png",
+      "Cache-Control": "private, max-age=86400",
+      ...corsHeaders(env),
+    },
+  });
+}
+
 // The chosen cover's bytes, at IGDB's fixed "cover_big_2x" size, passed
 // through so the page can copy it into the user's Drive.
 async function handleCoverImage(request, env) {
@@ -767,6 +1027,14 @@ async function route(request, env) {
     }
     if (url.pathname === "/games/info" && request.method === "POST") {
       return await handleGameInfo(request, env);
+    }
+    if (url.pathname.startsWith("/sgdb/") && request.method === "POST") {
+      const route = {
+        "/sgdb/status": handleSgdbStatus, "/sgdb/link": handleSgdbLink, "/sgdb/unlink": handleSgdbUnlink,
+        "/sgdb/search": handleSgdbSearch, "/sgdb/assets": handleSgdbAssets, "/sgdb/art": handleSgdbArt,
+        "/sgdb/pick": handleSgdbPick, "/sgdb/image": handleSgdbImage, "/sgdb/file": handleSgdbFile,
+      }[url.pathname];
+      if (route) return await route(request, env);
     }
     if (url.pathname === "/covers/image" && request.method === "POST") {
       return await handleCoverImage(request, env);
