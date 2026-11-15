@@ -811,6 +811,58 @@
   .dropzone .dz-icon .ico { width: 24px; height: 24px; vertical-align: 0; }
   .dropzone b { color: var(--text); font-weight: 600; }
   .dz-or { margin-top: 14px; font-size: 12px; }
+
+  /* Upload a save: a new game, or one of yours */
+  .up-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+  .up-mode {
+    display: flex; align-items: center; gap: 14px; text-align: left; padding: 14px 16px; height: auto;
+    background: var(--bg-sunk); border: 1.5px solid var(--border-2); border-radius: 14px;
+    color: var(--text); font: inherit; cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .up-mode:hover:not(:disabled) { border-color: var(--border-3); background: var(--panel-2); }
+  .up-mode.on, .up-mode.on:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
+  .up-mode:disabled { opacity: .5; cursor: default; }
+  .up-mode .um-ico {
+    flex: none; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center;
+    background: var(--panel-2); border: 1px solid var(--border-2); color: var(--accent-text);
+  }
+  .up-mode .um-ico .ico { width: 20px; height: 20px; }
+  .up-mode .um-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .up-mode .um-text b { font-size: 14.5px; font-weight: 650; }
+  .up-mode .um-text span { font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+  .up-lib-search {
+    display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; margin-bottom: 10px;
+    background: var(--bg-sunk); border: 1px solid var(--border-2); border-radius: 8px; color: var(--muted);
+  }
+  .up-lib-search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .up-lib-search .ico { width: 16px; height: 16px; flex: none; }
+  .up-lib-search input, .up-lib-search input:focus, .up-lib-search input:hover {
+    flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; box-shadow: none; border-radius: 0;
+    background: transparent; color: var(--text); font: inherit; font-size: 14px;
+  }
+  .up-lib-list {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px;
+    max-height: 320px; overflow-y: auto; padding: 2px; margin-bottom: 14px;
+  }
+  .ul-game {
+    display: flex; align-items: center; gap: 12px; padding: 8px 10px; text-align: left; height: auto;
+    background: var(--bg-sunk); border: 1.5px solid var(--border); border-radius: 10px;
+    color: var(--text); font: inherit; cursor: pointer; min-width: 0;
+  }
+  .ul-game:hover { border-color: var(--border-3); }
+  .ul-game.on { border-color: var(--accent); background: var(--accent-soft); }
+  .ul-cover { flex: none; width: 34px; border-radius: 5px; }
+  .ul-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+  .ul-text b { font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ul-text span { font-size: 12px; color: var(--muted); }
+  .ul-check { flex: none; width: 20px; height: 20px; color: var(--accent-text); opacity: 0; }
+  .ul-check .ico { width: 18px; height: 18px; }
+  .ul-game.on .ul-check { opacity: 1; }
+  .up-lib-empty { grid-column: 1 / -1; padding: 18px; text-align: center; color: var(--muted); font-size: 13px; }
+  @media (max-width: 620px) {
+    .up-modes { grid-template-columns: 1fr; }
+    .up-lib-list { grid-template-columns: 1fr; max-height: 280px; }
+  }
   .dz-or button { margin-top: 8px; }
 
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
@@ -1625,8 +1677,8 @@
   </div>
 
   <div class="sb-nav" id="sbNav">
-    <button class="sb-item sb-add" data-view="upload" title="Add a game">
-      <span class="sb-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><span class="sb-label">Add game</span>
+    <button class="sb-item sb-add" data-view="upload" title="Upload a save">
+      <span class="sb-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><span class="sb-label">Upload a save</span>
     </button>
 
     <div class="sb-sec">Library</div>
@@ -1684,7 +1736,7 @@
   <button class="mt" type="button" data-mt="games"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h4"/><path d="M8 10v4"/><path d="M15 13h.01"/><path d="M18 11h.01"/><rect width="20" height="12" x="2" y="6" rx="2"/></svg><span>My games</span></button>
   <button class="mt" type="button" data-mt="settings"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span>Settings</span></button>
 </nav>
-<button class="fab" type="button" id="fabAdd" aria-label="Add a game"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
+<button class="fab" type="button" id="fabAdd" aria-label="Upload a save"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
 
 
 <!-- LANDING — what a signed-out visitor sees: a few tabs about Save Station,
@@ -2174,13 +2226,44 @@
     </div>
   </div>
 
-  <!-- New game upload panel (hidden until "＋ New game") -->
+  <!-- Upload a save. It starts with the one question that matters: is this
+       a game you haven't got yet, or one that's already in your library? -->
   <div class="panel hidden" id="uploadPanel">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <h3 style="margin:0;"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Add a game — upload its first save</h3>
+      <h3 style="margin:0;"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13v8"/><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.24"/><path d="m8 17 4-4 4 4"/></svg> Upload a save</h3>
       <button class="btn-ghost btn-sm" id="closeUploadBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> Cancel</button>
     </div>
 
+    <div class="up-modes" id="upModes" role="radiogroup" aria-label="Which game is this save for?">
+      <button type="button" class="up-mode" data-upmode="new" role="radio" aria-checked="false">
+        <span class="um-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span>
+        <span class="um-text"><b>A new game</b><span>Its first save, for a game that isn't in your library yet</span></span>
+      </button>
+      <button type="button" class="up-mode" data-upmode="lib" role="radio" aria-checked="false">
+        <span class="um-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="18" x="3" y="3" rx="1"/><path d="M7 3v18"/><path d="M20.4 18.9c.2.5-.1 1.1-.6 1.3l-1.9.7c-.5.2-1.1-.1-1.3-.6L11.1 5.1c-.2-.5.1-1.1.6-1.3l1.9-.7c.5-.2 1.1.1 1.3.6Z"/></svg></span>
+        <span class="um-text"><b>A game in my library</b><span id="umLibSub">Another backup for one of your games</span></span>
+      </button>
+    </div>
+
+    <!-- A game in my library: find it, then drop its save -->
+    <div id="upLib" class="hidden">
+      <label class="up-lib-search"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="upLibQ" placeholder="Find one of your games" autocomplete="off" aria-label="Find one of your games"></label>
+      <div class="up-lib-list" id="upLibList"></div>
+      <div class="dropzone up-lib-drop hidden" id="upLibDrop">
+        <div class="dz-icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13v8"/><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.24"/><path d="m8 17 4-4 4 4"/></svg></div>
+        <div id="upLibLead"></div>
+        <div style="font-size:12px;margin-top:6px;" id="upLibExts"></div>
+        <div class="dz-or hidden" id="upLibFolderRow">
+          — or —<br>
+          <button class="btn-ghost btn-sm" id="upLibFolderBtn" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg> Choose a save folder</button>
+        </div>
+      </div>
+      <input type="file" id="upLibFile" class="hidden">
+      <input type="file" id="upLibFolder" class="hidden" webkitdirectory directory multiple>
+    </div>
+
+    <!-- A new game: its console, its save, its name -->
+    <div id="upNew" class="hidden">
     <div class="field" style="margin-bottom:16px;max-width:420px;">
       <label for="consoleSel">Console</label>
       <select id="consoleSel"></select>
@@ -2229,6 +2312,7 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 
   <!-- One game, from IGDB: what it is, and adding it (renderIgdbGame) -->
@@ -2255,7 +2339,7 @@
         </div>
         <button class="btn-ghost btn-sm hidden" id="clearFilterBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> All consoles</button>
         <button class="btn-ghost btn-sm" id="refreshBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg> Refresh</button>
-        <button class="btn-primary btn-sm" id="newGameBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Add game</button>
+        <button class="btn-primary btn-sm" id="newGameBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13v8"/><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.24"/><path d="m8 17 4-4 4 4"/></svg> Upload save</button>
       </div>
     </div>
     <div class="con-chips" id="conChips" role="group" aria-label="Consoles"></div>
@@ -5277,6 +5361,7 @@ function fillFromIgdb(g) {
 
 function addFromIgdb(g) {
   navigate("upload");
+  setUploadMode("new");
   fillFromIgdb(g);
   toast("Now drop in a save for " + g.name + ".", "ok");
 }
@@ -5934,15 +6019,98 @@ async function doUpload() {
   }
 }
 
-// New game panel (the "＋ New game" flow — the only place you name a game)
-function openNewGamePanel() {
+/* Upload a save. Two ways: "A new game" (the only place you name one) and
+   "A game in my library" (find it, drop its save). mode picks one up front;
+   left out, you choose, unless there's no library yet to choose from. */
+function openNewGamePanel(mode) {
   clearFile();
   $("gameName").value = "";
   igdbPick = null;
   setGameNameHint();
   onConsoleChanged();
+  const have = allGames.length > 0;
+  const lib = document.querySelector('#upModes [data-upmode="lib"]');
+  lib.disabled = !have;
+  $("umLibSub").textContent = have ? "Another backup for one of your games" : "Your library's empty so far";
+  setUploadMode(typeof mode === "string" ? mode : have ? null : "new");
   $("uploadPanel").classList.remove("hidden");
   $("uploadPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+let upLibPick = null;   // { folderId, name, consoleId }: the library game being uploaded to
+
+function setUploadMode(mode) {
+  document.querySelectorAll("#upModes .up-mode").forEach((b) => {
+    const on = b.dataset.upmode === mode;
+    b.classList.toggle("on", on);
+    b.setAttribute("aria-checked", on ? "true" : "false");
+  });
+  $("upNew").classList.toggle("hidden", mode !== "new");
+  $("upLib").classList.toggle("hidden", mode !== "lib");
+  if (mode === "lib") {
+    $("upLibQ").value = "";
+    upLibPick = null;
+    $("upLibDrop").classList.add("hidden");
+    renderUpLib();
+    if (!NARROW.matches) $("upLibQ").focus();
+  }
+}
+
+// Your games to pick from: the most recently backed up first, or what you typed.
+function renderUpLib() {
+  const box = $("upLibList");
+  const term = $("upLibQ").value.trim().toLowerCase();
+  const when = (g) => (g.saves[0] ? new Date(g.saves[0].createdTime).getTime() : 0);
+  const games = allGames
+    .filter((g) => !term || g.folder.name.toLowerCase().indexOf(term) >= 0)
+    .sort((a, b) => when(b) - when(a) || a.folder.name.localeCompare(b.folder.name));
+  if (!games.length) {
+    box.innerHTML = '<div class="up-lib-empty">' + (term
+      ? "None of your games match \u201c" + escapeHtml($("upLibQ").value.trim()) + "\u201d. A game that isn't here yet is <b>A new game</b>."
+      : "Your library's empty so far.") + "</div>";
+    return;
+  }
+  box.innerHTML = games.map((g) => {
+    const con = consoleOf(g.consoleId);
+    const n = g.saves.length;
+    const on = upLibPick && upLibPick.folderId === g.folder.id;
+    return '<button type="button" class="ul-game' + (on ? " on" : "") + '" data-fid="' + escapeAttr(g.folder.id) + '">' +
+      '<span class="ul-cover cover-frame"' + (g.cover ? ' data-cover="' + escapeAttr(g.cover.id) + '"' : "") + '>' +
+        '<span class="no-cover-label">' + consoleIcon(g.consoleId, 18, 5) + "</span></span>" +
+      '<span class="ul-text"><b>' + escapeHtml(g.folder.name) + "</b><span>" +
+        (con ? escapeHtml(con.short) + " \u00b7 " : "") +
+        (n ? n + " backup" + (n > 1 ? "s" : "") : "No backups yet") + "</span></span>" +
+      '<span class="ul-check">' + ico("check") + "</span></button>";
+  }).join("");
+  box.querySelectorAll(".ul-game").forEach((b) => { b.onclick = () => pickUpLibGame(b.dataset.fid); });
+  box.querySelectorAll(".ul-cover[data-cover]").forEach((el) => showCoverIn(el, el.dataset.cover));
+}
+
+function pickUpLibGame(fid) {
+  const g = allGames.find((x) => x.folder.id === fid);
+  if (!g) return;
+  upLibPick = { folderId: fid, name: g.folder.name, consoleId: g.consoleId };
+  $("upLibList").querySelectorAll(".ul-game").forEach((b) => b.classList.toggle("on", b.dataset.fid === fid));
+  const con = consoleOf(g.consoleId);
+  $("upLibLead").innerHTML = "<b>Drop a save for " + escapeHtml(g.folder.name) + "</b> here, or click to browse";
+  $("upLibExts").textContent = con ? con.label + " saves: " + con.exts.join("  ") : "";
+  $("upLibFile").accept = con ? con.exts.join(",") : "";
+  $("upLibFolderRow").classList.toggle("hidden", !isFolderConsole(g.consoleId));
+  $("upLibDrop").classList.remove("hidden");
+  $("upLibDrop").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+// Off to the game's page, and the save goes in there: its slots, its history.
+async function uploadToLibraryGame(sel) {
+  const t = upLibPick;
+  if (!t || !sel) return;
+  $("uploadPanel").classList.add("hidden");
+  if (!(await openHistory(t.folderId, t.name, t.consoleId))) {
+    toast("Couldn't open \u201c" + t.name + "\u201d to upload into it. Try again from its page.", "err", 6000);
+    return;
+  }
+  if (currentHistory.folderId !== t.folderId) return;   // you went somewhere else meanwhile
+  await uploadToGame(t.folderId, sel);
 }
 
 // Extension → console, but only ever narrowing within what the user picked.
@@ -6068,7 +6236,7 @@ async function loadGames() {
       $("sbGameCount").textContent = "";
       renderSidebar();
       announceGames();
-      c.innerHTML = '<div class="empty"><div class="e-icon">' + ico("gamepad") + '</div>No games yet — <b>Add game</b> uploads your first save.</div>';
+      c.innerHTML = '<div class="empty"><div class="e-icon">' + ico("gamepad") + '</div>No games yet — <b>Upload save</b> adds your first one.</div>';
       return;
     }
     // Fetch counts + latest + cover per game (in parallel)
@@ -6280,6 +6448,10 @@ async function openHistory(folderId, name, consoleId) {
   // tab would mean landing on a slot this game hasn't got.
   if (currentHistory.folderId !== folderId) {
     activeSlot = "all";
+    // Nor its backups and slots: an upload started now mustn't land in them.
+    currentHistory.saves = [];
+    currentHistory.slots = [];
+    currentHistory.console = consoleId || null;
     // Nor keep its console line up while this one loads: its Change button
     // would be acting on the wrong game.
     $("historyConsole").innerHTML = "";
@@ -6335,8 +6507,10 @@ async function openHistory(folderId, name, consoleId) {
 
     renderSlotBar();
     renderHistory();
+    return true;
   } catch (e) {
     c.innerHTML = '<div class="empty">Could not load backups: ' + escapeHtml(e.message) + "</div>";
+    return false;
   }
 }
 
@@ -7057,7 +7231,36 @@ function wireEvents() {
   $("setCoverBtn").onclick = () => $("coverInput").click();
   $("coverInput").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; setCover(f); };
 
-  $("newGameBtn").onclick = openNewGamePanel;
+  $("newGameBtn").onclick = () => openNewGamePanel();
+  document.querySelectorAll("#upModes .up-mode").forEach((b) => { b.onclick = () => setUploadMode(b.dataset.upmode); });
+  $("upLibQ").addEventListener("input", renderUpLib);
+  $("upLibQ").addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    const first = $("upLibList").querySelector(".ul-game");
+    if (first) pickUpLibGame(first.dataset.fid);
+  });
+  const libDrop = $("upLibDrop");
+  libDrop.onclick = (e) => { if (!e.target.closest("button")) $("upLibFile").click(); };
+  $("upLibFile").onchange = (e) => {
+    const f = e.target.files[0]; e.target.value = "";
+    if (f) uploadToLibraryGame({ kind: "file", file: f, name: f.name, size: f.size });
+  };
+  $("upLibFolderBtn").onclick = (e) => { e.stopPropagation(); $("upLibFolder").click(); };
+  $("upLibFolder").onchange = (e) => {
+    const fl = e.target.files;
+    if (fl && fl.length) {
+      const sel = { kind: "folder", files: fl, name: folderRootName(fl), size: 0 };
+      e.target.value = "";
+      uploadToLibraryGame(sel);
+    }
+  };
+  ["dragenter", "dragover"].forEach((ev) => libDrop.addEventListener(ev, (e) => { e.preventDefault(); libDrop.classList.add("drag"); }));
+  ["dragleave", "drop"].forEach((ev) => libDrop.addEventListener(ev, (e) => { e.preventDefault(); libDrop.classList.remove("drag"); }));
+  libDrop.addEventListener("drop", (e) => {
+    const f = e.dataTransfer.files[0];
+    if (f) uploadToLibraryGame({ kind: "file", file: f, name: f.name, size: f.size });
+  });
   setupGameSearch();
   $("sgdbConnectBtn").onclick = connectSgdb;
   $("sgdbKey").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); connectSgdb(); } });
