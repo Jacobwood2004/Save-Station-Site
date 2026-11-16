@@ -859,6 +859,19 @@
   .ul-check .ico { width: 18px; height: 18px; }
   .ul-game.on .ul-check { opacity: 1; }
   .up-lib-empty { grid-column: 1 / -1; padding: 18px; text-align: center; color: var(--muted); font-size: 13px; }
+
+  /* Which of the saves in a picked folder */
+  .save-pick-list { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; max-height: min(52vh, 420px); overflow-y: auto; padding: 2px; }
+  .save-pick {
+    display: flex; align-items: center; gap: 12px; height: auto; padding: 10px 12px; text-align: left;
+    background: var(--bg-sunk); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text); font: inherit;
+  }
+  .save-pick:hover, .save-pick:focus-visible { border-color: var(--accent); outline: none; }
+  .save-pick.on { border-color: var(--accent); background: var(--accent-soft); }
+  .save-pick .sp-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+  .save-pick .sp-text b { font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .save-pick .sp-text small { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .save-pick .sp-tag { flex: none; font-size: 11px; font-weight: 600; color: var(--accent-text); }
   @media (max-width: 620px) {
     .up-modes { grid-template-columns: 1fr; }
     .up-lib-list { grid-template-columns: 1fr; max-height: 280px; }
@@ -2393,6 +2406,8 @@
   </div>
 </div>
 
+<!-- How each emulator lays out its saves: shared with the apps (src/shared/save-recipes.js) -->
+<script src="save-recipes.js"></script>
 <script>
 /* ============================================================
    CONFIG — set your Google OAuth Client ID here.
@@ -4363,16 +4378,21 @@ function buildZip(entries) {
   return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type: "application/zip" });
 }
 
+// Where a picked file sits inside the save. webkitRelativePath is
+// "<folder>/sub/file": the top folder goes, so the save's *contents* are what's
+// kept, matching what emulators expect. A save found further in (one game's
+// folder out of PPSSPP's SAVEDATA) carries its own path, as ssRel.
+function relInFolder(f) {
+  if (f.ssRel) return f.ssRel;
+  const p = f.webkitRelativePath || f.name;
+  const i = p.indexOf("/");
+  return i >= 0 ? p.slice(i + 1) : p;
+}
+
 async function zipFileList(fileList) {
   const files = Array.from(fileList).filter((f) => f.size >= 0);
   if (!files.length) return null;
-  // webkitRelativePath is "<folder>/sub/file" — drop the top folder so the zip
-  // extracts as the save folder's *contents*, matching what emulators expect.
-  const rel = (f) => {
-    const p = f.webkitRelativePath || f.name;
-    const i = p.indexOf("/");
-    return i >= 0 ? p.slice(i + 1) : p;
-  };
+  const rel = relInFolder;
   const entries = [];
   for (const f of files) {
     entries.push({ path: rel(f), data: new Uint8Array(await f.arrayBuffer()), date: new Date(f.lastModified) });
@@ -5870,11 +5890,23 @@ function onFileChosen(file) {
 
 async function onFolderChosen(fileList) {
   if (!fileList || !fileList.length) return;
-  const rootName = folderRootName(fileList);
-  const total = Array.from(fileList).reduce((n, f) => n + f.size, 0);
-  selectedUpload = { kind: "folder", files: fileList, name: rootName, size: total };
-  showUploadChip(ico("folder"), rootName + "  (" + fileList.length + " files → .zip)", total);
-  if (!$("gameName").value) $("gameName").value = gameNameFromFilename(rootName);
+  const sel = await refineFolder(fileList, $("gameName").value.trim(), $("consoleSel").value);
+  if (!sel) return;
+  // The save knows its console (PSP, 3DS…): use it, if it's one of yours
+  if (sel.consoleId && sel.consoleId !== $("consoleSel").value &&
+      Array.from($("consoleSel").options).some((o) => o.value === sel.consoleId)) {
+    $("consoleSel").value = sel.consoleId;
+    onConsoleChanged();
+  }
+  selectedUpload = sel;
+  const zipped = !storesAsTree($("consoleSel").value);
+  showUploadChip(ico("folder"), sel.label + "  (" + sel.files.length + " file" + (sel.files.length === 1 ? "" : "s") +
+    (zipped ? " \u2192 .zip" : "") + ")", sel.size);
+  // The name the save gives itself beats the folder's; one you typed or picked from IGDB beats both
+  const typed = $("gameName").value.trim();
+  if (!igdbPickFor(typed) && (!typed || typed === gameNameFromFilename(folderRootName(fileList)))) {
+    $("gameName").value = sel.title || gameNameFromFilename(sel.name);
+  }
   $("uploadBtn").disabled = false;
 }
 
@@ -5935,10 +5967,103 @@ async function selectionToPayload(sel, consoleId) {
 // webkitRelativePath is "<folder>/sub/file"; drop the top folder so what lands
 // in Drive is the save folder's *contents*, which is what an emulator wants.
 function fileListToTree(fileList) {
-  return Array.from(fileList).map((f) => {
-    const p = f.webkitRelativePath || f.name;
-    const i = p.indexOf("/");
-    return { rel: i >= 0 ? p.slice(i + 1) : p, blob: f };
+  return Array.from(fileList).map((f) => ({ rel: relInFolder(f), blob: f }));
+}
+
+/* ---- A picked folder, understood with the save recipes ----
+   OS junk (Thumbs.db, .DS_Store, ._ files) is left out. A folder holding
+   several saves -- PPSSPP's SAVEDATA, Azahar's title folder, a whole
+   emulator folder -- is a list to pick one from, each named from inside
+   itself (PARAM.SFO, a Wii banner). A folder that's one save, picked a
+   level too high (a 3DS title rather than its data/00000001), is narrowed
+   to the save. Resolves a selection, or null if you backed out. */
+async function refineFolder(fileList, hintName, hintConsole) {
+  const all = Array.from(fileList).filter((f) => !SaveRecipes.isJunk(f.webkitRelativePath || f.name));
+  all.forEach((f) => { delete f.ssRel; });
+  if (!all.length) { toast("That folder is empty.", "err"); return null; }
+  const whole = () => ({ kind: "folder", files: all, name: folderRootName(fileList),
+    size: all.reduce((n, f) => n + f.size, 0), label: folderRootName(fileList) });
+
+  const list = all.map((f) => ({ rel: f.webkitRelativePath || f.name, size: f.size, mtime: f.lastModified, file: f }));
+  const hits = SaveRecipes.findInList(list);
+  if (!hits.length) return whole();
+  for (const h of hits.slice(0, 120)) {
+    const src = SaveRecipes.titleSource(h.recipe, h.entry);
+    if (!src || !src.inRoot) continue;
+    const want = (h.prefix + "/" + src.inRoot).toLowerCase();
+    const f = list.find((x) => x.rel.toLowerCase() === want);
+    if (!f || f.size > 4 * 1024 * 1024) continue;
+    try {
+      const t = SaveRecipes.readTitle(src.parse, new Uint8Array(await f.file.arrayBuffer()));
+      if (t) { h.title = t.title; h.detail = t.detail && t.detail !== t.title ? t.detail : ""; }
+    } catch (e) {}
+  }
+  let pick = hits[0];
+  if (hits.length > 1) {
+    pick = await chooseFolderSave(hits, hintName, hintConsole);
+    if (!pick) return null;
+  }
+  const files = list.filter((x) => x.rel.startsWith(pick.prefix + "/")).map((x) => {
+    x.file.ssRel = x.rel.slice(pick.prefix.length + 1);
+    return x.file;
+  });
+  const entryName = pick.entry.split("/").pop();
+  return { kind: "folder", files, name: entryName, size: pick.size, title: pick.title || "",
+           consoleId: pick.recipe.console, label: pick.title || entryName };
+}
+
+const nameKeyOf = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+  .replace(/\([^)]*\)|\[[^\]]*\]/g, " ").replace(/[^a-z0-9]+/g, " ").trim();
+function sameGameName(a, b) {
+  const x = nameKeyOf(a), y = nameKeyOf(b);
+  return x.length >= 4 && y.length >= 4 && (x === y || x.includes(y) || y.includes(x));
+}
+
+// Which of the saves in a folder: a list, the game you're uploading to first.
+function chooseFolderSave(hits, hintName, hintConsole) {
+  const mine = hits.filter((h) => (hintName && sameGameName(h.title, hintName)) && (!hintConsole || h.recipe.console === hintConsole));
+  const order = mine.concat(hits.filter((h) => mine.indexOf(h) < 0));
+  const recipes = Array.from(new Set(hits.map((h) => h.recipe.name)));
+  return new Promise((resolve) => {
+    const back = $("modalBack");
+    $("modalTitle").textContent = "Which game\u2019s save?";
+    $("modalBody").innerHTML =
+      '<div>' + (recipes.length === 1
+        ? "This is <b>" + escapeHtml(recipes[0]) + "</b>\u2019s save folder: " + order.length + " saves in it, one per game."
+        : "There are " + order.length + " saves in this folder.") + " Pick the one to upload.</div>" +
+      '<div class="save-pick-list">' + order.map((h, i) => {
+        const con = consoleOf(h.recipe.console);
+        const bits = [con && con.short, h.code, h.slot, h.detail].filter(Boolean).map(escapeHtml).join(" \u00b7 ");
+        return '<button type="button" class="save-pick' + (i === 0 && mine.length ? " on" : "") + '" data-i="' + i + '">' +
+          consoleIcon(h.recipe.console, 22, 6) +
+          '<span class="sp-text"><b>' + escapeHtml(h.title || h.entry.split("/").pop()) + "</b>" +
+          "<small>" + bits + (bits ? " \u00b7 " : "") + h.fileCount + " file" + (h.fileCount === 1 ? "" : "s") + " \u00b7 " +
+            humanSize(h.size) + (h.mtime ? " \u00b7 " + escapeHtml(relTime(new Date(h.mtime).toISOString())) : "") + "</small></span>" +
+          (i === 0 && mine.length ? '<span class="sp-tag">This game</span>' : "") +
+        "</button>";
+      }).join("") + "</div>";
+    const acts = $("modalActions");
+    acts.innerHTML = "";
+    let settled = false;
+    const finish = (v) => {
+      if (settled) return;
+      settled = true;
+      back.classList.add("hidden");
+      document.removeEventListener("keydown", onKey);
+      resolve(v || null);
+    };
+    const onKey = (e) => { if (e.key === "Escape") finish(null); };
+    const cancel = document.createElement("button");
+    cancel.className = "btn-ghost";
+    cancel.textContent = "Cancel";
+    cancel.onclick = () => finish(null);
+    acts.appendChild(cancel);
+    $("modalBody").querySelectorAll(".save-pick").forEach((b) => { b.onclick = () => finish(order[+b.dataset.i]); });
+    back.onclick = (e) => { if (e.target === back) finish(null); };
+    document.addEventListener("keydown", onKey);
+    back.classList.remove("hidden");
+    const first = $("modalBody").querySelector(".save-pick");
+    if (first) first.focus();
   });
 }
 
@@ -7247,13 +7372,12 @@ function wireEvents() {
     if (f) uploadToLibraryGame({ kind: "file", file: f, name: f.name, size: f.size });
   };
   $("upLibFolderBtn").onclick = (e) => { e.stopPropagation(); $("upLibFolder").click(); };
-  $("upLibFolder").onchange = (e) => {
-    const fl = e.target.files;
-    if (fl && fl.length) {
-      const sel = { kind: "folder", files: fl, name: folderRootName(fl), size: 0 };
-      e.target.value = "";
-      uploadToLibraryGame(sel);
-    }
+  $("upLibFolder").onchange = async (e) => {
+    const fl = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (!fl.length || !upLibPick) return;
+    const sel = await refineFolder(fl, upLibPick.name, upLibPick.consoleId);
+    if (sel) uploadToLibraryGame(sel);
   };
   ["dragenter", "dragover"].forEach((ev) => libDrop.addEventListener(ev, (e) => { e.preventDefault(); libDrop.classList.add("drag"); }));
   ["dragleave", "drop"].forEach((ev) => libDrop.addEventListener(ev, (e) => { e.preventDefault(); libDrop.classList.remove("drag"); }));
@@ -7272,13 +7396,13 @@ function wireEvents() {
     if (f) uploadToGame(currentHistory.folderId, { kind: "file", file: f, name: f.name, size: f.size });
   };
   $("uploadFolderToGameBtn").onclick = () => $("gameFolderInput").click();
-  $("gameFolderInput").onchange = (e) => {
-    const fl = e.target.files;
-    if (fl && fl.length) {
-      const sel = { kind: "folder", files: fl, name: folderRootName(fl), size: 0 };
-      e.target.value = "";
-      uploadToGame(currentHistory.folderId, sel);
-    }
+  $("gameFolderInput").onchange = async (e) => {
+    const fl = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (!fl.length) return;
+    const folderId = currentHistory.folderId;
+    const sel = await refineFolder(fl, currentHistory.name, currentHistory.console);
+    if (sel && currentHistory.folderId === folderId) uploadToGame(folderId, sel);
   };
   $("deleteGameBtn").onclick = deleteGame;
 
