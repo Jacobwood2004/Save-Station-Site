@@ -1435,6 +1435,14 @@
   .igdb-mine { flex-shrink: 0; font-size: 11px; color: var(--accent); border: 1px solid var(--accent-line); border-radius: 999px; padding: 2px 8px; }
   .igdb-note { padding: 12px; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
   .igdb-foot { padding: 6px 9px 4px; font-size: 11px; color: var(--faint); text-align: right; }
+  /* The game picked for a new upload */
+  .game-picked { display: flex; align-items: center; gap: 11px; padding: 8px 10px; border: 1px solid var(--accent-line); border-radius: 10px; background: var(--panel-2); }
+  .game-picked img, .game-picked .igdb-nocover { width: 30px; height: 40px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
+  .game-picked .gp-text { display: flex; flex-direction: column; min-width: 0; flex: 1; gap: 2px; }
+  .game-picked b { font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .game-picked .gp-sub { font-size: 11.5px; color: var(--muted); }
+  .game-picked .ico { width: 16px; height: 16px; color: var(--accent); flex-shrink: 0; }
+  .field .hint.warn { color: var(--warn, #e0a64a); }
 
   #igdbView { position: relative; }
   .igdb-hero {
@@ -2298,9 +2306,10 @@
 
     <div class="form-grid" id="uploadForm">
       <div class="field igdb-host" id="gameNameField">
-        <label for="gameName">Game name</label>
-        <input type="text" id="gameName" placeholder="e.g. Pokemon - Emerald" autocomplete="off">
-        <span class="hint" id="gameNameHint">Type to look it up on IGDB, or keep the name from the file.</span>
+        <label for="gameName">Game, from IGDB</label>
+        <input type="text" id="gameName" placeholder="Search IGDB, e.g. Pokémon Emerald" autocomplete="off">
+        <div id="gamePicked" class="game-picked hidden"></div>
+        <span class="hint" id="gameNameHint"></span>
       </div>
       <div class="field">
         <label for="emulator">Emulator (optional)</label>
@@ -5078,6 +5087,7 @@ function igdbImg(size, id) { return "https://images.igdb.com/igdb/image/upload/t
 const igdbSearchCache = new Map();
 let igdbPick = null;          // { name, cover, consoles } picked while adding a game
 let igdbBack = "games";       // where a game page's Back goes
+let gameSuggest = null;       // the new-game box's IGDB suggestions: { close, search }
 
 async function igdbPost(path, body) {
   if (!workerEnabled()) throw new Error("Game search isn't set up here.");
@@ -5206,7 +5216,7 @@ function attachGameSuggest(input, opts) {
   box.addEventListener("mousedown", (e) => e.preventDefault());     // keep the focus in the box
   box.addEventListener("click", (e) => { const el = e.target.closest(".igdb-opt"); if (el) pick(Number(el.dataset.i)); });
   input.addEventListener("blur", () => setTimeout(close, 150));
-  return { close };
+  return { close, search: run };
 }
 
 /* ---- the game page ---- */
@@ -5354,13 +5364,42 @@ function igdbLightbox(shots, start) {
 }
 
 /* ---- adding a game picked from IGDB ---- */
+/* A new game is always one from IGDB: its real name and cover, the same on
+   every device. What's typed is only the search. */
 function setGameNameHint() {
   const hint = $("gameNameHint");
   if (!hint) return;
-  const pick = igdbPickFor($("gameName").value);
-  hint.textContent = !pick ? "Type to look it up on IGDB, or keep the name from the file."
-    : pick.existing ? "Already in your games \u2014 this save goes in with its others."
-    : "From IGDB \u2014 its cover comes with it.";
+  const typed = $("gameName").value.trim();
+  const pick = igdbPickFor(typed);
+  const hack = " Not on IGDB, like a ROM hack? Pick the game it's based on.";
+  hint.textContent = pick
+    ? (pick.existing ? "Already in your games \u2014 this save goes in with its others." : "From IGDB \u2014 its cover comes with it.")
+    : typed ? "Pick it from IGDB's list to go on." + hack
+    : "Search IGDB and pick the game." + hack;
+  hint.classList.toggle("warn", !pick && !!typed && !!selectedUpload);
+  const chip = $("gamePicked");
+  chip.classList.toggle("hidden", !pick);
+  chip.innerHTML = !pick ? "" :
+    (pick.art ? '<img src="' + igdbImg("cover_small", pick.art) + '" alt="">' : '<span class="igdb-nocover">' + ico("gamepad") + "</span>") +
+    '<span class="gp-text"><b>' + escapeHtml(pick.name) + "</b>" +
+    '<span class="gp-sub">' + escapeHtml([pick.year, pick.existing ? "In your games" : "New game"].filter(Boolean).join(" \u00b7 ")) + "</span></span>" +
+    ico("check");
+  updateUploadBtn();
+}
+
+function updateUploadBtn() {
+  $("uploadBtn").disabled = !selectedUpload || !igdbPickFor($("gameName").value);
+}
+
+// A save just chosen and no game picked yet: show IGDB's matches for its name
+function suggestGameForSave() {
+  const box = $("gameName");
+  // No-Intro's "Pokemon - Emerald Version" searches better as "Pokemon Emerald Version"
+  if (!igdbPickFor(box.value)) box.value = box.value.replace(/\s+-\s+/g, " ");
+  setGameNameHint();
+  if (igdbPickFor(box.value) || !gameSuggest) return;
+  if (!NARROW.matches) $("gameName").focus();
+  gameSuggest.search();
 }
 
 function fillFromIgdb(g) {
@@ -5370,7 +5409,8 @@ function fillFromIgdb(g) {
   const name = mine ? mine.folder.name : g.name;
   $("gameName").value = name;
   const consoles = mine && mine.consoleId ? [mine.consoleId] : igdbConsoles(g);
-  igdbPick = { name, cover: mine ? null : g.cover || null, consoles, existing: !!mine };
+  igdbPick = { id: g.id, name, cover: mine ? null : g.cover || null, art: g.cover || null, year: g.year || null,
+               consoles, existing: !!mine };
   // The console it's on -- unless the one chosen already is one of them
   if (consoles.length && consoles.indexOf($("consoleSel").value) < 0) {
     $("consoleSel").value = consoles[0];
@@ -5412,10 +5452,10 @@ function setupGameSearch() {
     q.focus();
   });
 
-  attachGameSuggest($("gameName"), {
+  gameSuggest = attachGameSuggest($("gameName"), {
     limit: 8,
     onPick: fillFromIgdb,
-    onType: () => { if (igdbPick && !igdbPickFor($("gameName").value)) { igdbPick = null; setGameNameHint(); } },
+    onType: () => { if (igdbPick && !igdbPickFor($("gameName").value)) igdbPick = null; setGameNameHint(); },
   });
 }
 
@@ -5885,7 +5925,7 @@ function onFileChosen(file) {
   // A name picked from IGDB stays: the file's own name is the guess
   if (detected && !igdbPickFor($("gameName").value)) $("gameName").value = detected;
   guessConsole(file.name);
-  $("uploadBtn").disabled = false;
+  suggestGameForSave();
 }
 
 async function onFolderChosen(fileList) {
@@ -5907,7 +5947,7 @@ async function onFolderChosen(fileList) {
   if (!igdbPickFor(typed) && (!typed || typed === gameNameFromFilename(folderRootName(fileList)))) {
     $("gameName").value = sel.title || gameNameFromFilename(sel.name);
   }
-  $("uploadBtn").disabled = false;
+  suggestGameForSave();
 }
 
 function showUploadChip(icon, label, size) {
@@ -5926,6 +5966,7 @@ function clearFile() {
   $("folderInput").value = "";
   $("backupName").value = "";
   $("uploadBtn").disabled = true;
+  setGameNameHint();
 }
 
 /* Turn the current selection into something Drive can take.
@@ -6070,7 +6111,8 @@ function chooseFolderSave(hits, hintName, hintConsole) {
 async function doUpload() {
   if (!selectedUpload) return;
   const gameName = $("gameName").value.trim();
-  if (!gameName) { toast("Give the game a name first.", "err"); return; }
+  const picked = igdbPickFor(gameName);
+  if (!picked) { toast("Pick the game from IGDB's list first.", "err"); return; }
   const consoleId = $("consoleSel").value;
   const emulator = $("emulator").value.trim();
   const device = $("deviceName").value.trim() || "Unknown device";
@@ -6093,11 +6135,13 @@ async function doUpload() {
       gameFolderId = await restoreArchivedGame(gameName);
       restored = !!gameFolderId;
     }
+    // Which game it is on IGDB goes with it, so every device knows it by more than its name
+    const props = Object.assign({ console: consoleId, role: "game" }, picked.id ? { igdb: String(picked.id) } : {});
     if (!gameFolderId) {
-      gameFolderId = await createFolder(folderName, rootFolderId, { console: consoleId, role: "game" });
+      gameFolderId = await createFolder(folderName, rootFolderId, props);
     }
     // Make sure an existing folder learns its console too.
-    try { await setFolderProps(gameFolderId, { console: consoleId, role: "game" }); } catch (e) {}
+    try { await setFolderProps(gameFolderId, props); } catch (e) {}
 
     // A game that's already in the library keeps its own first slot; a brand
     // new one starts with the default, and can grow more from its history page.
@@ -6117,8 +6161,8 @@ async function doUpload() {
     // while you're thinking about it. One coming back from the archive already
     // has its cover, and one already in the library was asked the first time.
     // Picked from IGDB: its cover comes with it, no question needed.
-    const picked = igdbPickFor(gameName);
     igdbPick = null;
+    setGameNameHint();
     if (!alreadyThere && !restored) {
       try {
         if (picked && picked.cover) {
@@ -6140,7 +6184,7 @@ async function doUpload() {
     $("uploadStatus").textContent = "";
     toast("Upload failed: " + e.message, "err", 5000);
   } finally {
-    btn.disabled = !selectedUpload;
+    updateUploadBtn();
   }
 }
 
