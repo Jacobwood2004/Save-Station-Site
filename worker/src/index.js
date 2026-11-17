@@ -650,6 +650,31 @@ async function handleGameSearch(request, env) {
   return json({ configured: true, results }, 200, env);
 }
 
+/* The desktop app's Game Database front page: the most-rated games (IGDB's
+   measure of how widely played a game is) -- on one console, or on every
+   console Save Station knows -- 30 at a time. */
+async function handleGameBrowse(request, env) {
+  await requireUid(request, env);
+  if (!igdbConfigured(env)) return json({ configured: false, results: [] }, 200, env);
+  let input = {};
+  try { input = await request.json(); } catch (e) { /* the front page */ }
+  const ids = input.console && IGDB_PLATFORMS[input.console]
+    ? IGDB_PLATFORMS[input.console] : [].concat(...Object.values(IGDB_PLATFORMS));
+  const offset = Math.max(0, Math.min(5000, Math.floor(Number(input.offset) || 0)));
+  const games = await igdbGames(env,
+    "fields name,first_release_date,cover.image_id,platforms.name,platforms.abbreviation; " +
+    `where platforms = (${ids.join(",")}) & cover != null & version_parent = null & total_rating_count > 0; ` +
+    `sort total_rating_count desc; limit 30; offset ${offset};`);
+  const results = games.map((g) => ({
+    id: g.id,
+    name: g.name,
+    year: yearOf(g.first_release_date),
+    cover: g.cover && g.cover.image_id ? g.cover.image_id : null,
+    platforms: platformsOf(g),
+  }));
+  return json({ configured: true, results }, 200, env);
+}
+
 async function handleGameInfo(request, env) {
   await requireUid(request, env);
   if (!igdbConfigured(env)) return json({ configured: false }, 200, env);
@@ -1027,6 +1052,9 @@ async function route(request, env) {
     }
     if (url.pathname === "/games/info" && request.method === "POST") {
       return await handleGameInfo(request, env);
+    }
+    if (url.pathname === "/games/browse" && request.method === "POST") {
+      return await handleGameBrowse(request, env);
     }
     if (url.pathname.startsWith("/sgdb/") && request.method === "POST") {
       const route = {

@@ -111,6 +111,22 @@ assert.equal(r.status, 400, "ids are numbers");
 r = await post("/games/info", { id: 99 }, tok);
 assert.equal(r.status, 404);
 
+r = await post("/games/browse", { console: "3ds", offset: 30 }, tok);
+assert.equal(r.status, 200);
+d = await r.json();
+assert.equal(d.results[0].name, "Pokémon Ultra Sun");
+assert.equal(d.results[0].platforms[0].console, "3ds");
+let bq = queries[queries.length - 1];
+assert.match(bq, /platforms = \(37,137\)/, "one console's platforms");
+assert.match(bq, /sort total_rating_count desc/);
+assert.match(bq, /offset 30;/);
+r = await post("/games/browse", { offset: "9; fields *" }, tok);
+bq = queries[queries.length - 1];
+assert.match(bq, /offset 0;/, "offsets are numbers");
+assert.match(bq, /platforms = \(33,22,24,20,37,137,5,41,130,38,46\)/, "every Save Station console");
+r = await post("/games/browse", {});
+assert.equal(r.status, 401, "signed in only");
+
 delete env.IGDB_CLIENT_SECRET;
 r = await post("/games/search", { q: "pokemon" }, tok);
 assert.deepEqual(await r.json(), { configured: false, results: [] });
