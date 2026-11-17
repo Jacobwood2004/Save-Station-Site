@@ -117,13 +117,15 @@ d = await r.json();
 assert.equal(d.results[0].name, "Pokémon Ultra Sun");
 assert.equal(d.results[0].platforms[0].console, "3ds");
 let bq = queries[queries.length - 1];
-assert.match(bq, /platforms = \(37,137\)/, "one console's platforms");
+assert.match(bq, /\(\(platforms = \(37,137\) & first_release_date >= 1298678400\)\)/,
+  "one console's own games, not its re-releases");
 assert.match(bq, /sort total_rating_count desc/);
 assert.match(bq, /offset 30;/);
 r = await post("/games/browse", { offset: "9; fields *" }, tok);
 bq = queries[queries.length - 1];
 assert.match(bq, /offset 0;/, "offsets are numbers");
-assert.match(bq, /platforms = \(33,22,24,20,37,137,5,41,130,38,46\)/, "every Save Station console");
+assert.equal((bq.match(/first_release_date >= /g) || []).length, 10, "every Save Station console, each from its launch");
+assert.match(bq, /platforms = \(130\) & first_release_date >= 1488499200/);
 r = await post("/games/browse", {});
 assert.equal(r.status, 401, "signed in only");
 

@@ -650,6 +650,12 @@ async function handleGameSearch(request, env) {
   return json({ configured: true, results }, 200, env);
 }
 
+// When each console came out (its first launch anywhere), as IGDB dates games
+const CONSOLE_LAUNCHED = {
+  gb: 609120000, gbc: 908928000, gba: 985132800, nds: 1100995200, "3ds": 1298678400,
+  wii: 1163894400, wiiu: 1353196800, switch: 1488499200, psp: 1102809600, vita: 1324080000,
+};
+
 /* The desktop app's Game Database front page: the most-rated games (IGDB's
    measure of how widely played a game is) -- on one console, or on every
    console Save Station knows -- 30 at a time. */
@@ -658,12 +664,15 @@ async function handleGameBrowse(request, env) {
   if (!igdbConfigured(env)) return json({ configured: false, results: [] }, 200, env);
   let input = {};
   try { input = await request.json(); } catch (e) { /* the front page */ }
-  const ids = input.console && IGDB_PLATFORMS[input.console]
-    ? IGDB_PLATFORMS[input.console] : [].concat(...Object.values(IGDB_PLATFORMS));
+  // A console's own games: first out after the console was. IGDB lists
+  // Virtual Console re-releases on the console too (Super Mario World on the
+  // 3DS), and those would otherwise fill every list.
+  const cons = input.console && IGDB_PLATFORMS[input.console] ? [input.console] : Object.keys(IGDB_PLATFORMS);
+  const clause = cons.map((c) => `(platforms = (${IGDB_PLATFORMS[c].join(",")}) & first_release_date >= ${CONSOLE_LAUNCHED[c]})`).join(" | ");
   const offset = Math.max(0, Math.min(5000, Math.floor(Number(input.offset) || 0)));
   const games = await igdbGames(env,
     "fields name,first_release_date,cover.image_id,platforms.name,platforms.abbreviation; " +
-    `where platforms = (${ids.join(",")}) & cover != null & version_parent = null & total_rating_count > 0; ` +
+    `where (${clause}) & cover != null & version_parent = null & total_rating_count > 0; ` +
     `sort total_rating_count desc; limit 30; offset ${offset};`);
   const results = games.map((g) => ({
     id: g.id,
