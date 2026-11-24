@@ -1081,7 +1081,88 @@
   .console-pick small { margin-top: -3px; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-text); }
 
   /* ----------------------------------------------------- game history */
-  .history-hero { display: flex; gap: 24px; align-items: flex-end; margin-bottom: 24px; flex-wrap: wrap; }
+  .history-hero { display: flex; gap: 24px; align-items: flex-end; margin-bottom: 24px; flex-wrap: wrap; position: relative; isolation: isolate; z-index: 3; }
+  /* A game's hero (SteamGridDB, or IGDB's key art) behind its header, fading into the page */
+  .hh-backdrop {
+    position: absolute; z-index: -1; left: -40px; right: -40px; top: -90px; bottom: -24px; pointer-events: none;
+    background-size: cover; background-position: center 28%; opacity: 0; transition: opacity .6s ease;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 100%);
+            mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 100%);
+  }
+  .hh-backdrop.on { opacity: .5; }
+  .hh-backdrop::after { content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 55%, transparent) 50%, transparent 100%); }
+  /* One "Game cover" button, its choices out to the side on hover (or a click) */
+  .menu-host { position: relative; display: inline-flex; }
+  .menu-host .chev { width: 14px; height: 14px; margin-right: -2px; opacity: .7; }
+  .hover-menu {
+    position: absolute; left: calc(100% + 6px); top: -6px; z-index: 40; min-width: 200px; padding: 5px;
+    display: none; flex-direction: column; gap: 1px;
+    background: var(--panel); border: 1px solid var(--border-2, var(--border)); border-radius: 12px;
+    box-shadow: var(--shadow-pop, 0 14px 40px rgba(0, 0, 0, .45));
+  }
+  .menu-host.below .hover-menu { left: 0; top: calc(100% + 6px); }
+  .menu-host.below .hover-menu::before { left: 0; right: 0; top: -10px; bottom: auto; width: auto; height: 10px; }
+  .hover-menu::before { content: ""; position: absolute; left: -10px; top: 0; bottom: 0; width: 10px; }
+  .menu-host:hover .hover-menu, .menu-host.open .hover-menu { display: flex; animation: hm-in .14s ease; }
+  @keyframes hm-in { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: none; } }
+  .hover-menu button {
+    display: flex; align-items: center; justify-content: flex-start; gap: 10px; width: 100%; padding: 8px 10px; border: 0; border-radius: 8px;
+    background: transparent; color: inherit; font: inherit; font-size: 13.5px; text-align: left; cursor: pointer;
+  }
+  .hover-menu button:hover:not(:disabled) { background: rgba(127, 127, 127, .14); }
+  .hover-menu button:disabled { opacity: .45; cursor: default; }
+  .hover-menu .ico { width: 16px; height: 16px; }
+  .hm-sep { height: 1px; margin: 4px 6px; background: var(--border, #333); }
+  @media (max-width: 620px) { .hover-menu { left: 0; top: calc(100% + 6px); } .hover-menu::before { display: none; } }
+  .btn-sm.accent-soft { border-color: rgba(255, 160, 51, .45); color: var(--accent, #ffa033); }
+
+  /* Upload a save: the game first, then the rest swipes in */
+  .up-igdb { margin-bottom: 16px; max-width: 640px; }
+  .up-igdb input { font-size: 16px; padding-top: 12px; padding-bottom: 12px; }
+  .up-step { margin: 4px 0 12px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .up-step span { color: var(--muted); font-size: 13px; }
+  #upNewRest.swipe-in { animation: up-swipe .32s cubic-bezier(.2, .8, .2, 1) both; }
+  @keyframes up-swipe { from { opacity: 0; transform: translateX(46px); } to { opacity: 1; transform: none; } }
+  .up-lock { margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) { #upNewRest.swipe-in, .menu-host .hover-menu { animation: none; } }
+
+  /* SteamGridDB's art for a game: Icon / Hero / Logo, a grid to pick from */
+  .sgp-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .sgp-tab { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border, #333); background: transparent; color: inherit; font: inherit; font-size: 13px; cursor: pointer; }
+  .sgp-tab.on { border-color: rgba(255, 160, 51, .6); background: rgba(255, 160, 51, .14); color: var(--accent, #ffa033); }
+  .sgp-grid { display: grid; gap: 10px; max-height: 52vh; overflow: auto; padding: 2px; }
+  .sgp-grid.icon { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); }
+  .sgp-grid.hero { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+  .sgp-grid.logo { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  .sgp-item { position: relative; display: block; width: 100%; height: auto; padding: 0; border: 2px solid transparent; border-radius: 10px; overflow: hidden; background: rgba(127, 127, 127, .12); cursor: pointer; }
+  .sgp-item img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .sgp-grid.icon .sgp-item { aspect-ratio: 1; }
+  .sgp-grid.hero .sgp-item { aspect-ratio: 96 / 31; }
+  .sgp-grid.logo .sgp-item { aspect-ratio: 16 / 9; }
+  .sgp-grid.logo .sgp-item img { object-fit: contain; padding: 8px; }
+  .sgp-item:hover { border-color: rgba(255, 160, 51, .5); }
+  .sgp-item.on { border-color: #ffa033; }
+  .sgp-item.on::after { content: "\2713"; position: absolute; right: 6px; top: 6px; width: 22px; height: 22px; border-radius: 50%; background: #ffa033; color: #1d1304; font-weight: 800; display: grid; place-items: center; font-size: 13px; }
+  .sgp-note { color: var(--muted); font-size: 13px; padding: 8px 2px; }
+
+  /* The Game Database page */
+  .db-head { margin-bottom: 14px; }
+  .db-head h2 { margin: 0 0 4px; }
+  .db-head p { margin: 0; color: var(--muted); }
+  .db-search { margin: 14px 0 12px; max-width: 640px; }
+  .db-search input { font-size: 15px; }
+  .db-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+  .db-sub { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .db-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px 16px; }
+  .db-card { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; padding: 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; font: inherit; min-width: 0; height: auto; }
+  .db-cover { position: relative; width: 100%; aspect-ratio: 264 / 374; border-radius: 10px; overflow: hidden; background: rgba(127, 127, 127, .14); transition: transform .18s ease, box-shadow .18s ease; }
+  .db-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .db-card:hover .db-cover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0, 0, 0, .35); }
+  .db-mine { position: absolute; left: 7px; bottom: 7px; padding: 3px 8px; border-radius: 999px; background: #ffa033; color: #1d1304; font-size: 11px; font-weight: 700; }
+  .db-name { margin-top: 8px; font-weight: 600; font-size: 13.5px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .db-meta { margin-top: 2px; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .db-more { display: flex; justify-content: center; margin-top: 24px; }
   .history-hero .hh-cover {
     width: 160px; aspect-ratio: 264 / 374; border-radius: 12px; flex-shrink: 0;
     box-shadow: 0 0 0 1px var(--border-2), var(--shadow);
@@ -1702,6 +1783,10 @@
       <span class="sb-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><span class="sb-label">Upload a save</span>
     </button>
 
+    <button class="sb-item" data-view="database" title="Game Database">
+      <span class="sb-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m10.065 12.493-6.18 1.318a.934.934 0 0 1-1.108-.702l-.537-2.15a1.07 1.07 0 0 1 .691-1.265l13.504-4.44"/><path d="m13.56 11.747 4.332-.924"/><path d="m16 21-3.105-6.21"/><path d="M16.485 5.94a2 2 0 0 1 1.455-2.425l1.09-.272a1 1 0 0 1 1.212.727l1.515 6.06a1 1 0 0 1-.727 1.213l-1.09.272a2 2 0 0 1-2.425-1.455z"/><path d="m6.158 8.633 1.114 4.456"/><path d="m8 21 3.105-6.21"/><circle cx="12" cy="13" r="2"/></svg></span><span class="sb-label">Game Database</span>
+    </button>
+
     <div class="sb-sec">Library</div>
     <button class="sb-item on" data-view="games" title="All games">
       <span class="sb-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="18" x="3" y="3" rx="1"/><path d="M7 3v18"/><path d="M20.4 18.9c.2.5-.1 1.1-.6 1.3l-1.9.7c-.5.2-1.1-.1-1.3-.6L11.1 5.1c-.2-.5.1-1.1.6-1.3l1.9-.7c.5-.2 1.1.1 1.3.6Z"/></svg></span><span class="sb-label">All games</span>
@@ -2283,8 +2368,16 @@
       <input type="file" id="upLibFolder" class="hidden" webkitdirectory directory multiple>
     </div>
 
-    <!-- A new game: its console, its save, its name -->
+    <!-- A new game: found on IGDB first; then its save, its console and a name -->
     <div id="upNew" class="hidden">
+    <div class="field igdb-host up-igdb" id="gameNameField">
+        <label for="gameName">Which game is it? Find it on IGDB</label>
+        <input type="text" id="gameName" placeholder="Search IGDB, e.g. Pokémon Emerald" autocomplete="off">
+        <div id="gamePicked" class="game-picked hidden"></div>
+        <span class="hint" id="gameNameHint"></span>
+      </div>
+    <div id="upNewRest" class="hidden">
+    <div class="up-step"><b>Where's its save?</b> <span>Drop the save file, or choose its folder.</span></div>
     <div class="field" style="margin-bottom:16px;max-width:420px;">
       <label for="consoleSel">Console</label>
       <select id="consoleSel"></select>
@@ -2305,12 +2398,6 @@
     <div id="fileChip" class="hidden"></div>
 
     <div class="form-grid" id="uploadForm">
-      <div class="field igdb-host" id="gameNameField">
-        <label for="gameName">Game, from IGDB</label>
-        <input type="text" id="gameName" placeholder="Search IGDB, e.g. Pokémon Emerald" autocomplete="off">
-        <div id="gamePicked" class="game-picked hidden"></div>
-        <span class="hint" id="gameNameHint"></span>
-      </div>
       <div class="field">
         <label for="emulator">Emulator (optional)</label>
         <input type="text" id="emulator" list="emulatorList" placeholder="e.g. mGBA" autocomplete="off">
@@ -2318,7 +2405,7 @@
         <span class="hint">Which emulator or console this save came from.</span>
       </div>
       <div class="field">
-        <label for="backupName">Backup name (optional)</label>
+        <label for="backupName">Name this backup (optional)</label>
         <input type="text" id="backupName" placeholder="e.g. Before Elite Four" autocomplete="off">
         <span class="hint">A label to find this backup later.</span>
       </div>
@@ -2335,10 +2422,14 @@
       </div>
     </div>
     </div>
+    </div>
   </div>
 
   <!-- One game, from IGDB: what it is, and adding it (renderIgdbGame) -->
   <div id="igdbView" class="hidden"></div>
+
+  <!-- The Game Database: IGDB's most-rated games, by console, and a search (renderDatabase) -->
+  <div id="databaseView" class="hidden"></div>
 
   <!-- Games list -->
   <div id="gamesView">
@@ -2372,6 +2463,7 @@
   <div id="historyView" class="hidden">
     <button class="back-link" id="backBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> All games</button>
     <div class="history-hero">
+      <div class="hh-backdrop" id="historyBackdrop" aria-hidden="true"></div>
       <div class="hh-cover cover-frame" id="historyCover"><span class="no-cover-label">No cover</span></div>
       <div class="hh-info">
         <h3 id="historyTitle"></h3>
@@ -2380,8 +2472,17 @@
           <button class="btn-primary btn-sm" id="uploadToGameBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13v8"/><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.24"/><path d="m8 17 4-4 4 4"/></svg> Upload save</button>
           <button class="btn-ghost btn-sm hidden" id="uploadFolderToGameBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg> Upload save folder</button>
           <button class="btn-ghost btn-sm" id="downloadLatestBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Download latest</button>
-          <button class="btn-ghost btn-sm" id="findCoverBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Find cover</button>
-          <button class="btn-ghost btn-sm" id="setCoverBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/></svg> Add cover</button>
+          <div class="menu-host" id="coverMenuHost">
+            <button class="btn-ghost btn-sm" id="gameCoverBtn" type="button" aria-haspopup="menu" aria-expanded="false"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/></svg> Game cover <svg class="ico chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="hover-menu" id="coverMenu" role="menu">
+              <button type="button" role="menuitem" data-cover-act="find"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Find cover</button>
+              <button type="button" role="menuitem" data-cover-act="remove"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><line x1="2" x2="22" y1="2" y2="22"/><path d="M10.41 10.41a2 2 0 1 1-2.83-2.83"/><line x1="13.5" x2="6" y1="13.5" y2="21"/><line x1="18" x2="21" y1="12" y2="15"/><path d="M3.59 3.59A1.99 1.99 0 0 0 3 5v14a2 2 0 0 0 2 2h14c.55 0 1.052-.22 1.41-.59"/><path d="M21 15V5a2 2 0 0 0-2-2H9"/></svg> Remove cover</button>
+              <button type="button" role="menuitem" data-cover-act="upload"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10l-3.1-3.1a2 2 0 0 0-2.814.014L6 21"/><path d="m14 19.5 3-3 3 3"/><path d="M17 22v-5.5"/><circle cx="9" cy="9" r="2"/></svg> Upload a cover</button>
+              <div class="hm-sep"></div>
+              <button type="button" role="menuitem" data-cover-act="art"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></svg> Icon &amp; hero…</button>
+            </div>
+          </div>
+          <button class="btn-ghost btn-sm accent-soft hidden" id="artLaterBtn" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg> Pick its icon &amp; hero</button>
           <button class="btn-ghost btn-sm" id="pinGameBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg> Pin</button>
           <button class="btn-ghost btn-sm danger" id="deleteGameBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Delete game</button>
         </div>
@@ -3299,6 +3400,7 @@ function navigate(view) {
     games: "gamesView",
     history: "historyView",
     igdb: "igdbView",
+    database: "databaseView",
   };
   if (view === "upload") {
     navigate("games");
@@ -3310,6 +3412,7 @@ function navigate(view) {
   if (view !== "games") $("uploadPanel").classList.add("hidden");
   hideQrCode();
   $(views[view] || "gamesView").classList.remove("hidden");
+  if (view === "database") renderDatabase();
   markNav(view);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -5242,10 +5345,11 @@ async function openIgdbGame(id) {
 
 function igdbBackHtml() {
   return '<button class="back-link" id="igdbBackBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> ' +
-    (igdbBack === "history" && currentHistory.name ? escapeHtml(currentHistory.name) : "All games") + "</button>";
+    (igdbBack === "database" ? "Game Database" : igdbBack === "history" && currentHistory.name ? escapeHtml(currentHistory.name) : "All games") + "</button>";
 }
 
 function igdbGoBack() {
+  if (igdbBack === "database") { navigate("database"); return; }
   if (igdbBack === "history" && currentHistory.folderId) navigate("history");
   else showAllGames();
 }
@@ -5375,8 +5479,20 @@ function setGameNameHint() {
   hint.textContent = pick
     ? (pick.existing ? "Already in your games \u2014 this save goes in with its others." : "From IGDB \u2014 its cover comes with it.")
     : typed ? "Pick it from IGDB's list to go on." + hack
-    : "Search IGDB and pick the game." + hack;
+    : "Start with the game: search IGDB and pick it. Its save comes next." + hack;
   hint.classList.toggle("warn", !pick && !!typed && !!selectedUpload);
+  // The game first: its save, console and name come once it's picked
+  const rest = $("upNewRest");
+  if (rest) {
+    const was = rest.classList.contains("hidden");
+    rest.classList.toggle("hidden", !pick);
+    if (was && pick) {
+      rest.classList.remove("swipe-in");
+      void rest.offsetWidth;
+      rest.classList.add("swipe-in");
+      setTimeout(() => rest.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
+    }
+  }
   const chip = $("gamePicked");
   chip.classList.toggle("hidden", !pick);
   chip.innerHTML = !pick ? "" :
@@ -5457,6 +5573,310 @@ function setupGameSearch() {
     onPick: fillFromIgdb,
     onType: () => { if (igdbPick && !igdbPickFor($("gameName").value)) igdbPick = null; setGameNameHint(); },
   });
+}
+
+/* ============================================================
+   As the Thor, the 3DS and the desktop app have it
+   ============================================================ */
+
+/* Once a game has backups, its save is a file or a folder for good: the
+   newest backup says which. null when it has none yet. */
+function saveKindOf(saves) {
+  const s = (saves || []).find((x) => !x.appProperties || x.appProperties.role !== "cover");
+  if (!s) return null;
+  const k = (s.appProperties || {}).kind || (s.mimeType === "application/vnd.google-apps.folder" ? "tree" : "file");
+  return k === "tree" || k === "folder" ? "folder" : "file";
+}
+
+/* A save picked for a game you already have, named nothing like the saves its
+   backups were made from (nor like the game) -- likely another game's.
+   null when it matches. */
+function saveNameMismatch(gameName, saves, sel) {
+  const real = (saves || []).filter((x) => !x.appProperties || x.appProperties.role !== "cover");
+  if (!real.length || !sel) return null;
+  const stem = (n) => coverKey(String(n || "").replace(/\.[a-z0-9]{1,5}$/i, ""));
+  const mine = String(sel.name || sel.label || "").split(/[\\/]/).pop();
+  const k = stem(mine);
+  if (!k) return null;
+  const before = [];
+  real.forEach((x) => { const n = (x.appProperties || {}).originalName || x.name; if (n && before.indexOf(n) < 0) before.push(n); });
+  if (before.some((n) => stem(n) === k)) return null;
+  const g = gameKey(gameName);
+  const like = (n) => { const c = gameKey(n); return g.length >= 4 && c.length >= 4 && (g.indexOf(c) >= 0 || c.indexOf(g) >= 0); };
+  if (like(gameNameFromFilename(mine)) || (sel.title && like(sel.title))) return null;
+  return { name: mine, before: before.slice(0, 3), more: Math.max(0, before.length - 3) };
+}
+
+/* Games whose icon and hero you said you'd pick later: a reminder on their page */
+function artLaterList() {
+  try { return JSON.parse(localStorage.getItem("ssw_art_later") || "[]") || []; } catch (e) { return []; }
+}
+function artLaterHas(id) { return artLaterList().indexOf(id) >= 0; }
+function artLater(id, on) {
+  const list = artLaterList().filter((x) => x !== id);
+  if (on) list.push(id);
+  try { localStorage.setItem("ssw_art_later", JSON.stringify(list)); } catch (e) { /* a nicety */ }
+  if (currentHistory.folderId === id && $("artLaterBtn")) $("artLaterBtn").classList.toggle("hidden", !on);
+}
+
+/* A game that's new to your library: its icon and hero, while it's fresh in
+   your mind -- now, later (a reminder waits on its page), or never. */
+async function askArtNow(folderId, name) {
+  const choice = await askChoice("Its icon and hero",
+    "<p>Pick <b>" + escapeHtml(name) + "</b>'s icon and hero from SteamGridDB, as the Thor and the 3DS show them. " +
+    "Left alone, it gets SteamGridDB's best on its own.</p>",
+    [{ label: "Ignore", value: "ignore" }, { label: "Do later", value: "later" },
+     { label: "Choose them now", value: "now", className: "btn-primary" }]);
+  if (choice === "now") { artLater(folderId, false); openSgdbPicker(folderId, name); }
+  else if (choice === "later") { artLater(folderId, true); toast("It waits on the game's page: Pick its icon & hero.", "ok", 5000); }
+  else artLater(folderId, false);
+}
+
+/* SteamGridDB's art for one game, as Cocoon has it: Icon / Hero / Logo, a
+   grid to pick from. Picks are kept with your account, for every device. */
+async function openSgdbPicker(folderId, name) {
+  let art;
+  try { art = await sgdbCall("/sgdb/art", { id: folderId, name }); }
+  catch (e) { toast(e.message, "err", 6000); return; }
+  if (!art.connected) {
+    const go = await askChoice("Connect SteamGridDB first",
+      "<p>Icons, heroes and logos come from SteamGridDB. Connect it once, in Settings, and every device gets them.</p>",
+      [{ label: "Not now", value: null }, { label: "Open Settings", value: "go", className: "btn-primary" }]);
+    if (go === "go") navigate("settings");
+    return;
+  }
+  if (!art.game || !art.game.id) {
+    await askChoice("SteamGridDB doesn't know it", "<p>Nothing called “" + escapeHtml(name) + "” on SteamGridDB.</p>",
+      [{ label: "OK", value: null, className: "btn-primary" }]);
+    return;
+  }
+  artLater(folderId, false);
+  const back = $("modalBack");
+  $("modalTitle").textContent = "Icon & hero: " + name;
+  const kinds = [["icon", "Icon"], ["hero", "Hero"], ["logo", "Logo"]];
+  let kind = "icon";
+  const picked = {};
+  kinds.forEach(([k]) => { picked[k] = art[k] && art.picked && art.picked[k] ? (art[k].url || "") : ""; });
+  const body = $("modalBody");
+  const draw = async () => {
+    body.innerHTML = '<div class="sgp-tabs">' + kinds.map(([k, l]) =>
+      '<button type="button" class="sgp-tab' + (k === kind ? " on" : "") + '" data-k="' + k + '">' + l + "</button>").join("") +
+      '</div><div class="sgp-grid ' + kind + '"><div class="sgp-note"><span class="spinner"></span> Loading SteamGridDB…</div></div>';
+    body.querySelectorAll(".sgp-tab").forEach((b) => { b.onclick = () => { kind = b.dataset.k; draw(); }; });
+    const grid = body.querySelector(".sgp-grid");
+    let items = [];
+    try { items = (await sgdbCall("/sgdb/assets", { gameId: art.game.id, kind, page: 0 })).items || []; }
+    catch (e) { grid.innerHTML = '<div class="sgp-note">' + escapeHtml(e.message) + "</div>"; return; }
+    if (kind !== grid.className.split(" ")[1]) return;
+    if (!items.length) { grid.innerHTML = '<div class="sgp-note">SteamGridDB has none of these for it yet.</div>'; return; }
+    grid.innerHTML = items.slice(0, 48).map((x, i) =>
+      '<button type="button" class="sgp-item' + (picked[kind] && picked[kind] === x.url ? " on" : "") + '" data-i="' + i + '">' +
+      '<img src="' + escapeAttr(x.thumb || x.url) + '" alt="" loading="lazy"></button>').join("");
+    grid.querySelectorAll(".sgp-item").forEach((b) => {
+      b.onclick = async () => {
+        const x = items[Number(b.dataset.i)];
+        grid.querySelectorAll(".sgp-item").forEach((o) => o.classList.remove("on"));
+        b.classList.add("on");
+        try {
+          await sgdbCall("/sgdb/pick", { id: folderId, kind, url: x.url });
+          picked[kind] = x.url;
+          try { localStorage.removeItem("ssw_art_" + folderId); } catch (e) { /* the cache can wait */ }
+          toast(kinds.find((y) => y[0] === kind)[1] + " picked ✔ — every device gets it", "ok");
+        } catch (e) { b.classList.remove("on"); toast(e.message, "err", 6000); }
+      };
+    });
+  };
+  const acts = $("modalActions");
+  acts.innerHTML = "";
+  const close = () => {
+    back.classList.add("hidden");
+    document.removeEventListener("keydown", onKey);
+    if (currentHistory.folderId === folderId) showHistoryHero(folderId, name, currentHistory.console, true);
+  };
+  const onKey = (e) => { if (e.key === "Escape") close(); };
+  const auto = document.createElement("button");
+  auto.className = "btn-ghost";
+  auto.textContent = "Use SteamGridDB's best";
+  auto.onclick = async () => {
+    try {
+      await sgdbCall("/sgdb/pick", { id: folderId, kind, clear: true });
+      picked[kind] = "";
+      try { localStorage.removeItem("ssw_art_" + folderId); } catch (e) { /* the cache can wait */ }
+      toast("Back to SteamGridDB's best " + kind, "ok");
+      draw();
+    } catch (e) { toast(e.message, "err", 6000); }
+  };
+  const done = document.createElement("button");
+  done.className = "btn-primary";
+  done.textContent = "Done";
+  done.onclick = close;
+  acts.appendChild(auto);
+  acts.appendChild(done);
+  back.onclick = (e) => { if (e.target === back) close(); };
+  document.addEventListener("keydown", onKey);
+  back.classList.remove("hidden");
+  draw();
+}
+
+/* A game's hero, for its page: SteamGridDB's (your pick, or its best) when
+   it's connected, IGDB's key art otherwise. Kept a week per game. */
+async function gameArtFor(folderId, name, consoleId, fresh) {
+  const key = "ssw_art_" + folderId;
+  if (!fresh) {
+    try {
+      const c = JSON.parse(localStorage.getItem(key) || "null");
+      if (c && Date.now() - c.at < 7 * 24 * 3600 * 1000) return c.art;
+    } catch (e) { /* look again */ }
+  }
+  let out = null;
+  try {
+    const d = await sgdbCall("/sgdb/art", { id: folderId, name });
+    if (d && d.connected && d.hero && d.hero.url) out = { hero: d.hero.url, source: "sgdb" };
+  } catch (e) { /* IGDB, then */ }
+  if (!out) {
+    try {
+      const d = await igdbPost("/covers/search", { name, console: consoleId || "" });
+      const r = d && d.results && d.results[0];
+      if (r && r.hero) out = { hero: igdbImg("1080p", r.hero), source: "igdb" };
+    } catch (e) { return null; }
+  }
+  try { localStorage.setItem(key, JSON.stringify({ at: Date.now(), art: out })); } catch (e) { /* a nicety */ }
+  return out;
+}
+
+async function showHistoryHero(folderId, name, consoleId, fresh) {
+  const el = $("historyBackdrop");
+  if (!el) return;
+  if (el.dataset.fid !== folderId) { el.classList.remove("on"); el.style.backgroundImage = ""; el.dataset.fid = folderId; }
+  const art = await gameArtFor(folderId, name, consoleId, fresh);
+  if (currentHistory.folderId !== folderId || !art || !art.hero) return;
+  const img = new Image();
+  img.onload = () => {
+    if (currentHistory.folderId !== folderId) return;
+    el.style.backgroundImage = "url(\"" + art.hero.replace(/"/g, "%22") + "\")";
+    el.classList.add("on");
+  };
+  img.src = art.hero;
+}
+
+/* One "Game cover" button: Find cover, Remove cover, Upload a cover -- and
+   the icon & hero, from SteamGridDB */
+function setupCoverMenu() {
+  const host = $("coverMenuHost");
+  const btn = $("gameCoverBtn");
+  const set = (open) => { host.classList.toggle("open", open); btn.setAttribute("aria-expanded", open ? "true" : "false"); };
+  // To the right of the button -- or below it, when the right has no room
+  const place = () => host.classList.toggle("below", host.getBoundingClientRect().right + 230 > window.innerWidth);
+  btn.onclick = (e) => { e.stopPropagation(); place(); set(!host.classList.contains("open")); };
+  host.addEventListener("mouseenter", place);
+  document.addEventListener("click", (e) => { if (!host.contains(e.target)) set(false); });
+  host.addEventListener("mouseenter", () => {
+    const rm = host.querySelector('[data-cover-act="remove"]');
+    if (rm) rm.disabled = !currentHistory.cover;
+  });
+  host.querySelectorAll("[data-cover-act]").forEach((b) => {
+    b.onclick = async (e) => {
+      e.stopPropagation();
+      set(false);
+      const folderId = currentHistory.folderId;
+      if (!folderId) return;
+      const act = b.dataset.coverAct;
+      if (act === "find") return findCoverForGame();
+      if (act === "upload") return $("coverInput").click();
+      if (act === "art") return openSgdbPicker(folderId, currentHistory.name);
+      if (act === "remove") {
+        if (!currentHistory.cover) { toast("It has no cover to remove.", "ok"); return; }
+        try {
+          await removeCoverFrom(folderId);
+          toast("Cover removed", "ok");
+          await openHistory(folderId, currentHistory.name, currentHistory.console);
+          await loadGames();
+        } catch (err) { toast("Couldn't remove the cover: " + ((err && err.message) || err), "err", 7000); }
+      }
+    };
+  });
+}
+
+/* ---- the Game Database: IGDB's most-rated games, by console, and a search ---- */
+const dbState = { q: "", con: "", page: 0, results: [], more: false, kept: {} };
+
+function renderDatabase() {
+  const v = $("databaseView");
+  if (!v.dataset.built) {
+    v.dataset.built = "1";
+    v.innerHTML =
+      '<div class="db-head"><h2>Game Database</h2><p>Every game on IGDB. Look one up, see what it is, and upload a save for it.</p></div>' +
+      '<div class="field igdb-host db-search"><input type="search" id="dbQ" placeholder="Search for any game, e.g. Pokémon Emerald" autocomplete="off" aria-label="Search for any game"></div>' +
+      '<div class="db-chips" id="dbChips" role="group" aria-label="Console"></div>' +
+      '<div class="db-sub" id="dbSub"></div><div class="db-grid" id="dbGrid"></div><div class="db-more" id="dbMore"></div>';
+    let t = null;
+    $("dbQ").addEventListener("input", () => { clearTimeout(t); t = setTimeout(() => { dbState.q = $("dbQ").value.trim(); dbState.page = 0; dbLoad(); }, 300); });
+  }
+  $("dbQ").value = dbState.q;
+  const chips = [["", "All consoles"]].concat(CONSOLES.map((c) => [c.id, c.short]));
+  $("dbChips").innerHTML = chips.map(([id, label]) =>
+    '<button type="button" class="cchip' + (dbState.con === id ? " on" : "") + '" data-con="' + id + '">' +
+    (id ? consoleIcon(id, 16, 4) + " " : "") + escapeHtml(label) + "</button>").join("");
+  $("dbChips").querySelectorAll("[data-con]").forEach((b) => {
+    b.onclick = () => { dbState.con = dbState.con === b.dataset.con ? "" : b.dataset.con; dbState.page = 0; renderDatabase(); };
+  });
+  dbLoad();
+}
+
+async function dbLoad() {
+  const grid = $("dbGrid");
+  const searching = dbState.q.length >= 2;
+  const con = consoleOf(dbState.con);
+  $("dbSub").textContent = searching ? "Results for “" + dbState.q + "”" + (con ? " on " + con.label : "")
+                                     : "Popular" + (con ? " on " + con.label : "");
+  const keepKey = dbState.con || "all";
+  if (!searching && dbState.page === 0 && dbState.kept[keepKey]) { dbDraw(dbState.kept[keepKey], false); return; }
+  if (dbState.page === 0) grid.innerHTML = '<div class="sgp-note"><span class="spinner"></span> Looking on IGDB…</div>';
+  $("dbMore").innerHTML = "";
+  const want = JSON.stringify([dbState.q, dbState.con, dbState.page]);
+  dbState.want = want;
+  try {
+    let results, more = false;
+    if (searching) {
+      results = await igdbSearchGames(dbState.q);
+      if (dbState.con) results = results.filter((g) => igdbConsoles(g).indexOf(dbState.con) >= 0);
+    } else {
+      const d = await igdbPost("/games/browse", { console: dbState.con || null, offset: dbState.page * 30 });
+      const got = (d && d.results) || [];
+      results = dbState.page ? dbState.results.concat(got) : got;
+      more = got.length >= 30;
+      dbState.kept[keepKey] = { results, more };
+    }
+    if (dbState.want !== want) return;
+    dbState.results = results;
+    dbDraw({ results, more }, searching);
+  } catch (e) {
+    if (dbState.want !== want) return;
+    grid.innerHTML = '<div class="sgp-note">' + escapeHtml(e.message) + "</div>";
+  }
+}
+
+function dbDraw(st, searching) {
+  dbState.results = st.results;
+  const grid = $("dbGrid");
+  if (!st.results.length) {
+    grid.innerHTML = '<div class="sgp-note">' + (searching ? "Nothing called “" + escapeHtml(dbState.q) + "” on IGDB." : "Nothing here yet.") + "</div>";
+    $("dbMore").innerHTML = "";
+    return;
+  }
+  grid.innerHTML = st.results.map((g, i) => {
+    const plats = (g.platforms || []).map((p) => p.abbr).filter(Boolean);
+    const mine = libraryGameFor(g.name);
+    return '<button type="button" class="db-card" data-i="' + i + '"><div class="db-cover">' +
+      (g.cover ? '<img src="' + igdbImg("cover_big", g.cover) + '" alt="" loading="lazy">' : '<span class="igdb-nocover">' + ico("gamepad") + "</span>") +
+      (mine ? '<span class="db-mine">In your games</span>' : "") + '</div><div class="db-name">' + escapeHtml(g.name) + "</div>" +
+      '<div class="db-meta">' + escapeHtml([g.year, plats.slice(0, 3).join(" · ")].filter(Boolean).join(" · ")) + "</div></button>";
+  }).join("");
+  grid.querySelectorAll(".db-card").forEach((b) => {
+    b.onclick = () => { igdbBack = "database"; openIgdbGame(st.results[Number(b.dataset.i)].id); };
+  });
+  $("dbMore").innerHTML = !searching && st.more ? '<button class="btn-ghost" id="dbMoreBtn">Show more</button>' : "";
+  if ($("dbMoreBtn")) $("dbMoreBtn").onclick = () => { dbState.page++; dbLoad(); };
 }
 
 /* ---- SteamGridDB: the key goes to the Drive broker, kept with your account,
@@ -6179,6 +6599,7 @@ async function doUpload() {
       }
     }
     await loadGames();
+    if (!alreadyThere && !restored) askArtNow(gameFolderId, gameName);
   } catch (e) {
     console.error(e);
     $("uploadStatus").textContent = "";
@@ -6216,6 +6637,7 @@ function setUploadMode(mode) {
   });
   $("upNew").classList.toggle("hidden", mode !== "new");
   $("upLib").classList.toggle("hidden", mode !== "lib");
+  if (mode === "new" && !NARROW.matches) setTimeout(() => $("gameName").focus(), 60);
   if (mode === "lib") {
     $("upLibQ").value = "";
     upLibPick = null;
@@ -6258,13 +6680,18 @@ function renderUpLib() {
 function pickUpLibGame(fid) {
   const g = allGames.find((x) => x.folder.id === fid);
   if (!g) return;
-  upLibPick = { folderId: fid, name: g.folder.name, consoleId: g.consoleId };
+  // Once a game has backups, its save is a file or a folder for good
+  const lock = saveKindOf(g.saves);
+  upLibPick = { folderId: fid, name: g.folder.name, consoleId: g.consoleId, lock };
   $("upLibList").querySelectorAll(".ul-game").forEach((b) => b.classList.toggle("on", b.dataset.fid === fid));
   const con = consoleOf(g.consoleId);
-  $("upLibLead").innerHTML = "<b>Drop a save for " + escapeHtml(g.folder.name) + "</b> here, or click to browse";
-  $("upLibExts").textContent = con ? con.label + " saves: " + con.exts.join("  ") : "";
+  $("upLibLead").innerHTML = lock === "folder"
+    ? "<b>Choose the save folder for " + escapeHtml(g.folder.name) + "</b><div class=\"up-lock\">Its backups are a save folder, so this one is too.</div>"
+    : "<b>Drop a save for " + escapeHtml(g.folder.name) + "</b> here, or click to browse" +
+      (lock === "file" ? "<div class=\"up-lock\">Its backups are a single save file, so this one is too.</div>" : "");
+  $("upLibExts").textContent = lock === "folder" ? "" : con ? con.label + " saves: " + con.exts.join("  ") : "";
   $("upLibFile").accept = con ? con.exts.join(",") : "";
-  $("upLibFolderRow").classList.toggle("hidden", !isFolderConsole(g.consoleId));
+  $("upLibFolderRow").classList.toggle("hidden", lock === "file" || (!lock && !isFolderConsole(g.consoleId)));
   $("upLibDrop").classList.remove("hidden");
   $("upLibDrop").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
@@ -6303,6 +6730,17 @@ async function uploadToGame(folderId, selection) {
     "gba";
   const prev = currentHistory.saves.find((s) => s.appProperties && s.appProperties.emulator);
   const emulator = prev ? prev.appProperties.emulator : ((consoleOf(consoleId) || {}).emus || [""])[0];
+  // A save named nothing like this game's backups is likely another game's
+  const mm = saveNameMismatch(gameName, currentHistory.saves, selection);
+  if (mm) {
+    const q = (x) => "\u201c" + escapeHtml(x) + "\u201d";
+    const go = await askChoice("This might be a save for a different game",
+      "<p>You picked " + q(mm.name) + ", but " + q(gameName) + "'s backups so far were made from " +
+      mm.before.map(q).join(mm.before.length === 2 ? " and " : ", ") + (mm.more ? " and " + mm.more + " more" : "") +
+      ".</p><p>Check it's the right " + (selection.kind === "folder" ? "folder" : "file") + " before you upload it.</p>",
+      [{ label: "Cancel", value: null }, { label: "Upload it anyway", value: "go", className: "btn-primary" }]);
+    if (go !== "go") return;
+  }
   // Which slot, before anything else \u2014 backing out here should cost nothing.
   const slot = await pickTargetSlot();
   if (!slot) return;
@@ -6648,7 +7086,12 @@ async function openHistory(folderId, name, consoleId) {
         'title="File this game under a different console">' + (con ? "Change console" : "Set console") + "</button>" +
       (con ? '<span style="font-size:12px;color:var(--muted);">' + escapeHtml(con.where) + "</span>" : "");
     $("historyConsole").querySelector("[data-change-console]").onclick = changeGameConsole;
-    $("uploadFolderToGameBtn").classList.toggle("hidden", !isFolderConsole(resolved));
+    // Once it has backups, only its kind of save: a file, or a folder
+    const lock = saveKindOf(saves);
+    $("uploadFolderToGameBtn").classList.toggle("hidden", lock === "file" || (!lock && !isFolderConsole(resolved)));
+    $("uploadToGameBtn").classList.toggle("hidden", lock === "folder");
+    $("artLaterBtn").classList.toggle("hidden", !artLaterHas(folderId));
+    showHistoryHero(folderId, name, resolved);
     $("gameSaveInput").accept = con ? con.exts.join(",") : "";
 
     const zipSave = saves.find((s) => (s.appProperties || {}).kind === "folder");
@@ -6667,12 +7110,7 @@ async function openHistory(folderId, name, consoleId) {
         (con ? "<code>" + escapeHtml(con.where) + "</code>" : "your emulator's save folder") + ".</span>";
     }
 
-    if (cover) {
-      $("setCoverBtn").innerHTML = ico("image") + " Change cover";
-      await showCoverIn(coverEl, cover.id);
-    } else {
-      $("setCoverBtn").innerHTML = ico("image") + " Add cover";
-    }
+    if (cover) await showCoverIn(coverEl, cover.id);
 
     renderSlotBar();
     renderHistory();
@@ -7396,8 +7834,8 @@ function wireEvents() {
   $("uploadBtn").onclick = doUpload;
   $("consoleSel").onchange = onConsoleChanged;
 
-  $("findCoverBtn").onclick = findCoverForGame;
-  $("setCoverBtn").onclick = () => $("coverInput").click();
+  setupCoverMenu();
+  $("artLaterBtn").onclick = () => { if (currentHistory.folderId) openSgdbPicker(currentHistory.folderId, currentHistory.name); };
   $("coverInput").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; setCover(f); };
 
   $("newGameBtn").onclick = () => openNewGamePanel();
@@ -7410,7 +7848,10 @@ function wireEvents() {
     if (first) pickUpLibGame(first.dataset.fid);
   });
   const libDrop = $("upLibDrop");
-  libDrop.onclick = (e) => { if (!e.target.closest("button")) $("upLibFile").click(); };
+  libDrop.onclick = (e) => {
+    if (e.target.closest("button")) return;
+    (upLibPick && upLibPick.lock === "folder" ? $("upLibFolder") : $("upLibFile")).click();
+  };
   $("upLibFile").onchange = (e) => {
     const f = e.target.files[0]; e.target.value = "";
     if (f) uploadToLibraryGame({ kind: "file", file: f, name: f.name, size: f.size });
@@ -7427,7 +7868,12 @@ function wireEvents() {
   ["dragleave", "drop"].forEach((ev) => libDrop.addEventListener(ev, (e) => { e.preventDefault(); libDrop.classList.remove("drag"); }));
   libDrop.addEventListener("drop", (e) => {
     const f = e.dataTransfer.files[0];
-    if (f) uploadToLibraryGame({ kind: "file", file: f, name: f.name, size: f.size });
+    if (!f) return;
+    if (upLibPick && upLibPick.lock === "folder") {
+      toast("\u201c" + upLibPick.name + "\u201d's save is a folder. Choose its save folder instead.", "err", 6000);
+      return;
+    }
+    uploadToLibraryGame({ kind: "file", file: f, name: f.name, size: f.size });
   });
   setupGameSearch();
   $("sgdbConnectBtn").onclick = connectSgdb;
